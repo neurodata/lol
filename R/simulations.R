@@ -8,7 +8,6 @@
 #' @param r=FALSE whether to apply a random rotation.
 #' @param f=15 the fatness scaling of the tail.
 #' @param s0=10 the number of dimensions with a difference in the means.
-#' @param t=0.8
 #' @param rho=0.2 the scaling of the covariance terms, should be < 1.
 #' @return X the data as a [n, d] matrix.
 #' @return Y the labels as a [d] array.
@@ -113,6 +112,7 @@ fs.sims.rtrunk <- function(D, n, b=4, r=FALSE, C=2) {
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
+#' @export
 fs.sims.xor2 <- function(D, n) {
   n1 <- ceiling(n/2)
   n2 <- floor(n/2)
