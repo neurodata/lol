@@ -1,0 +1,15 @@
+Package: fselect
+Type: Package
+Title: Feature Selection
+Version: 0.0.0.9000
+Author: Eric Bridgeford, Richard Chen, Ran Liu, Jason Yim
+Description: A package for feature selection, particularly for HDLSS labelled data.
+Depends: R (>= 3.4.1)
+License: Apache 2.0
+Imports:
+  ggplot2,
+  abind,
+  MASS
+Encoding: UTF-8
+LazyData: true
+VignetteBuilder: knitr
