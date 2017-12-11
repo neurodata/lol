@@ -122,7 +122,7 @@ fs.sims.xor2 <- function(D, n) {
   S <- abind(S, S, along=3)
 
   # simulate from GMM for first set of training examples
-  sim1 <- fs.sims.sim_gmm(mus, S, n)
+  sim1 <- fs.sims.sim_gmm(mus, S, n1)
 
   # second simulation set
   mus <- abind(array(1, dim=c(D)), array(c(0, 1), dim=c(D)), along=2)
@@ -130,10 +130,13 @@ fs.sims.xor2 <- function(D, n) {
   S <- abind(S, S, along=3)
 
   # simulate from GMM for second set of training examples
-  sim2 <- fs.sims.sim_gmm(mus, S, n)
+  sim2 <- fs.sims.sim_gmm(mus, S, n2)
 
+  X <- abind(sim1$X, sim2$X, along=1)
+  Y <- abind(sim1$Y, sim2$Y, along=1)
 
-  return(list(X=sim$X, Y=sim$Y))
+  reorder <- sample(n)
+  return(list(X=X[reorder,], Y=Y[reorder]))
 }
 
 #' GMM Simulate
@@ -149,7 +152,7 @@ fs.sims.xor2 <- function(D, n) {
 fs.sims.sim_gmm <- function(mus, Sigmas, n) {
   C <- dim(mus)[2]
   labs <- sample(1:C, size=n, replace=TRUE)
-  X <- sapply(labs, function(lab) mvrnorm(n=1, mu[,lab], S[,,lab]), simplify=FALSE)
+  X <- sapply(labs, function(lab) mvrnorm(n=1, mus[,lab], S[,,lab]), simplify=FALSE)
   return(list(X=matrix(unlist(X), nrow=length(X), byrow=FALSE), Y=labs))
 }
 
