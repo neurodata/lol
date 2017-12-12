@@ -9,7 +9,8 @@ License: Apache 2.0
 Imports:
   ggplot2,
   abind,
-  MASS
+  MASS,
+  irlba
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
