@@ -14,9 +14,10 @@ fs.project.lrlda <- function(X, Y) {
   C <- length(ylabs)
   n <- length(Y)
   d <- dim(X)[2]
-  # Compute prior probabilities
-  pi <- sapply(ylabs, function(y) sum(Y==y)/length(Y))
+
+  # compute counts of each label
   counts <- sapply(ylabs, function(y) sum(Y==y))
+
   # Compute class means
   class_means <- sapply(ylabs, function(y) colMeans(X[Y==y,,drop=FALSE]))
   overall_mean <- colMeans(X)
