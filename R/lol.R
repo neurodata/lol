@@ -6,7 +6,7 @@
 #' @param X [n, d] the data with n samples in d dimensions.
 #' @param Y [n] the labels of the samples.
 #' @param r the rank of the projection.
-#' @return A [d, r] the data projected into r dimensions.
+#' @return A [d, r] the projection matrix for the linearly optimal projection from d to r dimensions.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
 #' @export
 fs.project.lol <- function(X, Y, r) {
