@@ -7,7 +7,7 @@
 #' @param Y [n] the labels of the samples.
 #' @param r the rank of the projection.
 #' @return A [d, r] the projection matrix for the linearly optimal projection from d to r dimensions.
-#' @author Eric Bridgeford, adapted from Joshua Vogelstein
+#' @author Eric Bridgeford
 #' @export
 fs.project.lol <- function(X, Y, r) {
   ylabs <- sort(unique(Y))
@@ -16,14 +16,10 @@ fs.project.lol <- function(X, Y, r) {
   d <- dim(X)[2]
   nv <- r - C
 
-  A <- array(0, dim=c(d, r))
-  for (i in 1:length(ylabs)) {
-    select <- Y == ylabs[i]
-    A[,i] <- colMeans(X[select,,drop=FALSE])
-  }
+  A <- sapply(ylabs, function(y) colMeans(X[Y==y,,drop=FALSE]))
 
   svd <- irlba(t(as.matrix(X)), nv=0, nu=nv)
-  A[,C:r] <- svd$u
+  A <- cbind(A, svd$u)
 
   # orthogonalize and normalize
   A <- qr.Q(qr(A))
