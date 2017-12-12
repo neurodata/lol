@@ -152,7 +152,7 @@ fs.sims.xor2 <- function(D, n) {
 fs.sims.sim_gmm <- function(mus, Sigmas, n) {
   C <- dim(mus)[2]
   labs <- sample(1:C, size=n, replace=TRUE)
-  X <- sapply(labs, function(lab) mvrnorm(n=1, mus[,lab], S[,,lab]), simplify=FALSE)
+  X <- sapply(labs, function(lab) mvrnorm(n=1, mus[,lab], Sigmas[,,lab]), simplify=FALSE)
   return(list(X=matrix(unlist(X), nrow=length(X), byrow=FALSE), Y=labs))
 }
 
