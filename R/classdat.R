@@ -2,9 +2,9 @@
 #' @import irlba
 #' @param X [n, d] the data with n samples in d dimensions.
 #' @param Y [n] the labels of the samples.
-#' @return ylabs [C] vector containing the unique, ordered class labels.
-#' @return centroids [C, d] centroid matrix of the unique, ordered classes.
-#' @return priors [C] vector containing prior probability for the unique, ordered classes.
+#' @return ylabs [K] vector containing the unique, ordered class labels.
+#' @return centroids [K, d] centroid matrix of the unique, ordered classes.
+#' @return priors [K] vector containing prior probability for the unique, ordered classes.
 #' @return n the number of samples.
 #' @return d the number of dimensions.
 #' @author Eric Bridgeford
@@ -18,6 +18,6 @@ fs.utils.classdat <- function(X, Y) {
   # compute the centroids of each class
   centroids <- t(as.matrix(sapply(ylabs, function(y) colMeans(X[Y==y,,drop=FALSE]))))
 
-  return(list(ylabs=ylabs, centroids=centroids, priors=priors, C=length(ylabs),
+  return(list(ylabs=ylabs, centroids=centroids, priors=priors, K=length(ylabs),
               n=n, d=d))
 }

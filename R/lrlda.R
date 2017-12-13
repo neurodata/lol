@@ -11,22 +11,22 @@ discriminant_fun <- function(x, centroid, prior){
 #'
 #' A function for using Linear Discriminant Analysis (LDA) for prediction.
 #' @param Xr [n, r] data matrix with n samples in r dimensions.
-#' @param ylabs [C] vector containing the unique, ordered class labels.
-#' @param centroids [C, r] centroid matrix of the unique, ordered class labels.
-#' @param priors [C] vector containing prior probability for the unique, ordered class labels.
-#' @param A [d, C-1] the projection matrix from d to C-1 dimensions.
-#' @return Xr [n, C-1] projected data matrix.
-#' @return Mp [C, C-1] projected centroid matrix.
+#' @param ylabs [K] vector containing the unique, ordered class labels.
+#' @param centroids [K, r] centroid matrix of the unique, ordered class labels.
+#' @param priors [K] vector containing prior probability for the unique, ordered class labels.
+#' @param A [d, K-1] the projection matrix from d to K-1 dimensions.
+#' @return Xr [n, K-1] projected data matrix.
+#' @return Mp [K, K-1] projected centroid matrix.
 #' @return Yhat [n] prediction matrix containing predictions for each example.
-#' @author Richard Chen
+#' @author Richard Khen
 #' @export
 fs.predict.lda <- function(X, ylabs, centroids, priors, A){
   dimx <- dim(X)
   n <- dimx[1] # number of examples
   d <- dimx[2] # dimensionality of data
-  C <- length(ylabs) # number of classes in the training set
+  K <- length(ylabs) # number of classes in the training set
 
-  train_lda <- fs.project.lrlda(X, Y, C-1)
+  train_lda <- fs.project.lrlda(X, Y, K-1)
   # Project the test data into the invariant subspaces
   Xr <- X %*% train_lda$A
   # project the centroids into the invariant subspaces
@@ -34,7 +34,7 @@ fs.predict.lda <- function(X, ylabs, centroids, priors, A){
 
   # Classify the data by doing nearest centroid classification
   Yhat <- ylabs[sapply(1:n, function(i) {
-    which.min(sapply(1:C, function(j) {
+    which.min(sapply(1:K, function(j) {
       discriminant_fun(Xr[i,], Mp[j,], priors[j])
     }))
   })]
@@ -49,17 +49,17 @@ fs.predict.lda <- function(X, ylabs, centroids, priors, A){
 #' @param Y [n] the labels of the samples.
 #' @param r the rank of the projection.
 #' @return A [d, r] the projection matrix
-#' @return ylabs [C] vector containing the unique, ordered class labels.
-#' @return centroids [C, d] centroid matrix of the unique, ordered classes.
-#' @return priors [C] vector containing prior probability for the unique, ordered classes.
+#' @return ylabs [K] vector containing the unique, ordered class labels.
+#' @return centroids [K, d] centroid matrix of the unique, ordered classes.
+#' @return priors [K] vector containing prior probability for the unique, ordered classes.
 #' @return Xr [n, r] the data in reduced dimensionality.
-#' @return cr [C, r] the centroids in reduced dimensionality.
+#' @return cr [K, r] the centroids in reduced dimensionality.
 #' @author Richard Chen
 #' @export
 fs.project.lrlda <- function(X, Y, r) {
   classdat <- fs.utils.classdat(X, Y)
   priors <- classdat$priors; M <- classdat$centroids
-  K <- classdat$C; ylabs <- classdat$ylabs
+  K <- classdat$K; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d
 
   # 1. Compute the class dependent probabilities and class centroids

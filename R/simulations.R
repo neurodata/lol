@@ -191,8 +191,13 @@ fs.sims.xor2 <- function(n, d) {
 fs.sims.sim_gmm <- function(mus, Sigmas, n) {
   C <- dim(mus)[2]
   labs <- sample(1:C, size=n, replace=TRUE)
-  X <- sapply(labs, function(lab) mvrnorm(n=1, mus[,lab], Sigmas[,,lab]), simplify=FALSE)
-  return(list(X=matrix(unlist(X), nrow=length(X), byrow=TRUE), Y=labs))
+  ylabs <- as.vector(sort(unique(labs)))
+  res <- sapply(ylabs, function(y) mvrnorm(n=sum(labs == y), mus[,y], Sigmas[,,y]), USE.NAMES=TRUE, simplify=FALSE)
+  X <- array(0, dim=c(n, dim(Sigmas)[1]))
+  for (y in ylabs) {
+    X[labs == y,] <- res[[y]]
+  }
+  return(list(X=X, Y=labs))
 }
 
 #' Random Rotation

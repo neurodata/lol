@@ -12,11 +12,11 @@ fs.utils.classdat(X, Y)
 \item{Y}{[n] the labels of the samples.}
 }
 \value{
-ylabs [C] vector containing the unique, ordered class labels.
+ylabs [K] vector containing the unique, ordered class labels.
 
-centroids [C, d] centroid matrix of the unique, ordered classes.
+centroids [K, d] centroid matrix of the unique, ordered classes.
 
-priors [C] vector containing prior probability for the unique, ordered classes.
+priors [K] vector containing prior probability for the unique, ordered classes.
 
 n the number of samples.
 

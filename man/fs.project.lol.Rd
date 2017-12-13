@@ -16,15 +16,15 @@ fs.project.lol(X, Y, r)
 \value{
 A [d, r] the projection matrix from d to r dimensions.
 
-ylabs [C] vector containing the unique, ordered class labels.
+ylabs [K] vector containing the unique, ordered class labels.
 
-centroids [C, d] centroid matrix of the unique, ordered classes.
+centroids [K, d] centroid matrix of the unique, ordered classes.
 
-priors [C] vector containing prior probability for the unique, ordered classes.
+priors [K] vector containing prior probability for the unique, ordered classes.
 
 Xr [n, r] the data in reduced dimensionality.
 
-cr [C, r] the centroids in reduced dimensionality.
+cr [K, r] the centroids in reduced dimensionality.
 }
 \description{
 A function for implementing the Linear Optimal Low-Rank Projection (LOL) Algorithm.

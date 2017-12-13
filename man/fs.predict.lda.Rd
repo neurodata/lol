@@ -7,20 +7,20 @@
 fs.predict.lda(X, ylabs, centroids, priors, A)
 }
 \arguments{
-\item{ylabs}{[C] vector containing the unique, ordered class labels.}
+\item{ylabs}{[K] vector containing the unique, ordered class labels.}
 
-\item{centroids}{[C, r] centroid matrix of the unique, ordered class labels.}
+\item{centroids}{[K, r] centroid matrix of the unique, ordered class labels.}
 
-\item{priors}{[C] vector containing prior probability for the unique, ordered class labels.}
+\item{priors}{[K] vector containing prior probability for the unique, ordered class labels.}
 
-\item{A}{[d, C-1] the projection matrix from d to C-1 dimensions.}
+\item{A}{[d, K-1] the projection matrix from d to K-1 dimensions.}
 
 \item{Xr}{[n, r] data matrix with n samples in r dimensions.}
 }
 \value{
-Xr [n, C-1] projected data matrix.
+Xr [n, K-1] projected data matrix.
 
-Mp [C, C-1] projected centroid matrix.
+Mp [K, K-1] projected centroid matrix.
 
 Yhat [n] prediction matrix containing predictions for each example.
 }
@@ -28,5 +28,5 @@ Yhat [n] prediction matrix containing predictions for each example.
 A function for using Linear Discriminant Analysis (LDA) for prediction.
 }
 \author{
-Richard Chen
+Richard Khen
 }
