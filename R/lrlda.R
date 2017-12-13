@@ -44,7 +44,7 @@ fs.predict.lda <- function(X, ylabs, centroids, priors, A){
 #' Low-rank Linear Discriminant Analysis (LR-LDA)
 #'
 #' A function for implementing the LR-LDA Algorithm.
-#' @import Rspectra
+#' @import RSpectra
 #' @param X [n, d] the data with n samples in d dimensions.
 #' @param Y [n] the labels of the samples.
 #' @return A [d, C-1] the projection matrix
@@ -64,7 +64,7 @@ fs.project.lrlda <- function(X, Y) {
   M <- t(as.matrix(sapply(ylabs, function(y) colMeans(X[Y==y,,drop=FALSE]))))
 
   # 2. Computing with-class covariance
-  W <- cov(X) # within-class scatter
+  W <- stats::cov(X) # within-class scatter
 
   # 3. Computing M* = M W^{-1/2} using the eigen-decomposition of W
   e <- eigen(W)
@@ -74,8 +74,8 @@ fs.project.lrlda <- function(X, Y) {
 
   # 4. Compuinge B* (which is just the covariance matrix of M*), and its eigen-decomposition, B*=V*D_BV*^T
   #    Note that the columns of V* define the coordiantes of the optimal subspaces
-  B_star = cov(M_star)
-  V_star = eigs(B_star, k=C-1)$vectors
+  B_star = stats::cov(M_star)
+  V_star = Rspectra::eigs(B_star, k=C-1)$vectors
 
   # 5. Compute the full projection matrix
   A = W_neg_one_half %*% V_star

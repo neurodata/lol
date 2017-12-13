@@ -19,7 +19,7 @@ fs.project.lrcca <- function(X, Y, r) {
   n <- classdat$n; d <- classdat$d
 
   # canonical correlation
-  cxy <- cancor(X, Y)
+  cxy <- stats::cancor(X, Y)
   A <- X %*% cxy$xcoef[,rank(-cxy$cor)[1:r]]
   return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs))
 }

@@ -24,7 +24,7 @@ fs.project.pca <- function(Xt, Y, r, center=TRUE) {
     X <- X - colMeans(X)
   }
   # take the svd and retain the top r left singular vectors as our components
-  svd <- irlba(t(as.matrix(X)), nv=0, nu=r)
+  svd <- irlba::irlba(t(as.matrix(X)), nv=0, nu=r)
   A <- svd$u
 
   return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs))
@@ -34,7 +34,6 @@ fs.project.pca <- function(Xt, Y, r, center=TRUE) {
 #'
 #' A function that performs PCA on the class-centered data.
 #'
-#' @import irlba
 #' @param X [n, d] the data with n samples in d dimensions.
 #' @param Y [n] the labels of the samples.
 #' @param r the rank of the projection.

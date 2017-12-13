@@ -2,7 +2,6 @@
 #'
 #' A function for implementing the Linear Optimal Low-Rank Projection (LOL) Algorithm.
 #'
-#' @import irlba
 #' @param X [n, d] the data with n samples in d dimensions.
 #' @param Y [n] the labels of the samples.
 #' @param r the rank of the projection.
@@ -26,6 +25,6 @@ fs.project.lol <- function(X, Y, r) {
   A <- cbind(centroids, fs.project.cpca(X))
 
   # orthogonalize and normalize
-  A <- qr.Q(qr(A))
+  A <- Matrix::qr.Q(Matrix::qr(A))
   return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs))
 }
