@@ -30,5 +30,5 @@ cr [K, r] the centroids in reduced dimensionality.
 A function for implementing the Low-rank Canonical Correlation Analysis (LR-CCA) Algorithm.
 }
 \author{
-Jason Yim
+stats and Jason Yim, modified by Eric Bridgeford
 }

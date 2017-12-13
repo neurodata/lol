@@ -10,37 +10,37 @@ discriminant_fun <- function(x, centroid, prior){
 #' Linear Discriminant Analysis (LDA) Prediction
 #'
 #' A function for using Linear Discriminant Analysis (LDA) for prediction.
-#' @param Xr [n, r] data matrix with n samples in r dimensions.
+#' @param X [n1, r] data matrix with n samples in r dimensions for training.
+#' @param Y [n1] the labels for each sample for training.
+#' @param Xtest [n2, r] data matrix with n samples in r dimensions for testing.
+#' @param Ytest [n2] the labels for each sample for testing.
 #' @param ylabs [K] vector containing the unique, ordered class labels.
-#' @param centroids [K, r] centroid matrix of the unique, ordered class labels.
+#' @param centroids [K, C-1] centroid matrix of the unique, ordered class labels.
 #' @param priors [K] vector containing prior probability for the unique, ordered class labels.
-#' @param A [d, K-1] the projection matrix from d to K-1 dimensions.
 #' @return Xr [n, K-1] projected data matrix.
 #' @return Mp [K, K-1] projected centroid matrix.
 #' @return Yhat [n] prediction matrix containing predictions for each example.
 #' @author Richard Chen, modified by Eric Bridgeford
 #' @export
-fs.predict.lda <- function(X, ylabs, centroids, priors, A){
-  dimx <- dim(X)
-  n <- dimx[1] # number of examples
-  d <- dimx[2] # dimensionality of data
-  K <- length(ylabs) # number of classes in the training set
+fs.lda <- function(X, Y, Xtest){
+  K <- length(unique(Y)) # number of classes in the data
 
   train_lda <- fs.project.lrlda(X, Y, K-1)
+  ylabs <- train_lda$ylabs; priors <- train_lda$priors; cr <- train_lda$cr
+
   # Project the test data into the invariant subspaces
-  Xr <- X %*% train_lda$A
-  # project the centroids into the invariant subspaces
-  Mp <- centroids %*% train_lda$A
+  Xr.test <- Xtest %*% train_lda$A
 
   # Classify the data by doing nearest centroid classification
-  Yhat <- ylabs[sapply(1:n, function(i) {
+  Yhat <- ylabs[sapply(1:(dim(Xr.test)[1]), function(i) {
     which.min(sapply(1:K, function(j) {
-      discriminant_fun(Xr[i,], Mp[j,], priors[j])
+      discriminant_fun(Xr.test[i,], cr[j,], priors[j])
     }))
   })]
 
-  return(list(Xr = Xr, Mp=Mp, Yhat=Yhat))
+  return(Yhat)
 }
+
 
 #' Low-rank Linear Discriminant Analysis (LR-LDA)
 #'

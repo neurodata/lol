@@ -30,5 +30,5 @@ cr [K, r] the centroids in reduced dimensionality.
 A function for implementing the LR-LDA Algorithm.
 }
 \author{
-Richard Chen
+Richard Chen, modified by Eric Bridgeford
 }
