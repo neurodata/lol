@@ -10,7 +10,8 @@ Imports:
   ggplot2,
   abind,
   MASS,
-  irlba
+  irlba,
+  Rspectra
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr

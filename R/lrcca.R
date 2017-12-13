@@ -1,31 +1,25 @@
-#' Linear Optimal Low-Rank Projection (LOL)
+#' Low-rank Canonical Correlation Analysis (LR-CCA)
 #'
-#' A function for implementing the Linear Optimal Low-Rank Projection (LOL) Algorithm.
+#' A function for implementing the Low-rank Canonical Correlation Analysis (LR-CCA) Algorithm.
 #'
-#' @import irlba
-#' @param X [n, d] the data with n samples in d dimensions.
-#' @param Y [n] the labels of the samples.
+#' @param X [n, p] the data with n samples in d dimensions.
+#' @param Y [n, q] the labels of the samples.
 #' @param r the rank of the projection.
 #' @return A [d, r] the projection matrix from d to r dimensions.
 #' @return ylabs [C] vector containing the unique, ordered class labels.
 #' @return centroids [C, d] centroid matrix of the unique, ordered classes.
 #' @return priors [C] vector containing prior probability for the unique, ordered classes.
-#' @author Eric Bridgeford
+#' @author Jason Yim
 #' @export
-fs.project.lol <- function(X, Y, r) {
+fs.project.lrcca <- function(X, Y, r) {
   # class data
   classdat <- gs.utils.classdat(X, Y)
   priors <- classdat$priors; centroids <- classdat$centroids
   K <- classdat$C; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d
-  nv <- r - C
 
-  # compute the centers per-class
-  centroids <- sapply(ylabs, function(y) colMeans(X[Y==y,,drop=FALSE]))
-
-  A <- cbind(centroids, fs.project.cpca(X))
-
-  # orthogonalize and normalize
-  A <- qr.Q(qr(A))
+  # canonical correlation
+  cxy <- cancor(X, Y)
+  A <- X %*% cxy$xcoef[,rank(-cxy$cor)[1:r]]
   return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs))
 }
