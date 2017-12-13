@@ -18,7 +18,7 @@ discriminant_fun <- function(x, centroid, prior){
 #' @return Xr [n, K-1] projected data matrix.
 #' @return Mp [K, K-1] projected centroid matrix.
 #' @return Yhat [n] prediction matrix containing predictions for each example.
-#' @author Richard Khen
+#' @author Richard Chen, modified by Eric Bridgeford
 #' @export
 fs.predict.lda <- function(X, ylabs, centroids, priors, A){
   dimx <- dim(X)
@@ -54,7 +54,7 @@ fs.predict.lda <- function(X, ylabs, centroids, priors, A){
 #' @return priors [K] vector containing prior probability for the unique, ordered classes.
 #' @return Xr [n, r] the data in reduced dimensionality.
 #' @return cr [K, r] the centroids in reduced dimensionality.
-#' @author Richard Chen
+#' @author Richard Chen, modified by Eric Bridgeford
 #' @export
 fs.project.lrlda <- function(X, Y, r) {
   classdat <- fs.utils.classdat(X, Y)

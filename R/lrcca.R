@@ -11,7 +11,7 @@
 #' @return priors [K] vector containing prior probability for the unique, ordered classes.
 #' @return Xr [n, r] the data in reduced dimensionality.
 #' @return cr [K, r] the centroids in reduced dimensionality.
-#' @author Jason Yim
+#' @author stats and Jason Yim, modified by Eric Bridgeford
 #' @export
 fs.project.lrcca <- function(X, Y, r) {
   # class data
