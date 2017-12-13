@@ -74,7 +74,7 @@ which will install in about 30 seconds on a recommended machine.
 
 #### Package Versions
 
-The `mgc` package functions with all packages in their latest versions as they appear on `CRAN` on October 15, 2017. Users can check [CRAN snapshot](https://mran.microsoft.com/timemachine/) for details. The versions of software are, specifically:
+The `fselect` package functions with all packages in their latest versions as they appear on `CRAN` on December 13, 2017. Users can check [CRAN snapshot](https://mran.microsoft.com/timemachine/) for details. The versions of software are, specifically:
 ```
 abind_1.4-5
 latex2exp_0.4.0
