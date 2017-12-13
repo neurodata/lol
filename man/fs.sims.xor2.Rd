@@ -4,12 +4,14 @@
 \alias{fs.sims.xor2}
 \title{Xor Problem}
 \usage{
-fs.sims.xor2(n, d)
+fs.sims.xor2(n, d, fall = 100)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
 
 \item{d}{the dimensionality of the simulated data.}
+
+\item{fall=20}{the sigma for the covariance structuring.}
 }
 \value{
 X [n, d] the data as a matrix.

@@ -15,18 +15,19 @@
 #' @export
 fs.sims.fat_tails <- function(n, d, r=FALSE, f=15, s0=10, t=0.8, rho=0.2) {
   mu0 <- array(0, dim=c(d, 1))
-  mu1 <- c(array(1, dim=c(s0)), array(0, dim=c(d - s0)))
+  mu1 <- c(array(0, dim=c(s0)), array(1, dim=c(d - s0)))
   mus <- abind(mu0, mu1, along=2)
 
   S <- rho*array(1, dim=c(d, d))
   diag(S) <- 1
-  if (r) {
-    res <- fs.sims.random_rotate(mu, S)
-    mus <- res$mu
-    S <- res$S
-  }
 
   S <- abind(S, 15*S, along=3)
+
+  if (r) {
+    res <- fs.sims.random_rotate(mus, S)
+    mus <- res$mus
+    S <- res$S
+  }
 
   # simulate from GMM
   sim <- fs.sims.sim_gmm(mus, S, n)
@@ -97,13 +98,13 @@ fs.sims.rtrunk <- function(n, d, b=4, r=FALSE, C=2) {
   S <- diag(d)
   diag(S) <- 100/sqrt(seq(from=d, to=1, by=-1))
 
+  S <- array(unlist(replicate(C, S, simplify=FALSE)), dim=c(d, d, C))
+
   if (r) {
     res <- fs.sims.random_rotate(mus, S)
     mus <- res$mus
     S <- res$S
   }
-  S <- array(unlist(replicate(C, S, simplify=FALSE)), dim=c(d, d, C))
-
   # simulate from GMM
   sim <- fs.sims.sim_gmm(mus, S, n)
   return(list(X=sim$X, Y=sim$Y))
@@ -130,13 +131,13 @@ fs.sims.cigar <- function(n, d, a=0.15, b=4, r=FALSE) {
   S <- diag(d)
   S[2,2] <- b
 
+  S <- abind(diag(d), S, along=3)
+
   if (r) {
     res <- fs.sims.random_rotate(mus, S)
     mus <- res$mus
     S <- res$S
   }
-  S <- abind(diag(d), S, along=3)
-
   # simulate from GMM
   sim <- fs.sims.sim_gmm(mus, S, n)
   return(list(X=sim$X, Y=sim$Y))
@@ -148,16 +149,17 @@ fs.sims.cigar <- function(n, d, a=0.15, b=4, r=FALSE) {
 #' A function to simulate from the 2-class xor problem.
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
+#' @param fall=20 the sigma for the covariance structuring.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
 #' @export
-fs.sims.xor2 <- function(n, d) {
+fs.sims.xor2 <- function(n, d, fall=100) {
   n1 <- ceiling(n/2)
   n2 <- floor(n/2)
   # first simulation set
   mus <- abind(array(0, dim=c(d)), array(c(1, 0), dim=c(d)), along=2)
-  S <- sqrt(d/4)*diag(d)
+  S <- sqrt(d/fall)*diag(d)
   S <- abind(S, S, along=3)
 
   # simulate from GMM for first set of training examples
@@ -165,8 +167,6 @@ fs.sims.xor2 <- function(n, d) {
 
   # second simulation set
   mus <- abind(array(1, dim=c(d)), array(c(0, 1), dim=c(d)), along=2)
-  S <- sqrt(d/4)*diag(d)
-  S <- abind(S, S, along=3)
 
   # simulate from GMM for second set of training examples
   sim2 <- fs.sims.sim_gmm(mus, S, n2)
@@ -208,7 +208,7 @@ fs.sims.random_rotate <- function(mus, Sigmas) {
   dimm <- dim(mus)
   C <- dimm[2]
   d <- dim(mus)[1]
-  Q <- qr.Q(qr(array(runif(d*d), dim=c(d, d))))
+  Q <- qr.Q(qr(array(rnorm(d*d), dim=c(d, d))))
   if (det(Q) < -.99) {
     Q[,1] <- -Q[,1]
   }
@@ -217,5 +217,5 @@ fs.sims.random_rotate <- function(mus, Sigmas) {
     mus[,i] <- Q %*% mus[,i,drop=FALSE]
     Sigmas[,,i] <- Q %*% Sigmas[,,i] %*% t(Q)
   }
-  return(list(mus=mus, S=S))
+  return(list(mus=mus, S=Sigmas))
 }
