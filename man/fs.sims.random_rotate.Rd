@@ -4,7 +4,7 @@
 \alias{fs.sims.random_rotate}
 \title{Random Rotation}
 \usage{
-fs.sims.random_rotate(mu, S)
+fs.sims.random_rotate(mus, Sigmas)
 }
 \description{
 A helper function for applying a random rotation to gaussian parameter set.

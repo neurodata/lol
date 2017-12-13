@@ -1,0 +1,47 @@
+---
+title: "Linear Optimal Low-Rank Projection (LOL)"
+author: "Eric Bridgeford"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo=FALSE}
+require(fselect)
+require(ggplot2)
+require(latex2exp)
+```
+
+# LOL Example
+
+We simulate data with n=100, d=20 and visualize the first 2 dimensions:
+```{r}
+testdat <- fs.sims.rtrunk(100, 20)
+X <- testdat$X
+Y <- testdat$Y
+
+data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, y=x2, color=y)) +
+  geom_point() +
+  xlab(TeX("$x_1$")) +
+  ylab(TeX("$x_2$")) +
+  ggtitle("Simulated Data")
+```
+
+Projecting with LOL to 2 dimensions:
+
+```{r}
+result <- fs.project.lol(X, Y, 2)
+
+data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, y=x2, color=y)) +
+  geom_point() +
+  xlab(TeX("$x_1$")) +
+  ylab(TeX("$x_2")) +
+  ggtitle("Projected Data using LOL")
+```

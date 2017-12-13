@@ -9,17 +9,20 @@
 #' @return ylabs [C] vector containing the unique, ordered class labels.
 #' @return centroids [C, d] centroid matrix of the unique, ordered classes.
 #' @return priors [C] vector containing prior probability for the unique, ordered classes.
+#' @return Xr [n, r] the data in reduced dimensionality.
+#' @return cr [C, r] the centroids in reduced dimensionality.
 #' @author Jason Yim
 #' @export
 fs.project.lrcca <- function(X, Y, r) {
   # class data
-  classdat <- gs.utils.classdat(X, Y)
+  classdat <- fs.utils.classdat(X, Y)
   priors <- classdat$priors; centroids <- classdat$centroids
   K <- classdat$C; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d
 
   # canonical correlation
   cxy <- stats::cancor(X, Y)
-  A <- X %*% cxy$xcoef[,rank(-cxy$cor)[1:r]]
-  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs))
+  A <-cxy$xcoef[,1:r]
+  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=X %*% A, cr=centroids %*% A))
 }

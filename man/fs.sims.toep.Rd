@@ -4,12 +4,12 @@
 \alias{fs.sims.toep}
 \title{Toeplitz Simulation}
 \usage{
-fs.sims.toep(D, n, D1 = 10, r = FALSE, b = 0.4, rho = 0.5)
+fs.sims.toep(n, d, D1 = 10, r = FALSE, b = 0.4, rho = 0.5)
 }
 \arguments{
-\item{D}{the dimensionality of the simulated data.}
-
 \item{n}{the number of samples of the simulated data.}
+
+\item{d}{the dimensionality of the simulated data.}
 
 \item{D1=10}{the dimensionality for the non-equal covariance terms}
 

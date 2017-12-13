@@ -4,12 +4,12 @@
 \alias{fs.sims.rtrunk}
 \title{Random Trunk}
 \usage{
-fs.sims.rtrunk(D, n, b = 4, r = FALSE, C = 2)
+fs.sims.rtrunk(n, d, b = 4, r = FALSE, C = 2)
 }
 \arguments{
-\item{D}{the dimensionality of the simulated data.}
-
 \item{n}{the number of samples of the simulated data.}
+
+\item{d}{the dimensionality of the simulated data.}
 
 \item{b=4}{scalar for mu scaling.}
 

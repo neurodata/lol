@@ -8,8 +8,8 @@
 #' @return n the number of samples.
 #' @return d the number of dimensions.
 #' @author Eric Bridgeford
-gs.utils.classdat <- function(X, Y) {
-  ylabs <- sort(unique(Y))
+fs.utils.classdat <- function(X, Y) {
+  ylabs <- as.vector(sort(unique(Y)))
   dimx <- dim(X)
   n <- dimx[1]; d <- dimx[2]
 

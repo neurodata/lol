@@ -11,11 +11,13 @@
 #' @return ylabs [C] vector containing the unique, ordered class labels.
 #' @return centroids [C, d] centroid matrix of the unique, ordered classes.
 #' @return priors [C] vector containing prior probability for the unique, ordered classes.
+#' @return Xr [n, r] the data in reduced dimensionality.
+#' @return cr [C, r] the centroids in reduced dimensionality.
 #' @author Eric Bridgeford
 #' @export
 fs.project.pca <- function(Xt, Y, r, center=TRUE) {
   # class data
-  classdat <- gs.utils.classdat(X, Y)
+  classdat <- fs.utils.classdat(X, Y)
   priors <- classdat$priors; centroids <- classdat$centroids
   K <- classdat$C; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d
@@ -23,11 +25,19 @@ fs.project.pca <- function(Xt, Y, r, center=TRUE) {
   if (center) {
     X <- X - colMeans(X)
   }
+
+  A <- fs.utils.pca(X, r)
+
+  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=X %*% A, cr=centroids %*% A))
+}
+
+# A utility for pre-centered data to do PCA faster.
+fs.utils.pca <- function(X, r) {
   # take the svd and retain the top r left singular vectors as our components
   svd <- irlba::irlba(t(as.matrix(X)), nv=0, nu=r)
   A <- svd$u
-
-  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs))
+  return(A)
 }
 
 #' Class PCA
@@ -41,19 +51,22 @@ fs.project.pca <- function(Xt, Y, r, center=TRUE) {
 #' @return ylabs [C] vector containing the unique, ordered class labels.
 #' @return centroids [C, d] centroid matrix of the unique, ordered classes.
 #' @return priors [C] vector containing prior probability for the unique, ordered classes.
+#' @return Xr [n, r] the data in reduced dimensionality.
+#' @return cr [C, r] the centroids in reduced dimensionality.
 #' @author Eric Bridgeford
 #' @export
 fs.project.cpca <- function(X, Y, r) {
   # class data
-  classdat <- gs.utils.classdat(X, Y)
+  classdat <- fs.utils.classdat(X, Y)
   priors <- classdat$priors; centroids <- classdat$centroids
   K <- classdat$C; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d
 
   # subtract column means per-class
-  Xt <- sapply(ylabs, function(y) X[Y==y,,drop=FALSE] - centroids[ylabs == y,,drop=FALSE])
+  Xt <- X - centroids[Y,]
   # compute the standard PCA but with the pre-centered data.
-  A <- fs.project.pca(Xt, Y, r, center=FALSE)
+  A <- fs.utils.pca(Xt, r)
 
-  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs))
+  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=X %*% A, cr=centroids %*% A))
 }

@@ -3,8 +3,8 @@
 #' A function for simulating from 2 classes, one of which has fatter tails.
 #'
 #' @import abind
-#' @param D the dimensionality of the simulated data.
 #' @param n the number of samples of the simulated data.
+#' @param d the dimensionality of the simulated data.
 #' @param r=FALSE whether to apply a random rotation.
 #' @param f=15 the fatness scaling of the tail.
 #' @param s0=10 the number of dimensions with a difference in the means.
@@ -13,12 +13,12 @@
 #' @return Y the labels as a [d] array.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
 #' @export
-fs.sims.fat_tails <- function(D, n, r=FALSE, f=15, s0=10, t=0.8, rho=0.2) {
-  mu0 <- array(0, dim=c(D, 1))
-  mu1 <- c(array(1, dim=c(s0)), array(0, dim=c(D - s0)))
+fs.sims.fat_tails <- function(n, d, r=FALSE, f=15, s0=10, t=0.8, rho=0.2) {
+  mu0 <- array(0, dim=c(d, 1))
+  mu1 <- c(array(1, dim=c(s0)), array(0, dim=c(d - s0)))
   mus <- abind(mu0, mu1, along=2)
 
-  S <- rho*array(1, dim=c(D, D))
+  S <- rho*array(1, dim=c(d, d))
   diag(S) <- 1
   if (r) {
     res <- fs.sims.random_rotate(mu, S)
@@ -38,8 +38,8 @@ fs.sims.fat_tails <- function(D, n, r=FALSE, f=15, s0=10, t=0.8, rho=0.2) {
 #' A function for simulating data in which the covariance is a non-symmetric toeplitz matrix.
 #'
 #' @import abind
-#' @param D the dimensionality of the simulated data.
 #' @param n the number of samples of the simulated data.
+#' @param d the dimensionality of the simulated data.
 #' @param D1=10 the dimensionality for the non-equal covariance terms
 #' @param r=FALSE whether to apply a random rotation.
 #' @param rho=0.5 the scaling of the covariance terms, should be < 1.
@@ -47,21 +47,26 @@ fs.sims.fat_tails <- function(D, n, r=FALSE, f=15, s0=10, t=0.8, rho=0.2) {
 #' @return Y [n] the labels as a array.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
 #' @export
-fs.sims.toep <- function(D, n, D1=10, r=FALSE, b=0.4, rho=0.5) {
+fs.sims.toep <- function(n, d, D1=10, r=FALSE, b=0.4, rho=0.5) {
   c <- rho^(0:(D1 - 1))
   A <- toeplitz(c)
   K1 <- sum(A)
 
-  c <- rho^(0:(D-1))
+  c <- rho^(0:(d-1))
   A <- toeplitz(c)
   K <- sum(A)
 
   mudelt <- (K1 * b^2/K)^0.5/2
 
-  mu0 <- array(mudelt*c(1, -1), dim=c(D))
+  mu0 <- array(mudelt*c(1, -1), dim=c(d))
   mus <- abind(mu0, -mu0, along=2)
   S <- abind(A, A, along=3)
 
+  if (r) {
+    res <- fs.sims.random_rotate(mus, S)
+    mus <- res$mus
+    S <- res$S
+  }
   # simulate from GMM
   sim <- fs.sims.sim_gmm(mus, S, n)
   return(list(X=sim$X, Y=sim$Y))
@@ -71,8 +76,8 @@ fs.sims.toep <- function(D, n, D1=10, r=FALSE, b=0.4, rho=0.5) {
 #'
 #' A simulation for the random trunk experiment.
 #' @import abind
-#' @param D the dimensionality of the simulated data.
 #' @param n the number of samples of the simulated data.
+#' @param d the dimensionality of the simulated data.
 #' @param b=4 scalar for mu scaling.
 #' @param r=FALSE whether to apply a random rotation.
 #' @param C=2 number of classes, should be <4.
@@ -80,53 +85,87 @@ fs.sims.toep <- function(D, n, D1=10, r=FALSE, b=0.4, rho=0.5) {
 #' @return Y [n] the labels as a array.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
 #' @export
-fs.sims.rtrunk <- function(D, n, b=4, r=FALSE, C=2) {
-  mu1 <- b/sqrt(0:(D-1)*2 + 1)
+fs.sims.rtrunk <- function(n, d, b=4, r=FALSE, C=2) {
+  mu1 <- b/sqrt(0:(d-1)*2 + 1)
   if (C == 2) {
     mus <- abind(mu1, -mu1, along=2)
   } else if (C == 3) {
     mus <- abind(mu1, 0*mu1, -mu1, along=2)
   } else if (C == 4) {
-    mus <- abind(mu1, b/(seq(from=D, to=1, by=-1)), b/(seq(from=1, to=D, by=1)), -mu1, along=3)
+    mus <- abind(mu1, b/(seq(from=d, to=1, by=-1)), b/(seq(from=1, to=d, by=1)), -mu1, along=3)
   }
-  S <- diag(D)
-  diag(S) <- 100/sqrt(seq(from=D, to=1, by=-1))
+  S <- diag(d)
+  diag(S) <- 100/sqrt(seq(from=d, to=1, by=-1))
 
   if (r) {
     res <- fs.sims.random_rotate(mus, S)
-    mus <- res$mu
+    mus <- res$mus
     S <- res$S
   }
-  S <- array(unlist(replicate(C, S, simplify=FALSE)), dim=c(D, D, C))
+  S <- array(unlist(replicate(C, S, simplify=FALSE)), dim=c(d, d, C))
 
   # simulate from GMM
   sim <- fs.sims.sim_gmm(mus, S, n)
   return(list(X=sim$X, Y=sim$Y))
 }
 
-#' Xor Problem
+#' Stacked Cigar
 #'
-#' A function to simulate from the 2-class xor problem.
-#' @param D the dimensionality of the simulated data.
+#' A simulation for the stacked cigar experiment.
+#' @import abind
 #' @param n the number of samples of the simulated data.
+#' @param d the dimensionality of the simulated data.
+#' @param a=0.15 scalar for all of the mu1 but 2nd dimension.
+#' @param b=4 scalar for 2nd dimension value of mu2.
+#' @param r=FALSE whether to apply a random rotation.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
 #' @export
-fs.sims.xor2 <- function(D, n) {
+fs.sims.cigar <- function(n, d, a=0.15, b=4, r=FALSE) {
+  mu1 <- array(a, dim=c(d))
+  mu1[2] <- b
+  mus <- cbind(array(0, dim=c(d)), mu1)
+
+  S <- diag(d)
+  S[2,2] <- b
+
+  if (r) {
+    res <- fs.sims.random_rotate(mus, S)
+    mus <- res$mus
+    S <- res$S
+  }
+  S <- abind(diag(d), S, along=3)
+
+  # simulate from GMM
+  sim <- fs.sims.sim_gmm(mus, S, n)
+  return(list(X=sim$X, Y=sim$Y))
+}
+
+
+#' Xor Problem
+#'
+#' A function to simulate from the 2-class xor problem.
+#' @param n the number of samples of the simulated data.
+#' @param d the dimensionality of the simulated data.
+#' @return X [n, d] the data as a matrix.
+#' @return Y [n] the labels as a array.
+#' @author Eric Bridgeford, adapted from Joshua Vogelstein
+#' @export
+fs.sims.xor2 <- function(n, d) {
   n1 <- ceiling(n/2)
   n2 <- floor(n/2)
   # first simulation set
-  mus <- abind(array(0, dim=c(D)), array(c(1, 0), dim=c(D)), along=2)
-  S <- sqrt(D/4)*diag(D)
+  mus <- abind(array(0, dim=c(d)), array(c(1, 0), dim=c(d)), along=2)
+  S <- sqrt(d/4)*diag(d)
   S <- abind(S, S, along=3)
 
   # simulate from GMM for first set of training examples
   sim1 <- fs.sims.sim_gmm(mus, S, n1)
 
   # second simulation set
-  mus <- abind(array(1, dim=c(D)), array(c(0, 1), dim=c(D)), along=2)
-  S <- sqrt(D/4)*diag(D)
+  mus <- abind(array(1, dim=c(d)), array(c(0, 1), dim=c(d)), along=2)
+  S <- sqrt(d/4)*diag(d)
   S <- abind(S, S, along=3)
 
   # simulate from GMM for second set of training examples
@@ -153,13 +192,25 @@ fs.sims.sim_gmm <- function(mus, Sigmas, n) {
   C <- dim(mus)[2]
   labs <- sample(1:C, size=n, replace=TRUE)
   X <- sapply(labs, function(lab) mvrnorm(n=1, mus[,lab], Sigmas[,,lab]), simplify=FALSE)
-  return(list(X=matrix(unlist(X), nrow=length(X), byrow=FALSE), Y=labs))
+  return(list(X=matrix(unlist(X), nrow=length(X), byrow=TRUE), Y=labs))
 }
 
 #' Random Rotation
 #'
 #' A helper function for applying a random rotation to gaussian parameter set.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
-fs.sims.random_rotate <- function(mu, S) {
-  stop("Not Implemented!")
+fs.sims.random_rotate <- function(mus, Sigmas) {
+  dimm <- dim(mus)
+  C <- dimm[2]
+  d <- dim(mus)[1]
+  Q <- qr.Q(qr(array(runif(d*d), dim=c(d, d))))
+  if (det(Q) < -.99) {
+    Q[,1] <- -Q[,1]
+  }
+
+  for (i in 1:C) {
+    mus[,i] <- Q %*% mus[,i,drop=FALSE]
+    Sigmas[,,i] <- Q %*% Sigmas[,,i] %*% t(Q)
+  }
+  return(list(mus=mus, S=S))
 }

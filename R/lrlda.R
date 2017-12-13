@@ -10,9 +10,9 @@ discriminant_fun <- function(x, centroid, prior){
 #' Linear Discriminant Analysis (LDA) Prediction
 #'
 #' A function for using Linear Discriminant Analysis (LDA) for prediction.
-#' @param X [n, d] data matrix with n samples in d dimensions.
+#' @param Xr [n, r] data matrix with n samples in r dimensions.
 #' @param ylabs [C] vector containing the unique, ordered class labels.
-#' @param centroids [C, d] centroid matrix of the unique, ordered class labels.
+#' @param centroids [C, r] centroid matrix of the unique, ordered class labels.
 #' @param priors [C] vector containing prior probability for the unique, ordered class labels.
 #' @param A [d, C-1] the projection matrix from d to C-1 dimensions.
 #' @return Xr [n, C-1] projected data matrix.
@@ -26,10 +26,11 @@ fs.predict.lda <- function(X, ylabs, centroids, priors, A){
   d <- dimx[2] # dimensionality of data
   C <- length(ylabs) # number of classes in the training set
 
+  train_lda <- fs.project.lrlda(X, Y, C-1)
   # Project the test data into the invariant subspaces
-  Xr <- X %*% A
+  Xr <- X %*% train_lda$A
   # project the centroids into the invariant subspaces
-  Mp <- centroids %*% A
+  Mp <- centroids %*% train_lda$A
 
   # Classify the data by doing nearest centroid classification
   Yhat <- ylabs[sapply(1:n, function(i) {
@@ -44,17 +45,19 @@ fs.predict.lda <- function(X, ylabs, centroids, priors, A){
 #' Low-rank Linear Discriminant Analysis (LR-LDA)
 #'
 #' A function for implementing the LR-LDA Algorithm.
-#' @import RSpectra
 #' @param X [n, d] the data with n samples in d dimensions.
 #' @param Y [n] the labels of the samples.
-#' @return A [d, C-1] the projection matrix
+#' @param r the rank of the projection.
+#' @return A [d, r] the projection matrix
 #' @return ylabs [C] vector containing the unique, ordered class labels.
 #' @return centroids [C, d] centroid matrix of the unique, ordered classes.
 #' @return priors [C] vector containing prior probability for the unique, ordered classes.
+#' @return Xr [n, r] the data in reduced dimensionality.
+#' @return cr [C, r] the centroids in reduced dimensionality.
 #' @author Richard Chen
 #' @export
-fs.project.lrlda <- function(X, Y) {
-  classdat <- gs.utils.classdat(X, Y)
+fs.project.lrlda <- function(X, Y, r) {
+  classdat <- fs.utils.classdat(X, Y)
   priors <- classdat$priors; M <- classdat$centroids
   K <- classdat$C; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d
@@ -75,10 +78,11 @@ fs.project.lrlda <- function(X, Y) {
   # 4. Compuinge B* (which is just the covariance matrix of M*), and its eigen-decomposition, B*=V*D_BV*^T
   #    Note that the columns of V* define the coordiantes of the optimal subspaces
   B_star = stats::cov(M_star)
-  V_star = Rspectra::eigs(B_star, k=C-1)$vectors
+  V_star = eigen(B_star)$vectors[,1:r]
 
   # 5. Compute the full projection matrix
   A = W_neg_one_half %*% V_star
 
-  return(list(A=A, centroids=M, priors=priors, ylabs=ylabs))
+  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=X %*% A, cr=centroids %*% A))
 }

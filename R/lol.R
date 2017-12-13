@@ -9,22 +9,25 @@
 #' @return ylabs [C] vector containing the unique, ordered class labels.
 #' @return centroids [C, d] centroid matrix of the unique, ordered classes.
 #' @return priors [C] vector containing prior probability for the unique, ordered classes.
+#' @return Xr [n, r] the data in reduced dimensionality.
+#' @return cr [C, r] the centroids in reduced dimensionality.
 #' @author Eric Bridgeford
 #' @export
 fs.project.lol <- function(X, Y, r) {
   # class data
-  classdat <- gs.utils.classdat(X, Y)
+  classdat <- fs.utils.classdat(X, Y)
   priors <- classdat$priors; centroids <- classdat$centroids
   K <- classdat$C; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d
   nv <- r - C
-
-  # compute the centers per-class
-  centroids <- sapply(ylabs, function(y) colMeans(X[Y==y,,drop=FALSE]))
-
-  A <- cbind(centroids, fs.project.cpca(X))
+  if (nv > 0) {
+    A <- cbind(t(centroids), fs.project.cpca(X, Y, nv)$A)
+  } else {
+    A <- centroids
+  }
 
   # orthogonalize and normalize
-  A <- Matrix::qr.Q(Matrix::qr(A))
-  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs))
+  A <- Matrix::qr.Q(Matrix::qr(t(A)))
+  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=X %*% A, cr=centroids %*% A))
 }
