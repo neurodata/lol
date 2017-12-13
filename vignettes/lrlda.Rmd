@@ -32,10 +32,10 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-Projecting with cPCA to 2 dimensions:
+Projecting with LRLDA to 3 dimensions and visualizing the top 2:
 
 ```{r}
-result <- fs.project.lrlda(X, Y, 2)
+result <- fs.project.lrlda(X, Y, 3)
 
 data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
 data$y <- factor(data$y)

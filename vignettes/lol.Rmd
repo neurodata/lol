@@ -32,7 +32,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-Projecting with LOL to 2 dimensions:
+Projecting with LOL to 3 dimensions and visualizing the first 2:
 
 ```{r}
 result <- fs.project.lol(X, Y, 3)

@@ -18,6 +18,7 @@ require(latex2exp)
 # PCA Example
 
 We simulate data with n=100, d=20 and visualize the first 2 dimensions:
+
 ```{r}
 testdat <- fs.sims.rtrunk(100, 20)
 X <- testdat$X
@@ -32,10 +33,10 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-Projecting with PCA to 2 dimensions:
+Projecting with PCA to 3 dimensions and visualizing the first 2:
 
 ```{r}
-result <- fs.project.pca(X, Y, 2)
+result <- fs.project.pca(X, Y, 3)
 
 data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
 data$y <- factor(data$y)

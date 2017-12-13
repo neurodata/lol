@@ -58,13 +58,12 @@ fs.predict.lda <- function(X, ylabs, centroids, priors, A){
 #' @export
 fs.project.lrlda <- function(X, Y, r) {
   classdat <- fs.utils.classdat(X, Y)
-  priors <- classdat$priors; M <- classdat$centroids
+  priors <- classdat$priors; centroids <- classdat$centroids
   K <- classdat$K; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d
 
   # 1. Compute the class dependent probabilities and class centroids
   priors = sapply(ylabs, function(y) sum(Y == y)/n)
-  M <- t(as.matrix(sapply(ylabs, function(y) colMeans(X[Y==y,,drop=FALSE]))))
 
   # 2. Computing with-class covariance
   W <- stats::cov(X) # within-class scatter
@@ -73,7 +72,7 @@ fs.project.lrlda <- function(X, Y, r) {
   e <- eigen(W)
   V <- e$vectors # Recall that W decomposes to = V W V^T, which is V %*% diag(e$values) %*% t(V)
   W_neg_one_half <- V %*% diag(1./sqrt(e$values)) %*% t(V)
-  M_star <- M %*% W_neg_one_half # M* = M W^{-1/2}
+  M_star <- centroids %*% W_neg_one_half # M* = M W^{-1/2}
 
   # 4. Compuinge B* (which is just the covariance matrix of M*), and its eigen-decomposition, B*=V*D_BV*^T
   #    Note that the columns of V* define the coordiantes of the optimal subspaces
