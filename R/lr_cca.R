@@ -11,5 +11,5 @@
 #' @export
 low_rank_cca <- function(X, Y, r) {
   cxy <- cancor(X,Y)
-  return(cxy$xcoef[,rank(cxy$cor)[1:r]][,1:r,drop=FALSE])
+  return(X %*% cxy$xcoef[,rank(-cxy$cor)[1:r]])
 }
