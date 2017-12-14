@@ -1,5 +1,5 @@
 ---
-title: "class-conditional PCA"
+title: "LDA"
 author: "Eric Bridgeford"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -15,11 +15,11 @@ require(ggplot2)
 require(latex2exp)
 ```
 
-# cPCA Example
+# LDA Example
 
-We simulate data with n=100, d=20 and visualize the first 2 dimensions:
-```{r}
-testdat <- fs.sims.rtrunk(100, 20)
+We simulate data with n=200, d=30 and visualize the first 2 dimensions:
+```{r, fig.width=5}
+testdat <- fs.sims.rtrunk(200, 30)
 X <- testdat$X
 Y <- testdat$Y
 
@@ -32,16 +32,16 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-Projecting with LRLDA to 3 dimensions and visualizing the top 2:
+Projecting with LDA to $K-1=1$ dimensions and classifying the data:
 
-```{r}
-result <- fs.project.lrlda(X, Y, 3)
+```{r, fig.width=5}
+result <- fs.classify.lda(X, Y, X, Y.test=Y)
 
-data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
+data <- data.frame(x1=result$Xr.train[,1], y=Y)
 data$y <- factor(data$y)
-ggplot(data, aes(x=x1, y=x2, color=y)) +
-  geom_point() +
+ggplot(data, aes(x=x1, fill=y)) +
+  geom_density(adjust=1.5, alpha=0.6) +
   xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2")) +
-  ggtitle("Projected Data using LRLDA")
+  ylab(TeX("Density")) +
+  ggtitle(TeX(sprintf("Projected Data using LDA, $\\hat{L} = %.2f$", result$Lhat)))
 ```

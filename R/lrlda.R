@@ -12,8 +12,8 @@ discriminant_fun <- function(x, centroid, prior){
 #' A function for using Linear Discriminant Analysis (LDA) for prediction.
 #' @param X [n1, r] data matrix with n samples in r dimensions for training.
 #' @param Y [n1] the labels for each sample for training.
-#' @param Xtest [n2, r] data matrix with n samples in r dimensions for testing.
-#' @param Ytest [n2] the labels for each sample for testing.
+#' @param X.test [n2, r] data matrix with n samples in r dimensions for testing.
+#' @param Y.test [n2] an optional argument for the labels for each sample for testing.
 #' @param ylabs [K] vector containing the unique, ordered class labels.
 #' @param centroids [K, C-1] centroid matrix of the unique, ordered class labels.
 #' @param priors [K] vector containing prior probability for the unique, ordered class labels.
@@ -22,14 +22,14 @@ discriminant_fun <- function(x, centroid, prior){
 #' @return Yhat [n] prediction matrix containing predictions for each example.
 #' @author Richard Chen, modified by Eric Bridgeford
 #' @export
-fs.lda <- function(X, Y, Xtest){
+fs.classify.lda <- function(X, Y, X.test, Y.test=NULL){
   K <- length(unique(Y)) # number of classes in the data
 
   train_lda <- fs.project.lda(X, Y)
   ylabs <- train_lda$ylabs; priors <- train_lda$priors; cr <- train_lda$cr
 
   # Project the test data into the invariant subspaces
-  Xr.test <- Xtest %*% train_lda$A
+  Xr.test <- X.test %*% train_lda$A
 
   # Classify the data by doing nearest centroid classification
   Yhat <- ylabs[sapply(1:(dim(Xr.test)[1]), function(i) {
@@ -38,7 +38,11 @@ fs.lda <- function(X, Y, Xtest){
     }))
   })]
 
-  return(Yhat)
+  result <- list(Xr.train=train_lda$Xr, Xr.test=Xr.test, Yhat=Yhat)
+  if (!is.null(Y.test)) {
+    result$Lhat <- (sum(Yhat == Y.test)/length(Y.test))
+  }
+  return(result)
 }
 
 
@@ -76,7 +80,7 @@ fs.project.lda <- function(X, Y) {
   # 4. Compuinge B* (which is just the covariance matrix of M*), and its eigen-decomposition, B*=V*D_BV*^T
   #    Note that the columns of V* define the coordiantes of the optimal subspaces
   B_star = stats::cov(M_star)
-  V_star = eigen(B_star)$vectors[,1:K]
+  V_star = eigen(B_star)$vectors[,1:K-1]
 
   # 5. Compute the full projection matrix
   A = W_neg_one_half %*% V_star

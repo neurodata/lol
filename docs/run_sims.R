@@ -13,7 +13,7 @@ algorithms = c(fs.project.cpca, fs.project.lol, fs.project.pca, fs.project.lrcca
 algnames =c("cpca", "lol", "pca", "lrcca")
 classalgs <- c("lda", "rf")
 
-for (i in 3:length(sims)) {
+for (i in 1:length(sims)) {
   print(paste('Simulations:', sims[i]))
   simset <- readRDS(files[i])
   Xsets <- simset$X

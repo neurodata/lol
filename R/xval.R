@@ -41,7 +41,7 @@ fs.eval.xval <- function(X, Y, r, alg, classifier='lda', k='loo') {
       mod <- do.call(alg, list(X.train, Y.train, r))  # learn the projection with the algorithm specified
       X.test.proj <- X.test %*% mod$A  # project the data with the projection just learned
       if (classifier == 'lda') {
-        Yhat <- fs.lda(mod$Xr, Y.train, X.test.proj)
+        Yhat <- fs.classify.lda(mod$Xr, Y.train, X.test.proj)$Yhat
       } else if (classifier == 'rf') {
         shrubbery <-randomForest(mod$Xr, Y.train)
         Yhat <- predict(shrubbery, X.test.proj)
