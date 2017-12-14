@@ -1,6 +1,6 @@
 ---
-title: "Vignette Title"
-author: "Vignette Author"
+title: "Simulations"
+author: "Eric Bridgeford"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -54,6 +54,7 @@ X <- testdat$X
 Y <- testdat$Y
 print(plot_sim(X, Y, "Toeplitz"))
 ```
+
 # XOR
 
 ```{r, fig.width=5}
@@ -62,6 +63,7 @@ X <- testdat$X
 Y <- testdat$Y
 print(plot_sim(X, Y, "XOR"))
 ```
+
 # Cigar
 
 ```{r, fig.width=5}
@@ -70,6 +72,7 @@ X <- testdat$X
 Y <- testdat$Y
 print(plot_sim(X, Y, "Cigar"))
 ```
+
 # Fat Tails
 
 ```{r, fig.width=5}
