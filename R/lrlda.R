@@ -25,7 +25,7 @@ discriminant_fun <- function(x, centroid, prior){
 fs.lda <- function(X, Y, Xtest){
   K <- length(unique(Y)) # number of classes in the data
 
-  train_lda <- fs.project.lrlda(X, Y, K-1)
+  train_lda <- fs.project.lda(X, Y)
   ylabs <- train_lda$ylabs; priors <- train_lda$priors; cr <- train_lda$cr
 
   # Project the test data into the invariant subspaces
@@ -42,12 +42,11 @@ fs.lda <- function(X, Y, Xtest){
 }
 
 
-#' Low-rank Linear Discriminant Analysis (LR-LDA)
+#' Linear Discriminant Analysis (LDA)
 #'
-#' A function for implementing the LR-LDA Algorithm.
+#' A function for implementing the LDA Algorithm.
 #' @param X [n, d] the data with n samples in d dimensions.
 #' @param Y [n] the labels of the samples.
-#' @param r the rank of the projection.
 #' @return A [d, r] the projection matrix
 #' @return ylabs [K] vector containing the unique, ordered class labels.
 #' @return centroids [K, d] centroid matrix of the unique, ordered classes.
@@ -56,7 +55,7 @@ fs.lda <- function(X, Y, Xtest){
 #' @return cr [K, r] the centroids in reduced dimensionality.
 #' @author Richard Chen, modified by Eric Bridgeford
 #' @export
-fs.project.lrlda <- function(X, Y, r) {
+fs.project.lda <- function(X, Y) {
   classdat <- fs.utils.classdat(X, Y)
   priors <- classdat$priors; centroids <- classdat$centroids
   K <- classdat$K; ylabs <- classdat$ylabs
@@ -71,13 +70,13 @@ fs.project.lrlda <- function(X, Y, r) {
   # 3. Computing M* = M W^{-1/2} using the eigen-decomposition of W
   e <- eigen(W)
   V <- e$vectors # Recall that W decomposes to = V W V^T, which is V %*% diag(e$values) %*% t(V)
-  W_neg_one_half <- V %*% diag(1./sqrt(e$values)) %*% t(V)
+  W_neg_one_half <- V %*% diag(1/sqrt(e$values)) %*% t(V)
   M_star <- centroids %*% W_neg_one_half # M* = M W^{-1/2}
 
   # 4. Compuinge B* (which is just the covariance matrix of M*), and its eigen-decomposition, B*=V*D_BV*^T
   #    Note that the columns of V* define the coordiantes of the optimal subspaces
   B_star = stats::cov(M_star)
-  V_star = eigen(B_star)$vectors[,1:r]
+  V_star = eigen(B_star)$vectors[,1:K]
 
   # 5. Compute the full projection matrix
   A = W_neg_one_half %*% V_star

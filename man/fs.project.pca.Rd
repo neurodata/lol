@@ -4,14 +4,14 @@
 \alias{fs.project.pca}
 \title{Principal Component Analysis (PCA)}
 \usage{
-fs.project.pca(Xt, Y, r, center = TRUE)
+fs.project.pca(X, Y, r, center = TRUE)
 }
 \arguments{
+\item{X}{[n, d] the data with n samples in d dimensions.}
+
 \item{Y}{[n] the labels of the samples.}
 
 \item{r}{the rank of the projection.}
-
-\item{X}{[n, d] the data with n samples in d dimensions.}
 
 \item{center=TRUE}{whether to center the data before applying PCA.}
 }
