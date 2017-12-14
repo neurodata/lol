@@ -53,6 +53,6 @@ fs.eval.xval <- function(X, Y, r, alg, classifier='lda', k='loo') {
   }
   model <- do.call(alg, list(X, Y, r))
 
-  return(list(Lhat=mean(Lhat.fold), A=model$A, ylabs=model$ylabs, centroids=model$centroids,
+  return(list(Lhat=1 - mean(Lhat.fold), A=model$A, ylabs=model$ylabs, centroids=model$centroids,
               priors=model$priors, Xr=model$Xr, cr=model$cr))
 }

@@ -15,7 +15,7 @@
 #' @return cr [K, r] the centroids in reduced dimensionality.
 #' @author Eric Bridgeford
 #' @export
-fs.project.pca <- function(Xt, Y, r, center=TRUE) {
+fs.project.pca <- function(X, Y, r, center=TRUE) {
   # class data
   classdat <- fs.utils.classdat(X, Y)
   priors <- classdat$priors; centroids <- classdat$centroids
