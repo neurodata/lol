@@ -93,7 +93,7 @@ fs.sims.rtrunk <- function(n, d, b=4, r=FALSE, C=2) {
   } else if (C == 3) {
     mus <- abind(mu1, 0*mu1, -mu1, along=2)
   } else if (C == 4) {
-    mus <- abind(mu1, b/(seq(from=d, to=1, by=-1)), b/(seq(from=1, to=d, by=1)), -mu1, along=3)
+    mus <- abind(mu1, b/(seq(from=d, to=1, by=-1)), b/(seq(from=1, to=d, by=1)), -mu1, along=2)
   }
   S <- diag(d)
   diag(S) <- 100/sqrt(seq(from=d, to=1, by=-1))
