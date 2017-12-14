@@ -4,7 +4,7 @@
 \alias{fs.project.lda}
 \title{Linear Discriminant Analysis (LDA)}
 \usage{
-fs.project.lda(X, Y, r)
+fs.project.lda(X, Y)
 }
 \arguments{
 \item{X}{[n, d] the data with n samples in d dimensions.}
