@@ -2,6 +2,7 @@
 #'
 #' A function for performing leave-one-out cross-validation for a given model.
 #' @import randomForest
+#' @import MASS
 #' @param X [n, d] the data as n samples in d dimensions.
 #' @param Y [n] the labels for each for each of the n samples.
 #' @param r the number of dimensions to project the data onto.
@@ -42,9 +43,10 @@ fs.eval.xval <- function(X, Y, r, alg, classifier='lda', k='loo') {
       mod <- do.call(alg, list(X.train, Y.train, r))  # learn the projection with the algorithm specified
       X.test.proj <- X.test %*% mod$A  # project the data with the projection just learned
       if (classifier == 'lda') {
-        Yhat <- fs.classify.lda(mod$Xr, Y.train, X.test.proj)$Yhat
+        liney <- MASS::lda(mod$Xr, Y.train)
+        Yhat <- predict(liney, X.test.proj)$class
       } else if (classifier == 'rf') {
-        shrubbery <-randomForest(mod$Xr, Y.train)
+        shrubbery <- randomForest::randomForest(mod$Xr, Y.train)
         Yhat <- predict(shrubbery, X.test.proj)
       }
       return(sum(Yhat == Y.test)/length(fold))
