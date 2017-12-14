@@ -109,5 +109,5 @@ vignette('cpca')
 vignette('lrcca')
 vignette('lda')
 vignette('xval')
-vignette('simulation')
+vignette('simulations')
 ```
