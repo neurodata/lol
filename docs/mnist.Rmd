@@ -1,4 +1,4 @@
----
+  ---
 title: "MNIST investigation"
 author: "Eric Bridgeford"
 date: "December 14, 2017"
@@ -6,11 +6,13 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-require(ggplot)
+require(ggplot2)
 require(fselect)
 require(reshape2)
 require(Rmisc)
 require(randomForest)
+require(gridExtra)
+require(latex2exp)
 ```
 
 # MNIST
@@ -70,18 +72,18 @@ show_digit <- function(png, title="",xlabel="Pixel", ylabel="Pixel", legend.name
   }
   colnames(dm) <- c("x", "y", "value")
   jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan", "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000"))
-  sqplot <- ggplot2::ggplot(dm, aes(x=x, y=y, fill=value)) +
-    ggplot2::geom_tile() +
-    ggplot2::scale_fill_gradientn(colours=jet.colors(7), name=legend.name, limits=limits) +
-    ggplot2::xlab(xlabel) +
-    ggplot2::ylab(ylabel) +
-    ggplot2::ggtitle(title)
+  sqplot <- ggplot(dm, aes(x=x, y=y, fill=value)) +
+    geom_tile() +
+    scale_fill_gradientn(colours=jet.colors(7), name=legend.name, limits=limits) +
+    xlab(xlabel) +
+    ylab(ylabel) +
+    ggtitle(title)
   if (legend.show) {
     sqplot <- sqplot +
-      ggplot2::theme(text=element_text(size=font.size))
+      theme(text=element_text(size=font.size))
   } else {
     sqplot <- sqplot +
-      ggplot2::theme(text=element_text(size=font.size, legend.position="none"))
+      theme(text=element_text(size=font.size, legend.position="none"))
   }
   return(sqplot)
 }
@@ -195,24 +197,26 @@ I am less sure of the intuition here, but it seems like CCA is trying to find th
 
 # Simulations
 
-Below, we perform the afformentioned simulations with 10-fold validation:
+Below, we perform the afformentioned simulations with 2-fold validation:
 
 ```{r}
 performance <- data.frame(set=c(), algorithm=c(), r=c(), class=c(), lhat=c())
 
 algorithms <- c(fs.project.pca, fs.project.cpca, fs.project.lol, fs.project.lrcca)
 algnames <- c("PCA", "cPCA", "LOL", "LRCCA")
-k <- 10
+k <- 2
 setsX <- list(set1$X, set2$X, set3$X)
 setsY <- list(set1$Y, set2$Y, set3$Y)
 setname <- c("set 1", "set 2", "set 3")
 rs <- c(10, 20, 50, 100)
 classalgs <- c("lda", "rf")
 
-for (j in 1:length(sets)) {
+for (j in 1:length(setsX)) {
+  print(paste('Set:', j))
   setX <- setsX[[j]]
   setY <- setsY[[j]]
   for (i in 1:length(algorithms)) {
+    print(paste('Alg:', algnames[i]))
     for (r in rs) {
       for (class in classalgs) {
         res <- suppressWarnings(fs.eval.xval(setX, setY, r=r, alg=algorithms[i][[1]], classifier=class, k=k))
@@ -224,4 +228,43 @@ for (j in 1:length(sets)) {
 }
 
 saveRDS(performance, 'mnist.rds')
+```
+
+```{r}
+
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)}
+
+performance <- readRDS('./mnist.rds')
+
+plot_example <- function(data, sim) {
+  p1 <- ggplot(data[data$class =='lda',], aes(x=r, y=lhat, color=algorithm, group=algorithm)) +
+    stat_summary(geom="line", fun.y="mean", size=2) +
+    xlab("Dimensions Retained") +
+    ylab(TeX("$\\hat{L}$")) +
+    ggtitle(paste(sim, "Simulation, LDA Classifier")) +
+    scale_color_discrete(name="Algorithm") +
+    theme_bw()
+  p2 <- ggplot(data[data$class=='rf',], aes(x=r, y=lhat, color=algorithm, group=algorithm)) +
+    stat_summary(geom="line", fun.y="mean", size=2) +
+    xlab("Dimensions Retained") +
+    ylab(TeX("$\\hat{L}$")) +
+    ggtitle(paste(sim, "Simulation, RF Classifier")) +
+    theme_bw() +
+    scale_color_discrete(name="Algorithm")
+
+  my_legend <- g_legend(p1)
+  p3 <- grid.arrange(arrangeGrob(p1 + theme(legend.position=NaN), p2 + theme(legend.position=NaN), nrow=2), my_legend, nrow=1, widths=c(.88, .12))
+
+}
+
+for (set in unique(performance$set)) {
+  subset <- performance[performance$set == set,]
+  plotlist <- list()
+  undims <- unique(subset$r)
+  plot_example(subset, set)
+}
 ```

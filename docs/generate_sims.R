@@ -1,3 +1,11 @@
+require(ggplot2)
+require(fselect)
+require(reshape2)
+require(Rmisc)
+require(randomForest)
+require(gridExtra)
+require(latex2exp)
+
 nsim <- 50
 
 ds <- c(15, 50, 100, 500, 1000)
