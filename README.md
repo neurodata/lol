@@ -7,10 +7,8 @@
 - [System Requirements](#system-requirements)
 - [Installation Guide](#installation-guide)
 - [Demo](#demo)
-- [Instructions for Use](#instructions-for-use)
 - [License](./LICENSE)
 - [Issues](https://github.com/ebridge2/fselect/issues)
-- [Pseudocode](#pseudocode)
 
 # Overview
 
@@ -101,6 +99,15 @@ The package should take approximately 15 seconds to install with vignettes on a 
 
 # Demo
 
-# Instructions for Use
+For interactive demos of the functions, please check out the vignettes built into the package. They can be accessed as follows:
 
-# Pseudocode
+```
+require(fselect)
+vignette('lol')
+vignette('pca')
+vignette('cpca')
+vignette('lrcca')
+vignette('lda')
+vignette('xval')
+vignette('simulations')
+```
