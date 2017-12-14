@@ -23,7 +23,7 @@ fs.project.lrcca <- function(X, Y, r) {
   Yind <- array(0, dim=c(n, K))
   # Yind is a indicator of membership in each respective class
   for (i in 1:length(ylabs)) {
-    Yind[Y == y,i] <- 1
+    Yind[Y == y[i],i] <- 1
   }
   X <- as.array(X)
   # covariance matrices
