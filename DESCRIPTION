@@ -11,7 +11,8 @@ Imports:
   abind,
   MASS,
   irlba,
-  latex2exp
+  latex2exp,
+  randomForest
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr

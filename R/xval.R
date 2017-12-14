@@ -1,6 +1,7 @@
 #' Cross-Validation
 #'
 #' A function for performing leave-one-out cross-validation for a given model.
+#' @import randomForest
 #' @param X [n, d] the data as n samples in d dimensions.
 #' @param Y [n] the labels for each for each of the n samples.
 #' @param r the number of dimensions to project the data onto.

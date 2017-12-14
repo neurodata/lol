@@ -63,7 +63,8 @@ fs.project.cpca <- function(X, Y, r) {
   n <- classdat$n; d <- classdat$d
 
   # subtract column means per-class
-  Xt <- X - centroids[Y,]
+  Yidx <- sapply(Y, function(y) which(ylabs == y))
+  Xt <- X - centroids[Yidx,]
   # compute the standard PCA but with the pre-centered data.
   A <- fs.utils.pca(Xt, r)
 

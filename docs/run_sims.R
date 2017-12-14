@@ -9,8 +9,8 @@ files = c('xor_sim.rds', 'cig_sim.rds', 'rtr_sim.rds', 'rtr3_sim.rds', 'toe_sim.
 
 performance <- data.frame(dimensions=c(), algorithm=c(), classification=c(), simulation=c(), simid=c(), lhat=c())
 sims = c('xor', 'cigar', 'rtrunk', 'rtrunk3', 'toep', 'fat tails')
-algorithms = c(fs.project.cpca, fs.project.lol, fs.project.pca, fs.project.lrcca)
-algnames =c("cpca", "lol", "pca", "lrcca")
+algorithms = c(fs.project.pca, fs.project.cpca, fs.project.lol, fs.project.lrcca)
+algnames =c("PCA", "cPCA", "LOL", "LRCCA")
 classalgs <- c("lda", "rf")
 
 for (i in 1:length(sims)) {
