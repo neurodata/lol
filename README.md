@@ -91,7 +91,7 @@ From an `R` session, type:
 
 ```
 require(devtools)
-install_github('ebridge2/fselect', build_vignettes=TRUE, force=TRUE)  # install fselect with the vignettes
+install_github('neurodata/fselect', build_vignettes=TRUE, force=TRUE)  # install fselect with the vignettes
 require(fselect)
 vignette("lol", package="fselect")  # view one of the basic vignettes
 ```
