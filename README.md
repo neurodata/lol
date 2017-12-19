@@ -115,4 +115,4 @@ vignette('simulations')
 
 # Results
 
-[MNIST](http://ericwb.me/fselect/mnist.html)
+[MNIST](https://htmlpreview.github.io/?https://github.com/neurodata/fselect/blob/master/docs/mnist.html)
