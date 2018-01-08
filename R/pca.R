@@ -23,7 +23,7 @@ fs.project.pca <- function(X, Y, r, center=TRUE) {
   n <- classdat$n; d <- classdat$d
   # mean center by the global mean
   if (center) {
-    X <- X - colMeans(X)
+    X <- sweep(X, 2, colMeans(X), '-')
   }
 
   A <- fs.utils.pca(X, r)
@@ -42,7 +42,7 @@ fs.utils.pca <- function(X, r) {
 
 #' Class PCA
 #'
-#' A function that performs PCA on the class-centered data.
+#' A function that performs PCA on the class-centered data. Same as low-rank LDA.
 #'
 #' @param X [n, d] the data with n samples in d dimensions.
 #' @param Y [n] the labels of the samples.
