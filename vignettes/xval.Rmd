@@ -11,10 +11,19 @@ vignette: >
 
 # Cross Validation
 
+```{r}
+require(fselect)
+require(ggplot2)
+require(latex2exp)
+n = 400
+d = 30
+r = 3
+```
+
 Here, we look at how to see the generalizability of a given model in the form of the cross-validated error. We simulate data with n=200 and d=30:
 
 ```{r, fig.width=5}
-testdat <- fs.sims.rtrunk(200, 30)
+testdat <- fs.sims.rtrunk(n, d)
 X <- testdat$X
 Y <- testdat$Y
 
@@ -30,7 +39,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 We arbitrarily select LOL as our algorithm, and look at the leave-one-out (loo) cross-validated error with the LDA classifier. We project the resulting model to 3 dimensions and visualize the first 2:
 
 ```{r, fig.width=5}
-result <- fs.eval.xval(X, Y, 3, fs.project.lol, classifier='lda', k='loo')
+result <- fs.xval.eval(X, Y, r, fs.project.lol, classifier='lda', k='loo')
 
 data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
 data$y <- factor(data$y)
@@ -38,5 +47,5 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point() +
   xlab(TeX("$x_1$")) +
   ylab(TeX("$x_2")) +
-  ggtitle(TeX(sprintf("Projected Data using PCA, $\\hat{L}_{XV}=%.2f", result$Lhat)))
+  ggtitle(TeX(sprintf("Projected Data using LOL, $\\hat{L}_{XV}=%.2f", result$Lhat)))
 ```

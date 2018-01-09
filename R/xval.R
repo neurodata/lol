@@ -50,7 +50,7 @@ fs.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo') {
     return(1 - sum(Yhat == set$Y.test)/length(Yhat))
   })
 
-  model <- do.call(alg, list(X, r, Y))
+  model <- do.call(alg, list(X, Y, r))
 
   return(list(Lhat=mean(Lhat.fold), A=model$A, ylabs=model$ylabs, centroids=model$centroids,
               priors=model$priors, Xr=model$Xr, cr=model$cr))
@@ -93,7 +93,7 @@ fs.xval.split <- function(X, Y, k='loo') {
     sets <- sapply(k.folds, function(fold) {
       list(X.train=X[-fold,,drop=FALSE], Y.train=Y[-fold,drop=FALSE],
            X.test=X[fold,,drop=FALSE], Y.test=Y[fold,drop=FALSE])
-    })
+    }, simplify=FALSE)
   } else {
     stop("You have not entered a valid parameter for xval.")
   }
