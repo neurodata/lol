@@ -30,7 +30,7 @@
 #' library(fselect)
 #' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
-#' r=10  # embed into r=10 dimensions
+#' r=5  # embed into r=5 dimensions
 #' xval.fit <- fs.xval.eval(X, Y, r, fs.project.lol, classifier='lda', k='loo')
 #' @export
 fs.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo') {
