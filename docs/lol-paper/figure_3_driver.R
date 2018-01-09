@@ -2,7 +2,7 @@
 #=========================#
 library(parallel)
 
-no_cores = detectCores() - 1
+no_cores = round(7/8*detectCores())
 
 cl = makeCluster(no_cores)
 
