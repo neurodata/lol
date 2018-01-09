@@ -4,14 +4,14 @@
 \alias{fs.project.pca}
 \title{Principal Component Analysis (PCA)}
 \usage{
-fs.project.pca(X, Y, r, center = TRUE)
+fs.project.pca(X, r, ...)
 }
 \arguments{
 \item{X}{[n, d] the data with n samples in d dimensions.}
 
-\item{Y}{[n] the labels of the samples.}
-
 \item{r}{the rank of the projection.}
+
+\item{Y}{[n] the labels of the samples.}
 
 \item{center=TRUE}{whether to center the data before applying PCA.}
 }
@@ -30,6 +30,12 @@ cr [K, r] the centroids in reduced dimensionality.
 }
 \description{
 A function that performs PCA on data.
+}
+\examples{
+library(fselect)
+data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+X <- data$X; Y <- data$Y
+model <- fs.project.pca(X=X, r=2)  # use pca to project into 2 dimensions
 }
 \author{
 Eric Bridgeford

@@ -13,13 +13,22 @@ vignette: >
 require(fselect)
 require(ggplot2)
 require(latex2exp)
+n=400
+d=30
+r=3
 ```
 
-# cPCA Example
+Data for this notebook will be n=400 examples of d=30 dimensions.
 
-We simulate data with n=200, d=30 and visualize the first 2 dimensions:
+# cPCA
+
+## Stacked Cigar Simulation
+
+
+We first visualize the first 2 dimensions:
+
 ```{r, fig.width=5}
-testdat <- fs.sims.rtrunk(200, 30)
+testdat <- fs.sims.cigar(n, d)
 X <- testdat$X
 Y <- testdat$Y
 
@@ -35,7 +44,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 Projecting with cPCA to 3 dimensions and visualizing the first 2:
 
 ```{r, fig.width=5}
-result <- fs.project.cpca(X, Y, 3)
+result <- fs.project.cpca(X, Y, r)
 
 data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
 data$y <- factor(data$y)
@@ -46,16 +55,115 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Projected Data using cPCA")
 ```
 
-Projecting with LDA to $K-1=1$ dimensions:
+Projecting with LDA to K-1=1 dimensions:
 
 ```{r, fig.width=5}
-result <- fs.classify.lda(result$Xr, Y, result$Xr, Y.test=Y)
+liney <- MASS::lda(result$Xr, Y)
+result <- predict(liney, result$Xr)
+lhat <- 1 - sum(result$class == Y)/length(Y)
 
-data <- data.frame(x1=result$Xr.train[,1], y=Y)
+data <- data.frame(x1=result$x[,1], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, fill=y)) +
   geom_density(adjust=1.5, alpha=0.6) +
   xlab(TeX("$x_1$")) +
   ylab(TeX("Density")) +
-  ggtitle(TeX(sprintf("$cPCA \\rightarrow LDA$, $\\hat{L} = %.2f$", result$Lhat)))
+  ggtitle(TeX(sprintf("$cPCA \\rightarrow LDA$, $\\hat{L} = %.2f$", lhat)))
 ```
+
+## Trunk Simulation
+
+We visualize the first 2 dimensions:
+
+```{r, fig.width=5}
+testdat <- fs.sims.rtrunk(n, d)
+X <- testdat$X
+Y <- testdat$Y
+
+data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, y=x2, color=y)) +
+  geom_point() +
+  xlab(TeX("$x_1$")) +
+  ylab(TeX("$x_2$")) +
+  ggtitle("Simulated Data")
+```
+
+Projecting with cPCA to 3 dimensions and visualizing the first 2:
+
+```{r, fig.width=5}
+result <- fs.project.cpca(X, Y, r)
+
+data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, y=x2, color=y)) +
+  geom_point() +
+  xlab(TeX("$x_1$")) +
+  ylab(TeX("$x_2")) +
+  ggtitle("Projected Data using cPCA")
+```
+
+Projecting with LDA to K-1=1 dimensions:
+
+```{r, fig.width=5}
+liney <- MASS::lda(result$Xr, Y)
+result <- predict(liney, result$Xr)
+lhat <- 1 - sum(result$class == Y)/length(Y)
+
+data <- data.frame(x1=result$x[,1], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, fill=y)) +
+  geom_density(adjust=1.5, alpha=0.6) +
+  xlab(TeX("$x_1$")) +
+  ylab(TeX("Density")) +
+  ggtitle(TeX(sprintf("$cPCA \\rightarrow LDA$, $\\hat{L} = %.2f$", lhat)))
+```
+
+## Rotated Trunk Simulation
+
+We visualize the first 2 dimensions:
+
+```{r, fig.width=5}
+testdat <- fs.sims.rtrunk(n, d, r=TRUE)
+X <- testdat$X
+Y <- testdat$Y
+
+data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, y=x2, color=y)) +
+  geom_point() +
+  xlab(TeX("$x_1$")) +
+  ylab(TeX("$x_2$")) +
+  ggtitle("Simulated Data")
+```
+
+Projecting with cPCA to 3 dimensions and visualizing the first 2:
+
+```{r, fig.width=5}
+result <- fs.project.cpca(X, Y, r)
+
+data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, y=x2, color=y)) +
+  geom_point() +
+  xlab(TeX("$x_1$")) +
+  ylab(TeX("$x_2")) +
+  ggtitle("Projected Data using cPCA")
+```
+
+Projecting with LDA to K-1=1 dimensions:
+
+```{r, fig.width=5}
+liney <- MASS::lda(result$Xr, Y)
+result <- predict(liney, result$Xr)
+lhat <- 1 - sum(result$class == Y)/length(Y)
+
+data <- data.frame(x1=result$x[,1], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, fill=y)) +
+  geom_density(adjust=1.5, alpha=0.6) +
+  xlab(TeX("$x_1$")) +
+  ylab(TeX("Density")) +
+  ggtitle(TeX(sprintf("$cPCA \\rightarrow LDA$, $\\hat{L} = %.2f$", lhat)))
+```
+

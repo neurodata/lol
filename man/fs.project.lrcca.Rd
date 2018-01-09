@@ -29,6 +29,12 @@ cr [K, r] the centroids in reduced dimensionality.
 \description{
 A function for implementing the Low-rank Canonical Correlation Analysis (LR-CCA) Algorithm.
 }
+\examples{
+library(fselect)
+data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+X <- data$X; Y <- data$Y
+model <- fs.project.lrcca(X=X, Y=Y, r=5)  # use lrcca to project into 5 dimensions
+}
 \author{
 Jason Yim and Eric Bridgeford
 }

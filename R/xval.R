@@ -25,8 +25,62 @@
 #' @return Xr [n, r] the data in reduced dimensionality.
 #' @return cr [K, r] the centroids in reduced dimensionality.
 #' @author Eric Bridgeford
+#' @examples
+#' # train model and analyze with loo validation using lda classifier
+#' library(fselect)
+#' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+#' X <- data$X; Y <- data$Y
+#' r=10  # embed into r=10 dimensions
+#' xval.fit <- fs.xval.eval(X, Y, r, fs.project.lol, classifier='lda', k='loo')
 #' @export
-fs.eval.xval <- function(X, Y, r, alg, classifier='lda', k='loo') {
+fs.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo') {
+  Y <- factor(Y)
+  n <- length(Y)
+  sets <- fs.xval.split(X, Y, k=k)
+  Lhat.fold <- sapply(sets, function(set) {
+    mod <- do.call(alg, list(X=set$X.train, Y=set$Y.train, r=r))  # learn the projection with the algorithm specified
+    X.test.proj <- set$X.test %*% mod$A  # project the data with the projection just learned
+    if (classifier == 'lda') {
+      liney <- MASS::lda(mod$Xr, set$Y.train)
+      Yhat <- predict(liney, X.test.proj)$class
+    } else if (classifier == 'rf') {
+      shrubbery <- randomForest::randomForest(mod$Xr, set$Y.train)
+      Yhat <- predict(shrubbery, X.test.proj)
+    }
+    return(1 - sum(Yhat == set$Y.test)/length(Yhat))
+  })
+
+  model <- do.call(alg, list(X, r, Y))
+
+  return(list(Lhat=mean(Lhat.fold), A=model$A, ylabs=model$ylabs, centroids=model$centroids,
+              priors=model$priors, Xr=model$Xr, cr=model$cr))
+}
+
+#' Cross-Validation Data Splitter
+#'
+#' \code{sg.bern.xval_split_data} A function to split a dataset into
+#' training and testing sets for cross validation.
+#'
+#' @param X [n, d] an array of input data.
+#' @param Y [s] the class labels.
+#' @param k='loo' the cross-validated method to perform.
+#' \itemize{
+#' \item{'loo'}{Leave-one-out cross validation, setting k=n.}
+#' \item{isinteger(k)}{perform k-fold cross-validation with k as the number of folds.}
+#' }
+#' @return sets the cross-validation sets as a list, each element with an X.train, X.test, Y.train, and Y.test.
+#' @author Eric Bridgeford
+#' @examples
+#' # prepare data for 10-fold validation
+#' library(fselect)
+#' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+#' X <- data$X; Y <- data$Y
+#' sets.xval.10fold <- fs.xval.split(X, Y, k=10)
+#' # prepare data for loo validation
+#' sets.xval.loo <- fs.xval.split(X, Y, k='loo')
+#'
+#' @export
+fs.xval.split <- function(X, Y, k='loo') {
   Y <- factor(Y)
   n <- length(Y)
   if (k == 'loo') {
@@ -35,27 +89,13 @@ fs.eval.xval <- function(X, Y, r, alg, classifier='lda', k='loo') {
   if (round(k) == k) {  # then xval is an integer
     samp.ids <- as.matrix(sample(1:n, n))  # the sample ids randomly permuted
     k.folds <- split(samp.ids, rep(1:k), drop=TRUE)  # split the sample ids into xval folds
-    Lhat.fold <- sapply(k.folds, function(fold) {
-      X.train <- X[-fold,,drop=FALSE]
-      Y.train <- Y[-fold,drop=FALSE]
-      X.test <- X[fold,,drop=FALSE]
-      Y.test <- Y[fold,drop=FALSE]
-      mod <- do.call(alg, list(X.train, Y.train, r))  # learn the projection with the algorithm specified
-      X.test.proj <- X.test %*% mod$A  # project the data with the projection just learned
-      if (classifier == 'lda') {
-        liney <- MASS::lda(mod$Xr, Y.train)
-        Yhat <- predict(liney, X.test.proj)$class
-      } else if (classifier == 'rf') {
-        shrubbery <- randomForest::randomForest(mod$Xr, Y.train)
-        Yhat <- predict(shrubbery, X.test.proj)
-      }
-      return(sum(Yhat == Y.test)/length(fold))
+
+    sets <- sapply(k.folds, function(fold) {
+      list(X.train=X[-fold,,drop=FALSE], Y.train=Y[-fold,drop=FALSE],
+           X.test=X[fold,,drop=FALSE], Y.test=Y[fold,drop=FALSE])
     })
   } else {
     stop("You have not entered a valid parameter for xval.")
   }
-  model <- do.call(alg, list(X, Y, r))
-
-  return(list(Lhat=1 - mean(Lhat.fold), A=model$A, ylabs=model$ylabs, centroids=model$centroids,
-              priors=model$priors, Xr=model$Xr, cr=model$cr))
+  return(sets)
 }

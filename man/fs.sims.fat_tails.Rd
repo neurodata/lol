@@ -4,8 +4,7 @@
 \alias{fs.sims.fat_tails}
 \title{Fat Tails Simulation}
 \usage{
-fs.sims.fat_tails(n, d, r = FALSE, f = 15, s0 = 10, t = 0.8,
-  rho = 0.2)
+fs.sims.fat_tails(n, d, r = FALSE, f = 15, s0 = 10, rho = 0.2)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
@@ -16,7 +15,7 @@ fs.sims.fat_tails(n, d, r = FALSE, f = 15, s0 = 10, t = 0.8,
 
 \item{f=15}{the fatness scaling of the tail.}
 
-\item{s0=10}{the number of dimensions with a difference in the means.}
+\item{s0=10}{the number of dimensions with a difference in the means. s0 should be < d.}
 
 \item{rho=0.2}{the scaling of the covariance terms, should be < 1.}
 }
@@ -27,6 +26,11 @@ Y the labels as a [d] array.
 }
 \description{
 A function for simulating from 2 classes, one of which has fatter tails.
+}
+\examples{
+library(fselect)
+data <- fs.sims.fat_tails(n=200, d=30)  # 200 examples of 30 dimensions
+X <- data$X; Y <- data$Y
 }
 \author{
 Eric Bridgeford, adapted from Joshua Vogelstein

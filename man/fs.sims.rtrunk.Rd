@@ -25,6 +25,11 @@ Y [n] the labels as a array.
 \description{
 A simulation for the random trunk experiment.
 }
+\examples{
+library(fselect)
+data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+X <- data$X; Y <- data$Y
+}
 \author{
 Eric Bridgeford, adapted from Joshua Vogelstein
 }

@@ -11,7 +11,7 @@ fs.sims.xor2(n, d, fall = 100)
 
 \item{d}{the dimensionality of the simulated data.}
 
-\item{fall=20}{the sigma for the covariance structuring.}
+\item{fall=100}{the sigma for the covariance structuring.}
 }
 \value{
 X [n, d] the data as a matrix.
@@ -20,6 +20,11 @@ Y [n] the labels as a array.
 }
 \description{
 A function to simulate from the 2-class xor problem.
+}
+\examples{
+library(fselect)
+data <- fs.sims.xor2(n=200, d=30)  # 200 examples of 30 dimensions
+X <- data$X; Y <- data$Y
 }
 \author{
 Eric Bridgeford, adapted from Joshua Vogelstein

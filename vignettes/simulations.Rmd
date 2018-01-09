@@ -14,8 +14,8 @@ require(fselect)
 require(ggplot2)
 require(latex2exp)
 
-n <- 600
-d <- 2
+n <- 1000
+d <- 15
 plot_sim <- function(X, Y, name) {
   data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
   data$y <- factor(data$y)
@@ -55,6 +55,15 @@ Y <- testdat$Y
 print(plot_sim(X, Y, "Toeplitz"))
 ```
 
+# QD- Toeplitz
+
+```{r, fig.width=5}
+testdat <- fs.sims.qdtoep(n, d)
+X <- testdat$X
+Y <- testdat$Y
+print(plot_sim(X, Y, "QD-Toeplitz"))
+```
+
 # XOR
 
 ```{r, fig.width=5}
@@ -76,7 +85,7 @@ print(plot_sim(X, Y, "Cigar"))
 # Fat Tails
 
 ```{r, fig.width=5}
-testdat <- fs.sims.fat_tails(n, d=15)
+testdat <- fs.sims.fat_tails(n, d)
 X <- testdat$X
 Y <- testdat$Y
 print(plot_sim(X, Y, "Fat Tails"))

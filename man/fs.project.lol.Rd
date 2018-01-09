@@ -11,7 +11,7 @@ fs.project.lol(X, Y, r)
 
 \item{Y}{[n] the labels of the samples.}
 
-\item{r}{the rank of the projection.}
+\item{r}{the rank of the projection. Note that r >= length(unique(Y)).}
 }
 \value{
 A [d, r] the projection matrix from d to r dimensions.
@@ -28,6 +28,12 @@ cr [K, r] the centroids in reduced dimensionality.
 }
 \description{
 A function for implementing the Linear Optimal Low-Rank Projection (LOL) Algorithm.
+}
+\examples{
+library(fselect)
+data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+X <- data$X; Y <- data$Y
+model <- fs.project.lol(X=X, Y=Y, r=5)  # use lol to project into 5 dimensions
 }
 \author{
 Eric Bridgeford

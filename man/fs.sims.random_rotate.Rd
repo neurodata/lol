@@ -10,5 +10,5 @@ fs.sims.random_rotate(mus, Sigmas)
 A helper function for applying a random rotation to gaussian parameter set.
 }
 \author{
-Eric Bridgeford, adapted from Joshua Vogelstein
+Eric Bridgeford
 }
