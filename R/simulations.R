@@ -18,8 +18,8 @@
 #' X <- data$X; Y <- data$Y
 #' @export
 fs.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2) {
-  if  (D1 > d) {
-    stop(sprintf("s0 = %d, d=%d. s0 should be > d.", s0, d))
+  if  (s0 > d) {
+    stop(sprintf("s0 = %d, d=%d. s0 should be < d.", s0, d))
   }
   mu0 <- array(0, dim=c(d, 1))
   mu1 <- c(array(0, dim=c(s0)), array(1, dim=c(d - s0)))
