@@ -26,15 +26,11 @@ fs.project.lol <- function(X, Y, r) {
   n <- classdat$n; d <- classdat$d
   nv <- r - K
 
-  if (r < K) {
-    stop(paste("LOL requires the rank of the projection to be >= the number of unique classes in Y.",
-               sprintf("rank is r=%d, number of classes is K=%d.", r, K)))
-  }
-
   if (nv > 0) {
     A <- cbind(t(centroids), fs.project.cpca(X, Y, nv)$A)
   } else {
     A <- t(centroids)
+    A <- A[,1:r,drop=FALSE]
   }
 
   # orthogonalize and normalize

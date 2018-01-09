@@ -50,7 +50,7 @@ fs.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo') {
     return(1 - sum(Yhat == set$Y.test)/length(Yhat))
   })
 
-  model <- do.call(alg, list(X, Y, r))
+  model <- do.call(alg, list(X=X, Y=Y, r=r))
 
   return(list(Lhat=mean(Lhat.fold), A=model$A, ylabs=model$ylabs, centroids=model$centroids,
               priors=model$priors, Xr=model$Xr, cr=model$cr))
