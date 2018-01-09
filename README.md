@@ -66,7 +66,7 @@ which should install in about 20 seconds.
 Users should install the following packages prior to installing `fselect`, from an `R` terminal:
 
 ```
-install.packages(c('ggplot2', 'abind', 'irlba', 'knitr', 'rmarkdown', 'latex2exp', 'MASS'))
+install.packages(c('ggplot2', 'abind', 'irlba', 'knitr', 'rmarkdown', 'latex2exp', 'MASS', 'randomForest'))
 ```
 
 which will install in about 30 seconds on a recommended machine.
@@ -81,9 +81,10 @@ ggplot2_2.2.1
 irlba_2.3.1
 Matrix_1.2-3
 MASS_7.3-47
+randomForest_4.6-12
 ```
 
-If you are having an issue that you believe to be tied to software versioning issues, please drop us an [Issue](https://github.com/neurodata/mgc/issues). 
+If you are having an issue that you believe to be tied to software versioning issues, please drop us an [Issue](https://github.com/neurodata/fselect/issues). 
 
 # Installation Guide
 
@@ -96,7 +97,7 @@ require(fselect)
 vignette("lol", package="fselect")  # view one of the basic vignettes
 ```
 
-The package should take approximately 15 seconds to install with vignettes on a recommended computer. 
+The package should take approximately 40 seconds to install with vignettes on a recommended computer. 
 
 # Demo
 
