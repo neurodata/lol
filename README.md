@@ -109,7 +109,6 @@ vignette('lol')
 vignette('pca')
 vignette('cpca')
 vignette('lrcca')
-vignette('lda')
 vignette('xval')
 vignette('simulations')
 ```
