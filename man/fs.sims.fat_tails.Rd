@@ -4,14 +4,14 @@
 \alias{fs.sims.fat_tails}
 \title{Fat Tails Simulation}
 \usage{
-fs.sims.fat_tails(n, d, r = FALSE, f = 15, s0 = 10, rho = 0.2)
+fs.sims.fat_tails(n, d, rotate = FALSE, f = 15, s0 = 10, rho = 0.2)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
 
 \item{d}{the dimensionality of the simulated data.}
 
-\item{r=FALSE}{whether to apply a random rotation.}
+\item{rotate=FALSE}{whether to apply a random rotation.}
 
 \item{f=15}{the fatness scaling of the tail.}
 

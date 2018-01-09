@@ -5,7 +5,7 @@
 #' @import abind
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
-#' @param r=FALSE whether to apply a random rotation.
+#' @param rotate=FALSE whether to apply a random rotation.
 #' @param f=15 the fatness scaling of the tail.
 #' @param s0=10 the number of dimensions with a difference in the means. s0 should be < d.
 #' @param rho=0.2 the scaling of the covariance terms, should be < 1.
@@ -17,7 +17,7 @@
 #' data <- fs.sims.fat_tails(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-fs.sims.fat_tails <- function(n, d, r=FALSE, f=15, s0=10, rho=0.2) {
+fs.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2) {
   if  (D1 > d) {
     stop(sprintf("s0 = %d, d=%d. s0 should be > d.", s0, d))
   }
@@ -30,7 +30,7 @@ fs.sims.fat_tails <- function(n, d, r=FALSE, f=15, s0=10, rho=0.2) {
 
   S <- abind::abind(S, 15*S, along=3)
 
-  if (r) {
+  if (rotate) {
     res <- fs.sims.random_rotate(mus, S)
     mus <- res$mus
     S <- res$S
@@ -49,7 +49,7 @@ fs.sims.fat_tails <- function(n, d, r=FALSE, f=15, s0=10, rho=0.2) {
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
 #' @param D1=10 the dimensionality for the non-equal covariance terms.
-#' @param r=FALSE whether to apply a random rotation.
+#' @param rotate=FALSE whether to apply a random rotation.
 #' @param b=0.4 a scaling parameter for the means.
 #' @param rho=0.5 the scaling of the covariance terms, should be < 1.
 #' @return X [n, d] the data as a matrix.
@@ -60,7 +60,7 @@ fs.sims.fat_tails <- function(n, d, r=FALSE, f=15, s0=10, rho=0.2) {
 #' data <- fs.sims.toep(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-fs.sims.toep <- function(n, d, D1=10, r=FALSE, b=0.4, rho=0.5) {
+fs.sims.toep <- function(n, d, D1=10, rotate=FALSE, b=0.4, rho=0.5) {
   c <- rho^(0:(D1 - 1))
   A <- toeplitz(c)
   K1 <- sum(A)
@@ -75,7 +75,7 @@ fs.sims.toep <- function(n, d, D1=10, r=FALSE, b=0.4, rho=0.5) {
   mus <- abind::abind(mu0, -mu0, along=2)
   S <- abind::abind(A, A, along=3)
 
-  if (r) {
+  if (rotate) {
     res <- fs.sims.random_rotate(mus, S)
     mus <- res$mus
     S <- res$S
@@ -93,7 +93,7 @@ fs.sims.toep <- function(n, d, D1=10, r=FALSE, b=0.4, rho=0.5) {
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
 #' @param D1=10 the dimensionality for the non-equal covariance terms.
-#' @param r=FALSE whether to apply a random rotation.
+#' @param rotate=FALSE whether to apply a random rotation.
 #' @param b=0.4 a scaling parameter for the means.
 #' @param rho=0.5 the scaling of the covariance terms, should be < 1.
 #' @return X [n, d] the data as a matrix.
@@ -104,7 +104,7 @@ fs.sims.toep <- function(n, d, D1=10, r=FALSE, b=0.4, rho=0.5) {
 #' data <- fs.sims.qdtoep(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-fs.sims.qdtoep <- function(n, d, D1=10, r=FALSE, b=0.4, rho=0.5) {
+fs.sims.qdtoep <- function(n, d, D1=10, rotate=FALSE, b=0.4, rho=0.5) {
   tR <- rho^(0:(D1 - 1))
   A <- toeplitz(tR)
   K1 <- sum(A)
@@ -122,7 +122,7 @@ fs.sims.qdtoep <- function(n, d, D1=10, r=FALSE, b=0.4, rho=0.5) {
   A1 <- Q %*% A0 %*% t(Q)
   S <- abind::abind(A0, A1, along=3)
 
-  if (r) {
+  if (rotate) {
     res <- fs.sims.random_rotate(mus, S)
     mus <- res$mus
     S <- res$S
@@ -139,7 +139,7 @@ fs.sims.qdtoep <- function(n, d, D1=10, r=FALSE, b=0.4, rho=0.5) {
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
 #' @param b=4 scalar for mu scaling.
-#' @param r=FALSE whether to apply a random rotation.
+#' @param rotate=FALSE whether to apply a random rotation.
 #' @param C=2 number of classes, should be <4.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
@@ -149,7 +149,7 @@ fs.sims.qdtoep <- function(n, d, D1=10, r=FALSE, b=0.4, rho=0.5) {
 #' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-fs.sims.rtrunk <- function(n, d, b=4, r=FALSE, C=2) {
+fs.sims.rtrunk <- function(n, d, b=4, rotate=FALSE, C=2) {
   mu1 <- b/sqrt(0:(d-1)*2 + 1)
   if (C == 2) {
     mus <- abind::abind(mu1, -mu1, along=2)
@@ -163,7 +163,7 @@ fs.sims.rtrunk <- function(n, d, b=4, r=FALSE, C=2) {
 
   S <- array(unlist(replicate(C, S, simplify=FALSE)), dim=c(d, d, C))
 
-  if (r) {
+  if (rotate) {
     res <- fs.sims.random_rotate(mus, S)
     mus <- res$mus
     S <- res$S
@@ -181,7 +181,7 @@ fs.sims.rtrunk <- function(n, d, b=4, r=FALSE, C=2) {
 #' @param d the dimensionality of the simulated data.
 #' @param a=0.15 scalar for all of the mu1 but 2nd dimension.
 #' @param b=4 scalar for 2nd dimension value of mu2.
-#' @param r=FALSE whether to apply a random rotation.
+#' @param rotate=FALSE whether to apply a random rotation.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
@@ -190,7 +190,7 @@ fs.sims.rtrunk <- function(n, d, b=4, r=FALSE, C=2) {
 #' data <- fs.sims.cigar(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-fs.sims.cigar <- function(n, d, a=0.15, b=4, r=FALSE) {
+fs.sims.cigar <- function(n, d, a=0.15, b=4, rotate=FALSE) {
   mu1 <- array(a, dim=c(d))
   mu1[2] <- b
   mus <- cbind(array(0, dim=c(d)), mu1)
@@ -200,7 +200,7 @@ fs.sims.cigar <- function(n, d, a=0.15, b=4, r=FALSE) {
 
   S <- abind::abind(diag(d), S, along=3)
 
-  if (r) {
+  if (rotate) {
     res <- fs.sims.random_rotate(mus, S)
     mus <- res$mus
     S <- res$S

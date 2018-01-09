@@ -4,7 +4,7 @@
 \alias{fs.sims.toep}
 \title{Toeplitz Simulation}
 \usage{
-fs.sims.toep(n, d, D1 = 10, r = FALSE, b = 0.4, rho = 0.5)
+fs.sims.toep(n, d, D1 = 10, rotate = FALSE, b = 0.4, rho = 0.5)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
@@ -13,7 +13,7 @@ fs.sims.toep(n, d, D1 = 10, r = FALSE, b = 0.4, rho = 0.5)
 
 \item{D1=10}{the dimensionality for the non-equal covariance terms.}
 
-\item{r=FALSE}{whether to apply a random rotation.}
+\item{rotate=FALSE}{whether to apply a random rotation.}
 
 \item{b=0.4}{a scaling parameter for the means.}
 

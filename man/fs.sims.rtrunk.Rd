@@ -4,7 +4,7 @@
 \alias{fs.sims.rtrunk}
 \title{Random Trunk}
 \usage{
-fs.sims.rtrunk(n, d, b = 4, r = FALSE, C = 2)
+fs.sims.rtrunk(n, d, b = 4, rotate = FALSE, C = 2)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
@@ -13,7 +13,7 @@ fs.sims.rtrunk(n, d, b = 4, r = FALSE, C = 2)
 
 \item{b=4}{scalar for mu scaling.}
 
-\item{r=FALSE}{whether to apply a random rotation.}
+\item{rotate=FALSE}{whether to apply a random rotation.}
 
 \item{C=2}{number of classes, should be <4.}
 }

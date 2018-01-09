@@ -4,7 +4,7 @@
 \alias{fs.sims.cigar}
 \title{Stacked Cigar}
 \usage{
-fs.sims.cigar(n, d, a = 0.15, b = 4, r = FALSE)
+fs.sims.cigar(n, d, a = 0.15, b = 4, rotate = FALSE)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
@@ -15,7 +15,7 @@ fs.sims.cigar(n, d, a = 0.15, b = 4, r = FALSE)
 
 \item{b=4}{scalar for 2nd dimension value of mu2.}
 
-\item{r=FALSE}{whether to apply a random rotation.}
+\item{rotate=FALSE}{whether to apply a random rotation.}
 }
 \value{
 X [n, d] the data as a matrix.

@@ -124,7 +124,7 @@ ggplot(data, aes(x=x1, fill=y)) +
 We visualize the first 2 dimensions:
 
 ```{r, fig.width=5}
-testdat <- fs.sims.rtrunk(n, d, r=TRUE)
+testdat <- fs.sims.rtrunk(n, d, rotate=TRUE)
 X <- testdat$X
 Y <- testdat$Y
 
