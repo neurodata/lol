@@ -117,5 +117,6 @@ vignette('simulations')
 
 ## LOL Paper
 
-[Figure 2](https://htmlpreview.github.io/?https://github.com/neurodata/fselect/blob/master/docs/lol-paper/figure_2.html)
+[Figure 2](https://htmlpreview.github.io/?https://github.com/neurodata/fselect/blob/master/docs/lol-paper/figure_2.html)  
+
 [Figure 3](https://htmlpreview.github.io/?https://github.com/neurodata/fselect/blob/master/docs/lol-paper/figure_3.html)
