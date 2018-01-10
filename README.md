@@ -115,4 +115,7 @@ vignette('simulations')
 
 # Results
 
-[MNIST](https://htmlpreview.github.io/?https://github.com/neurodata/fselect/blob/master/docs/mnist.html)
+## LOL Paper
+
+[Figure 2](https://htmlpreview.github.io/?https://github.com/neurodata/fselect/blob/master/docs/lol-paper/figure_2.html)
+[Figure 3](https://htmlpreview.github.io/?https://github.com/neurodata/fselect/blob/master/docs/lol-paper/figure_3.html)
