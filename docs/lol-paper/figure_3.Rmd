@@ -19,9 +19,11 @@ require(graphstats)  # for graph plotting
 require(data.table)
 local_path <- '~/Documents/research/R-fmri/fselect'  # local path to the package
 
-sim_cov_plot <- function(Sigmas, title="", ylab="Dimension", xlab="Dimension", ndim=10, legend.name="cov") {
+sim_cov_plot <- function(Sigmas, title="", ylab="Dimension", xlab="Dimension", ndim=10, legend.name="norm cov") {
   Sigma <- apply(Sigmas, c(1, 2), sum)
-  plot_cov <- gs.plot.plot_matrix(Sigma[1:ndim, 1:ndim], title=title, xlabel=xlab,
+  Sigma <- Sigma[1:ndim, 1:ndim]  # subset
+  Sigma <- Sigma/max(Sigma)
+  plot_cov <- gs.plot.plot_matrix(Sigma, title=title, xlabel=xlab,
                                   ylabel=ylab, legend.name = legend.name) +
     scale_y_reverse() +
     theme(legend.position="bottom")
