@@ -23,6 +23,10 @@ fs.sims.fat_tails(n, d, rotate = FALSE, f = 15, s0 = 10, rho = 0.2)
 X the data as a [n, d] matrix.
 
 Y the labels as a [d] array.
+
+mus [d, K] the per-class means.
+
+Sigmas [d, d, K] the per-class covariance matrices.
 }
 \description{
 A function for simulating from 2 classes, one of which has fatter tails.

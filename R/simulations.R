@@ -11,6 +11,8 @@
 #' @param rho=0.2 the scaling of the covariance terms, should be < 1.
 #' @return X the data as a [n, d] matrix.
 #' @return Y the labels as a [d] array.
+#' @return mus [d, K] the per-class means.
+#' @return Sigmas [d, d, K] the per-class covariance matrices.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
 #' @examples
 #' library(fselect)
@@ -38,7 +40,7 @@ fs.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2) {
 
   # simulate from GMM
   sim <- fs.sims.sim_gmm(mus, S, n)
-  return(list(X=sim$X, Y=sim$Y))
+  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
 }
 
 #' Toeplitz Simulation
@@ -54,6 +56,8 @@ fs.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2) {
 #' @param rho=0.5 the scaling of the covariance terms, should be < 1.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
+#' @return mus [d, K] the per-class means.
+#' @return Sigmas [d, d, K] the per-class covariance matrices.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
 #' @examples
 #' library(fselect)
@@ -82,7 +86,7 @@ fs.sims.toep <- function(n, d, D1=10, rotate=FALSE, b=0.4, rho=0.5) {
   }
   # simulate from GMM
   sim <- fs.sims.sim_gmm(mus, S, n)
-  return(list(X=sim$X, Y=sim$Y))
+  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
 }
 
 #' Quadratic Discriminant Toeplitz Simulation
@@ -98,6 +102,8 @@ fs.sims.toep <- function(n, d, D1=10, rotate=FALSE, b=0.4, rho=0.5) {
 #' @param rho=0.5 the scaling of the covariance terms, should be < 1.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
+#' @return mus [d, K] the per-class means.
+#' @return Sigmas [d, d, K] the per-class covariance matrices.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
 #' @examples
 #' library(fselect)
@@ -129,7 +135,7 @@ fs.sims.qdtoep <- function(n, d, D1=10, rotate=FALSE, b=0.4, rho=0.5) {
   }
   # simulate from GMM
   sim <- fs.sims.sim_gmm(mus, S, n)
-  return(list(X=sim$X, Y=sim$Y))
+  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
 }
 
 #' Random Trunk
@@ -143,6 +149,8 @@ fs.sims.qdtoep <- function(n, d, D1=10, rotate=FALSE, b=0.4, rho=0.5) {
 #' @param C=2 number of classes, should be <4.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
+#' @return mus [d, K] the per-class means.
+#' @return Sigmas [d, d, K] the per-class covariance matrices.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
 #' @examples
 #' library(fselect)
@@ -170,7 +178,7 @@ fs.sims.rtrunk <- function(n, d, b=4, rotate=FALSE, C=2) {
   }
   # simulate from GMM
   sim <- fs.sims.sim_gmm(mus, S, n)
-  return(list(X=sim$X, Y=sim$Y))
+  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
 }
 
 #' Stacked Cigar
@@ -184,6 +192,8 @@ fs.sims.rtrunk <- function(n, d, b=4, rotate=FALSE, C=2) {
 #' @param rotate=FALSE whether to apply a random rotation.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
+#' @return mus [d, K] the per-class means.
+#' @return Sigmas [d, d, K] the per-class covariance matrices.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
 #' @examples
 #' library(fselect)
@@ -207,7 +217,7 @@ fs.sims.cigar <- function(n, d, a=0.15, b=4, rotate=FALSE) {
   }
   # simulate from GMM
   sim <- fs.sims.sim_gmm(mus, S, n)
-  return(list(X=sim$X, Y=sim$Y))
+  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
 }
 
 
@@ -219,6 +229,8 @@ fs.sims.cigar <- function(n, d, a=0.15, b=4, rotate=FALSE) {
 #' @param fall=100 the sigma for the covariance structuring.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
+#' @return mus [d, K] the per-class means.
+#' @return Sigmas [d, d, K] the per-class covariance matrices.
 #' @author Eric Bridgeford, adapted from Joshua Vogelstein
 #' @examples
 #' library(fselect)
@@ -246,7 +258,7 @@ fs.sims.xor2 <- function(n, d, fall=100) {
   Y <- abind::abind(sim1$Y, sim2$Y, along=1)
 
   reorder <- sample(n)
-  return(list(X=X[reorder,], Y=Y[reorder]))
+  return(list(X=X[reorder,], Y=Y[reorder], mus=mus, Sigmas=S))
 }
 
 #' GMM Simulate

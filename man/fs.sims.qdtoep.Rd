@@ -23,6 +23,10 @@ fs.sims.qdtoep(n, d, D1 = 10, rotate = FALSE, b = 0.4, rho = 0.5)
 X [n, d] the data as a matrix.
 
 Y [n] the labels as a array.
+
+mus [d, K] the per-class means.
+
+Sigmas [d, d, K] the per-class covariance matrices.
 }
 \description{
 A function for simulating data generalizing the Toeplitz setting, where each class has a different covariance matrix. This results in a Quadratic Discriminant.

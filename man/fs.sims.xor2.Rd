@@ -17,6 +17,10 @@ fs.sims.xor2(n, d, fall = 100)
 X [n, d] the data as a matrix.
 
 Y [n] the labels as a array.
+
+mus [d, K] the per-class means.
+
+Sigmas [d, d, K] the per-class covariance matrices.
 }
 \description{
 A function to simulate from the 2-class xor problem.

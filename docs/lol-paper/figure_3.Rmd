@@ -1,0 +1,168 @@
+---
+title: "LOL Figure 3"
+author: "Eric Bridgeford"
+date: "January 5, 2017"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+# Figure 3 - LOL Paper
+
+```{r, message=FALSE}
+require(fselect)
+require(ggplot2)
+require(latex2exp)
+require(MASS)
+require(gridExtra)
+require(graphstats)  # for graph plotting
+require(data.table)
+local_path <- '~/Documents/research/R-fmri/fselect'  # local path to the package
+
+sim_cov_plot <- function(Sigmas, title="", ylab="Dimension", xlab="Dimension", ndim=10, legend.name="cov") {
+  Sigma <- apply(Sigmas, c(1, 2), sum)
+  plot_cov <- gs.plot.plot_matrix(Sigma[1:ndim, 1:ndim], title=title, xlabel=xlab,
+                                  ylabel=ylab, legend.name = legend.name) +
+    scale_y_reverse() +
+    theme(legend.position="bottom")
+}
+
+sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndim=10) {
+  dat <- data.frame(mus[1:ndim,])
+  dat <- cbind(data.frame(1:ndim), dat)
+  colnames(dat) <- c("Dimension", c("1", "2"))
+  dat <- melt(dat, id="Dimension")
+  colnames(dat) <- c("Dimension", "Class", "Magnitude")
+  dat$Class <- factor(dat$Class)
+  plot_mean <- ggplot(dat, aes(x=Dimension, y=Magnitude, color=Class)) +
+    geom_line() +
+    theme_bw() +
+    ggtitle(title) +
+    xlab(xlab) +
+    ylab(ylab) +
+    theme(legend.position="bottom")
+}
+
+plot_sim_lhats <- function(data, title="", ylab=TeX("$\\hat{L}$"), xlab="Embedded Dimensions") {
+  plot_sims <- ggplot(data, aes(x=r, y=lhat, group=alg, color=alg)) +
+    geom_line() +
+    xlab(xlab) +
+    ylab(ylab) +
+    ggtitle(title) +
+    theme_bw() +
+    theme(legend.position="bottom") +
+    labs(color="Algorithm")
+  return(plot_sims)
+}
+
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
+```
+
+The below code will produce the required data, which runs LOL, cPCA, PCA, and LR-CCA at the desired simulation settings. Note that this function will multi-thread natively, and took approximately 7 hours to run on a 96 core machine with $\frac{7}{8}$ of the cores active.
+
+```{r, eval=FALSE}
+source(paste(local_path, '/docs/lol-paper/figure_3_driver.R', sep=""))
+```
+
+First, we prepare the plots of subsets of the mean and covariance matrices:
+
+```{r}
+# run the simulations once to obtain some basic visualizations
+require(fselect)
+n=100
+# the simulations to call themselves
+sims <- list(fs.sims.rtrunk, fs.sims.toep, fs.sims.rtrunk, fs.sims.fat_tails, fs.sims.qdtoep)
+ds <- c(100, 100, 100, 1000, 100)
+# additional arguments for each simulation scenario
+opt_args <- list(list(), list(), list(C=3), list(), list())
+ndim <- c(10, 10, 10, 20, 10)
+sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "QDA")
+
+cov_plots <- list()
+mean_plots <- list()
+counter <- 1
+
+for (i in 1:length(sims)) {
+  simn <- do.call(sims[[i]], c(list(n, ds[i]), opt_args[[i]]))
+  cov_plots[[counter]] <- sim_cov_plot(simn$Sigmas, title=sim_names[i])
+  mean_plots[[counter]] <- sim_mean_plot(simn$mus, title=sim_names[i], ndim=ndim[i])
+  counter <- counter + 1
+}
+```
+
+Next, we aggregate over the respective iterations, and subset plots for each function:
+
+```{r}
+# read the results in
+results <- readRDS(paste(local_path, '/docs/lol-paper/lol_fig3.rds', sep=""))
+
+results <- data.table(results)
+results[results$lhat > 0.5,]$lhat <- (1 - results[results$lhat > 0.5,]$lhat)
+# aggregate over the iterations, retaining the other factors
+results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = mean)
+
+sim_plots <- list()
+counter <- 1
+for (sim in unique(results.means$sim)) {
+  data_sub <- results.means[results.means$sim == sim,]
+  sim_plots[[counter]] <- plot_sim_lhats(data_sub, ylab=sim)
+  counter <- counter + 1
+}
+```
+
+We merge and combine the plots:
+
+```{r, fig.show='hide'}
+nsim <- length(sim_names)
+sim_leg <- g_legend(sim_plots[[1]])
+cov_leg <- g_legend(cov_plots[[1]])
+mean_leg <- g_legend(mean_plots[[1]])
+
+# remove the legends from the plots
+sim_plots <- sapply(1:length(sim_plots), function(j) {
+    resp <- sim_plots[[j]] + ggtitle("") +theme(legend.position=NaN)
+    # remove the ylabel of only the non-left most columns
+    if (j != 1) {
+      resp <- resp + xlab("")
+    } else {
+      resp <- resp + ggtitle(TeX("$\\hat{L}$"))
+    }
+    return(resp)
+  }, simplify=FALSE)
+mean_plots <- sapply(1:length(mean_plots), function(j) {
+    resp <- mean_plots[[j]] + ggtitle("") + theme(legend.position=NaN)
+    # remove the ylabel of only the non-left most columns
+    if (j != 1) {
+      resp <- resp + xlab("") + ylab("")
+    } else {
+      resp <- resp + ggtitle(TeX("Means"))
+    }
+    return(resp)
+  }, simplify=FALSE)
+
+cov_plots <- sapply(1:length(cov_plots), function(j) {
+    resp <- cov_plots[[j]] + ggtitle("") + theme(legend.position=NaN)
+    # remove the ylabel of only the non-left most columns
+    if (j != 1) {
+      resp <- resp + xlab("") + ylab("")
+    } else {
+      resp <- resp + ggtitle(TeX("Covariances"))
+    }
+    return(resp)
+  }, simplify=FALSE)
+
+grid_sim <- grid.arrange(grid.arrange(grobs=sim_plots, nrow=nsim), sim_leg, nrow=2, heights=c(.95, .05))
+grid_mean <- grid.arrange(grid.arrange(grobs=mean_plots, nrow=nsim), mean_leg, nrow=2, heights=c(.95, .05))
+grid_cov <- grid.arrange(grid.arrange(grobs=cov_plots, nrow=nsim), cov_leg, nrow=2, heights=c(.95, .05))
+```
+
+We combine and plot:
+
+```{r, fig.height=10, fig.width=12}
+grid.arrange(grid_sim, grid_mean, grid_cov, ncol=3)
+```

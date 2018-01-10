@@ -21,6 +21,10 @@ fs.sims.rtrunk(n, d, b = 4, rotate = FALSE, C = 2)
 X [n, d] the data as a matrix.
 
 Y [n] the labels as a array.
+
+mus [d, K] the per-class means.
+
+Sigmas [d, d, K] the per-class covariance matrices.
 }
 \description{
 A simulation for the random trunk experiment.
