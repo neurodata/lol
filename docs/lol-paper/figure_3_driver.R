@@ -36,9 +36,9 @@ for (i in 1:length(sims)) {
 algs <- list(fs.project.pca, fs.project.cpca, fs.project.lrcca, fs.project.lol)
 alg_name <- c("PCA", "cPCA", "LR-CCA", "LOL")
 
-clusterExport(cl, "algs"); clusterExport(cl, "alg_name"); clusterExport(cl, "sim")
-clusterExport(cl, "rs"); clusterExport(cl, "maxr")
-results <- lapply(simulations, function(sim) {
+clusterExport(cl, "algs"); clusterExport(cl, "alg_name")
+clusterExport(cl, "simulations"); clusterExport(cl, "rlen")
+results <- parLapply(cl, simulations, function(sim) {
   require(fselect)
   sim_dat <- do.call(sim$sim_func, sim$args)
   X <- sim_dat$X; Y <- sim_dat$Y
@@ -56,5 +56,6 @@ results <- lapply(simulations, function(sim) {
   return(results)
 })
 
+results <- do.call(rbind, results)
 saveRDS(results, 'lol_fig3.rds')
 stopCluster(cl)
