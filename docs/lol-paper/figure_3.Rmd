@@ -104,7 +104,6 @@ Next, we aggregate over the respective iterations, and subset plots for each fun
 results <- readRDS(paste(local_path, '/docs/lol-paper/lol_fig3.rds', sep=""))
 
 results <- data.table(results)
-results[results$lhat > 0.5,]$lhat <- (1 - results[results$lhat > 0.5,]$lhat)
 # aggregate over the iterations, retaining the other factors
 results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = mean)
 
