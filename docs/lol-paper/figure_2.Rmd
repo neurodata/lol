@@ -14,8 +14,8 @@ require(latex2exp)
 require(MASS)
 require(gridExtra)
 
-n <- 40
-d <- 40
+n <- 100
+d <- 1000
 plot_sim <- function(X, Y, name) {
   data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
   data$y <- factor(data$y)
@@ -38,14 +38,14 @@ run_sim <- function(X, Y, func, ylab="", title="", r=1) {
   data <- data.frame(x1=result$x[,1], y=Y)
   data$y <- factor(data$y)
   proj_plot <- ggplot(data, aes(x=x1, fill=y, linetype=y)) +
-    geom_density(alpha=0.6) +
+    geom_density(adjust=2, alpha=0.6) +
     xlab(TeX("")) +
     ylab(TeX(ylab)) +
     theme_bw() +
     ggtitle(title) +
-    scale_fill_discrete(name="Class Posterior") +
-    guides(linetype=FALSE) +
-    geom_jitter(data=data, aes(x=x1, y=0, group=y, color=y, shape=y), position = position_jitter(width=0, height=0.2))
+    scale_fill_discrete(name="Class Posterior")# +
+    #guides(linetype=FALSE) +
+    #geom_jitter(data=data, aes(x=x1, y=0, group=y, color=y, shape=y), position = position_jitter(width=0, height=0.2))
   return(proj_plot)
 }
 
@@ -69,7 +69,7 @@ funcs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca,
               lol.project.lol)
 alg_names <- c("PCA", "PCA'", "LR-CCA", "LOL")
   
-settings <- list(list(), list(), list(), list(md=4.4))
+settings <- list(list(), list(), list(), list(md=1))
 
 sim_plots <- list()
 res_plots <- list()
