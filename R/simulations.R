@@ -339,6 +339,8 @@ lol.sims.sim_gmm <- function(mus, Sigmas, n, priors=NULL) {
     priors <- array(1/K, dim=c(K))
   } else if (length(priors) != K) {
     stop(sprintf("You have specified %d priors for %d classes.", length(priors), K))
+  } else if (sum(priors) != 1) {
+    stop(sprintf("You have passed invalid priors. The sum(priors) should be 1; yours is %.3f", sum(priors)))
   }
   labs <- sample(1:K, size=n, prob=priors, replace=TRUE)
   ylabs <- as.vector(sort(unique(labs)))
