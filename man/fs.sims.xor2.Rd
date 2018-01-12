@@ -4,14 +4,16 @@
 \alias{fs.sims.xor2}
 \title{Xor Problem}
 \usage{
-fs.sims.xor2(n, d, fall = 100)
+fs.sims.xor2(n, d, priors = NULL, fall = 100)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
 
 \item{d}{the dimensionality of the simulated data.}
 
-\item{fall=100}{the sigma for the covariance structuring.}
+\item{priors=NULL}{the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.}
+
+\item{fall=100}{the sigma for the covariance structuring. Sigma declines by ndim/fall across the variance terms.}
 }
 \value{
 X [n, d] the data as a matrix.
@@ -26,10 +28,10 @@ Sigmas [d, d, K] the per-class covariance matrices.
 A function to simulate from the 2-class xor problem.
 }
 \examples{
-library(fselect)
+library(lol)
 data <- fs.sims.xor2(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 }
 \author{
-Eric Bridgeford, adapted from Joshua Vogelstein
+Eric Bridgeford
 }

@@ -26,7 +26,7 @@ training and testing sets for cross validation.
 }
 \examples{
 # prepare data for 10-fold validation
-library(fselect)
+library(lol)
 data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 sets.xval.10fold <- fs.xval.split(X, Y, k=10)

@@ -8,7 +8,7 @@ output: html_document
 # Figure 2 - LOL Paper
 
 ```{r, message=FALSE}
-require(fselect)
+require(lol)
 require(ggplot2)
 require(latex2exp)
 require(MASS)

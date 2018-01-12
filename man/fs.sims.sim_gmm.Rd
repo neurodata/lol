@@ -4,7 +4,7 @@
 \alias{fs.sims.sim_gmm}
 \title{GMM Simulate}
 \usage{
-fs.sims.sim_gmm(mus, Sigmas, n)
+fs.sims.sim_gmm(mus, Sigmas, n, priors = NULL)
 }
 \arguments{
 \item{mus}{[d, C] the mus for each class.}
@@ -12,6 +12,8 @@ fs.sims.sim_gmm(mus, Sigmas, n)
 \item{Sigmas}{[d,d,C] the Sigmas for each class.}
 
 \item{n}{the of examples.}
+
+\item{priors=NULL}{the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.}
 }
 \value{
 X [n, d] the simulated data.

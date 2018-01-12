@@ -2,18 +2,35 @@
 % Please edit documentation in R/simulations.R
 \name{fs.sims.toep}
 \alias{fs.sims.toep}
-\title{Toeplitz Simulation}
+\title{Mean Difference Simulation}
 \usage{
-fs.sims.toep(n, d, D1 = 10, rotate = FALSE, b = 0.4, rho = 0.5)
+fs.sims.toep(n, d, rotate = FALSE, priors = NULL, D1 = 10, b = 0.4,
+  rho = 0.5)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
 
 \item{d}{the dimensionality of the simulated data.}
 
+\item{rotate=FALSE}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix Q, mu = Q*mu, and S = Q*S*Q.}
+
+\item{priors=NULL}{the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.}
+
+\item{md=1}{the difference in the means in the specified subset of dimensions.}
+
+\item{offdiag=0}{the off-diagonal elements of the covariance matrix. Should be < 1. S_{ij} = offdiag if i != j, or 1 if i == j.}
+
+\item{scaling=1}{the scaling parameter of the covariance matrix. S_{ij} = scaling*1 if i == j, or scaling*offdiag if i != j.}
+
+\item{n}{the number of samples of the simulated data.}
+
+\item{d}{the dimensionality of the simulated data.}
+
 \item{D1=10}{the dimensionality for the non-equal covariance terms.}
 
-\item{rotate=FALSE}{whether to apply a random rotation.}
+\item{rotate=FALSE}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix Q, mu = Q*mu, and S = Q*S*Q.}
+
+\item{priors=NULL}{the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.}
 
 \item{b=0.4}{a scaling parameter for the means.}
 
@@ -27,15 +44,26 @@ Y [n] the labels as a array.
 mus [d, K] the per-class means.
 
 Sigmas [d, d, K] the per-class covariance matrices.
+Toeplitz Simulation
+
+A function for simulating data in which the covariance is a non-symmetric toeplitz matrix.
+
+X [n, d] the data as a matrix.
+
+Y [n] the labels as a array.
+
+mus [d, K] the per-class means.
+
+Sigmas [d, d, K] the per-class covariance matrices.
 }
 \description{
-A function for simulating data in which the covariance is a non-symmetric toeplitz matrix.
+A function for simulating data in which a difference in the means is present only in a subset of dimensions, and equal covariance.
 }
 \examples{
-library(fselect)
+library(lol)
 data <- fs.sims.toep(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 }
 \author{
-Eric Bridgeford, adapted from Joshua Vogelstein
+Eric Bridgeford
 }

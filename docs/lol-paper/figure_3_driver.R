@@ -2,22 +2,22 @@
 #=========================#
 library(parallel)
 
-no_cores = round(7/8*detectCores())
+no_cores = detectCores() - 5
 
 cl = makeCluster(no_cores)
 
 # Setup Sims
 #==========================#
-require(fselect)
+require(lol)
 n=100
-niter <- 100  # number of iterations per simulation
+niter <- 500  # number of iterations per simulation
 rlen <- 30
 # the simulations to call themselves
 sims <- list(fs.sims.rtrunk, fs.sims.toep, fs.sims.rtrunk, fs.sims.fat_tails, fs.sims.qdtoep)
 maxr <- c(30, 90, 30, 30, 30)
 ds <- c(100, 100, 100, 1000, 100)
 # additional arguments for each simulation scenario
-opt_args <- list(list(), list(), list(C=3), list(), list())
+opt_args <- list(list(), list(), list(C=3), list(rotate=TRUE), list())
 sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "QDA")
 
 simulations <- list()
@@ -39,7 +39,7 @@ alg_name <- c("PCA", "cPCA", "LR-CCA", "LOL")
 clusterExport(cl, "algs"); clusterExport(cl, "alg_name")
 clusterExport(cl, "simulations"); clusterExport(cl, "rlen")
 results <- parLapply(cl, simulations, function(sim) {
-  require(fselect)
+  require(lol)
   sim_dat <- do.call(sim$sim_func, sim$args)
   X <- sim_dat$X; Y <- sim_dat$Y
   results <- data.frame(sim=c(), iter=c(), alg=c(), r=c(), lhat=c())
@@ -56,6 +56,13 @@ results <- parLapply(cl, simulations, function(sim) {
   return(results)
 })
 
+# Aggregate and save
+#=================================#
+require(data.table)
 results <- do.call(rbind, results)
-saveRDS(results, 'lol_fig3.rds')
+results <- data.table(results)
+# aggregate over the iterations, retaining the other factors
+results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = mean)
+results_agg <- list(overall=results, means=results.means)
+saveRDS(results_agg, 'lol_fig3_lda.rds')
 stopCluster(cl)

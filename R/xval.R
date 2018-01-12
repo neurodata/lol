@@ -27,7 +27,7 @@
 #' @author Eric Bridgeford
 #' @examples
 #' # train model and analyze with loo validation using lda classifier
-#' library(fselect)
+#' library(lol)
 #' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' r=5  # embed into r=5 dimensions
@@ -72,7 +72,7 @@ fs.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo') {
 #' @author Eric Bridgeford
 #' @examples
 #' # prepare data for 10-fold validation
-#' library(fselect)
+#' library(lol)
 #' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' sets.xval.10fold <- fs.xval.split(X, Y, k=10)

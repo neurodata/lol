@@ -14,13 +14,13 @@
 #' @return cr [K, r] the centroids in reduced dimensionality.
 #' @author Jason Yim and Eric Bridgeford
 #' @examples
-#' library(fselect)
+#' library(lol)
 #' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' model <- fs.project.lrcca(X=X, Y=Y, r=5)  # use lrcca to project into 5 dimensions
 #' @export
 fs.project.lrcca <- function(X, Y, r) {
-  classdat <- fselect:::fs.utils.classdat(X, Y)
+  classdat <- lol:::fs.utils.classdat(X, Y)
   priors <- classdat$priors; centroids <- classdat$centroids
   K <- classdat$K; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d

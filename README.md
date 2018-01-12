@@ -1,4 +1,4 @@
-# Linear Optimal Low Rank Projection (LOL)
+# Feature Extraction for HDLSS Labelled Data
 
 ## Contents
 
@@ -9,11 +9,11 @@
 - [Demo](#demo)
 - [Results](#results)
 - [License](./LICENSE)
-- [Issues](https://github.com/ebridge2/fselect/issues)
+- [Issues](https://github.com/ebridge2/lol/issues)
 
 # Overview
 
-In modern scientific discovery, it is becoming increasingly critical to investigate data in the HDLSS (high dimensionality; low sample size) setting. Supervised learning techniques designed for the situation when the dimensionality exceeds the sample size have a tendency to overfit as the dimensionality of the data increases. To remedy the HDLSS situation, we attempt to learn a lower-dimensional representation of the data before learning a classifier. That is, we project the data to a situation where the dimensionality is more manageable, and then are able to better apply standard classification or clustering techniques since we will have fewer dimensions to overfit. A number of previous works have focused on how to strategically reduce dimensionality in the unsupervised case, yet in the labeled HDLSS (LHDLSS) regime, few works have attempted to devise dimensionality reduction techniques that leverage the labels associated with the data. In this package, we provide several methods for feature extraction, some utilizing labels and some not, along with utilities to simplify cross-validative efforts to identify the best feature extraction method measuring performance using several classification algorithms. Additionally, we provide a series of adaptable benchmark simulations to serve as a standard for future investigative efforts into supervised HDLSS. Finally, we provide a comprehensive comparison of the included algorithms across a range of benchmark simulations and real data applications.
+In modern scientific discovery, it is becoming increasingly critical to investigate data in the HDLSS (high dimensionality; low sample size) setting. In this package, we provide several methosd for feature extraction, reference simulations, and perform a comprehensive comparison.
 
 # Repo Contents
 
@@ -28,7 +28,7 @@ In modern scientific discovery, it is becoming increasingly critical to investig
 
 ## Hardware Requirements
 
-The `fselect` package requires only a standard computer with enough RAM to support the operations defined by a user. For minimal performance, this will be a computer with about 2 GB of RAM. For optimal performance, we recommend a computer with the following specs:
+The `lol` package requires only a standard computer with enough RAM to support the operations defined by a user. For minimal performance, this will be a computer with about 2 GB of RAM. For optimal performance, we recommend a computer with the following specs:
 
 RAM: 16+ GB  
 CPU: 4+ cores, 3.3+ GHz/core
@@ -45,7 +45,7 @@ Linux: Ubuntu 16.04
 Mac OSX:  
 Windows:  
 
-Before setting up the `fselect` package, users should have `R` version 3.4.0 or higher, and several packages set up from CRAN.
+Before setting up the `lol` package, users should have `R` version 3.4.0 or higher, and several packages set up from CRAN.
 
 #### Installing R version 3.4.2 on Ubuntu 16.04
 
@@ -63,7 +63,7 @@ which should install in about 20 seconds.
 
 #### Package dependencies
 
-Users should install the following packages prior to installing `fselect`, from an `R` terminal:
+Users should install the following packages prior to installing `lol`, from an `R` terminal:
 
 ```
 install.packages(c('ggplot2', 'abind', 'irlba', 'knitr', 'rmarkdown', 'latex2exp', 'MASS', 'randomForest'))
@@ -73,7 +73,7 @@ which will install in about 30 seconds on a recommended machine.
 
 #### Package Versions
 
-The `fselect` package functions with all packages in their latest versions as they appear on `CRAN` on December 13, 2017. Users can check [CRAN snapshot](https://mran.microsoft.com/timemachine/) for details. The versions of software are, specifically:
+The `lol` package functions with all packages in their latest versions as they appear on `CRAN` on December 13, 2017. Users can check [CRAN snapshot](https://mran.microsoft.com/timemachine/) for details. The versions of software are, specifically:
 ```
 abind_1.4-5
 latex2exp_0.4.0
@@ -84,7 +84,7 @@ MASS_7.3-47
 randomForest_4.6-12
 ```
 
-If you are having an issue that you believe to be tied to software versioning issues, please drop us an [Issue](https://github.com/neurodata/fselect/issues). 
+If you are having an issue that you believe to be tied to software versioning issues, please drop us an [Issue](https://github.com/neurodata/lol/issues). 
 
 # Installation Guide
 
@@ -92,9 +92,9 @@ From an `R` session, type:
 
 ```
 require(devtools)
-install_github('neurodata/fselect', build_vignettes=TRUE, force=TRUE)  # install fselect with the vignettes
-require(fselect)
-vignette("lol", package="fselect")  # view one of the basic vignettes
+install_github('neurodata/lol', build_vignettes=TRUE, force=TRUE)  # install lol with the vignettes
+require(lol)
+vignette("lol", package="lol")  # view one of the basic vignettes
 ```
 
 The package should take approximately 40 seconds to install with vignettes on a recommended computer. 
@@ -104,7 +104,7 @@ The package should take approximately 40 seconds to install with vignettes on a 
 For interactive demos of the functions, please check out the vignettes built into the package. They can be accessed as follows:
 
 ```
-require(fselect)
+require(lol)
 vignette('lol')
 vignette('pca')
 vignette('cpca')
@@ -115,8 +115,4 @@ vignette('simulations')
 
 # Results
 
-## LOL Paper
-
-[Figure 2](https://htmlpreview.github.io/?https://github.com/neurodata/fselect/blob/master/docs/lol-paper/figure_2.html)  
-
-[Figure 3](https://htmlpreview.github.io/?https://github.com/neurodata/fselect/blob/master/docs/lol-paper/figure_3.html)
+[MNIST](https://htmlpreview.github.io/?https://github.com/neurodata/lol/blob/master/docs/mnist.html)

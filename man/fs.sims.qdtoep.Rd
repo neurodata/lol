@@ -4,7 +4,8 @@
 \alias{fs.sims.qdtoep}
 \title{Quadratic Discriminant Toeplitz Simulation}
 \usage{
-fs.sims.qdtoep(n, d, D1 = 10, rotate = FALSE, b = 0.4, rho = 0.5)
+fs.sims.qdtoep(n, d, rotate = FALSE, priors = NULL, D1 = 10, b = 0.4,
+  rho = 0.5)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
@@ -13,7 +14,9 @@ fs.sims.qdtoep(n, d, D1 = 10, rotate = FALSE, b = 0.4, rho = 0.5)
 
 \item{D1=10}{the dimensionality for the non-equal covariance terms.}
 
-\item{rotate=FALSE}{whether to apply a random rotation.}
+\item{rotate=FALSE}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix Q, mu = Q*mu, and S = Q*S*Q.}
+
+\item{priors=NULL}{the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.}
 
 \item{b=0.4}{a scaling parameter for the means.}
 
@@ -32,10 +35,10 @@ Sigmas [d, d, K] the per-class covariance matrices.
 A function for simulating data generalizing the Toeplitz setting, where each class has a different covariance matrix. This results in a Quadratic Discriminant.
 }
 \examples{
-library(fselect)
+library(lol)
 data <- fs.sims.qdtoep(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 }
 \author{
-Eric Bridgeford, adapted from Joshua Vogelstein
+Eric Bridgeford
 }

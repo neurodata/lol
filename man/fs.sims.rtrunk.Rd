@@ -4,16 +4,18 @@
 \alias{fs.sims.rtrunk}
 \title{Random Trunk}
 \usage{
-fs.sims.rtrunk(n, d, b = 4, rotate = FALSE, C = 2)
+fs.sims.rtrunk(n, d, rotate = FALSE, priors = NULL, b = 4, C = 2)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
 
 \item{d}{the dimensionality of the simulated data.}
 
-\item{b=4}{scalar for mu scaling.}
+\item{rotate=FALSE}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix Q, mu = Q*mu, and S = Q*S*Q.}
 
-\item{rotate=FALSE}{whether to apply a random rotation.}
+\item{priors=NULL}{the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.}
+
+\item{b=4}{scalar for mu scaling.}
 
 \item{C=2}{number of classes, should be <4.}
 }
@@ -30,10 +32,10 @@ Sigmas [d, d, K] the per-class covariance matrices.
 A simulation for the random trunk experiment.
 }
 \examples{
-library(fselect)
+library(lol)
 data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 }
 \author{
-Eric Bridgeford, adapted from Joshua Vogelstein
+Eric Bridgeford
 }

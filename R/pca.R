@@ -15,7 +15,7 @@
 #' @return cr [K, r] the centroids in reduced dimensionality.
 #' @author Eric Bridgeford
 #' @examples
-#' library(fselect)
+#' library(lol)
 #' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' model <- fs.project.pca(X=X, r=2)  # use pca to project into 2 dimensions
@@ -51,14 +51,14 @@ fs.utils.pca <- function(X, r, ...) {
 #' @return cr [K, r] the centroids in reduced dimensionality.
 #' @author Eric Bridgeford
 #' @examples
-#' library(fselect)
+#' library(lol)
 #' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' model <- fs.project.pca(X=X, Y=Y, r=2)  # use cpca to project into 2 dimensions
 #' @export
 fs.project.cpca <- function(X, Y, r) {
   # class data
-  classdat <- fselect:::fs.utils.classdat(X, Y)
+  classdat <- lol:::fs.utils.classdat(X, Y)
   priors <- classdat$priors; centroids <- classdat$centroids
   K <- classdat$K; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d

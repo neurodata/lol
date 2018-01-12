@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r}
-require(fselect)
+require(lol)
 require(ggplot2)
 require(latex2exp)
 
@@ -35,6 +35,17 @@ testdat <- fs.sims.rtrunk(n, d, b=20)
 X <- testdat$X
 Y <- testdat$Y
 print(plot_sim(X, Y, "Trunk, 2 Class"))
+```
+
+# Rotated Trunk, 2 Class, non-equal priors
+
+In this simulation, we show the trunk, estimate a rotation matrix to apply to the mean and covariances, and use a non-equal prior with more class 1 than class 2.
+
+```{r, fig.width=5}
+testdat <- fs.sims.rtrunk(n, d, rotate=TRUE, priors=c(0.8, 0.2), b=20)
+X <- testdat$X
+Y <- testdat$Y
+print(plot_sim(X, Y, "Rotated Trunk, 2 Class, non-equal priors"))
 ```
 
 # Trunk, 3 Class

@@ -4,18 +4,20 @@
 \alias{fs.sims.cigar}
 \title{Stacked Cigar}
 \usage{
-fs.sims.cigar(n, d, a = 0.15, b = 4, rotate = FALSE)
+fs.sims.cigar(n, d, rotate = FALSE, priors = NULL, a = 0.15, b = 4)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
 
 \item{d}{the dimensionality of the simulated data.}
 
+\item{rotate=FALSE}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix Q, mu = Q*mu, and S = Q*S*Q.}
+
+\item{priors=NULL}{the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.}
+
 \item{a=0.15}{scalar for all of the mu1 but 2nd dimension.}
 
-\item{b=4}{scalar for 2nd dimension value of mu2.}
-
-\item{rotate=FALSE}{whether to apply a random rotation.}
+\item{b=4}{scalar for 2nd dimension value of mu2 and the 2nd variance term of S.}
 }
 \value{
 X [n, d] the data as a matrix.
@@ -30,10 +32,10 @@ Sigmas [d, d, K] the per-class covariance matrices.
 A simulation for the stacked cigar experiment.
 }
 \examples{
-library(fselect)
+library(lol)
 data <- fs.sims.cigar(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 }
 \author{
-Eric Bridgeford, adapted from Joshua Vogelstein
+Eric Bridgeford
 }

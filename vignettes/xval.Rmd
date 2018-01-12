@@ -12,7 +12,7 @@ vignette: >
 # Cross Validation
 
 ```{r}
-require(fselect)
+require(lol)
 require(ggplot2)
 require(latex2exp)
 n = 400

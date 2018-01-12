@@ -32,7 +32,7 @@ cr [K, r] the centroids in reduced dimensionality.
 A function that performs PCA on data.
 }
 \examples{
-library(fselect)
+library(lol)
 data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 model <- fs.project.pca(X=X, r=2)  # use pca to project into 2 dimensions

@@ -4,20 +4,23 @@
 \alias{fs.sims.fat_tails}
 \title{Fat Tails Simulation}
 \usage{
-fs.sims.fat_tails(n, d, rotate = FALSE, f = 15, s0 = 10, rho = 0.2)
+fs.sims.fat_tails(n, d, rotate = FALSE, f = 15, s0 = 10, rho = 0.2,
+  priors = NULL)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
 
 \item{d}{the dimensionality of the simulated data.}
 
-\item{rotate=FALSE}{whether to apply a random rotation.}
+\item{rotate=FALSE}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix Q, mu = Q*mu, and S = Q*S*Q.}
 
-\item{f=15}{the fatness scaling of the tail.}
+\item{priors=NULL}{the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.}
+
+\item{f=15}{the fatness scaling of the tail. S2 = f*S1, where S1_{ij} = rho if i != j, and 1 if i == j.}
 
 \item{s0=10}{the number of dimensions with a difference in the means. s0 should be < d.}
 
-\item{rho=0.2}{the scaling of the covariance terms, should be < 1.}
+\item{rho=0.2}{the scaling of the off-diagonal covariance terms, should be < 1.}
 }
 \value{
 X the data as a [n, d] matrix.
@@ -32,10 +35,10 @@ Sigmas [d, d, K] the per-class covariance matrices.
 A function for simulating from 2 classes, one of which has fatter tails.
 }
 \examples{
-library(fselect)
+library(lol)
 data <- fs.sims.fat_tails(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 }
 \author{
-Eric Bridgeford, adapted from Joshua Vogelstein
+Eric Bridgeford
 }

@@ -81,7 +81,7 @@ n=100
 sims <- list(fs.sims.rtrunk, fs.sims.toep, fs.sims.rtrunk, fs.sims.fat_tails, fs.sims.qdtoep)
 ds <- c(100, 100, 100, 1000, 100)
 # additional arguments for each simulation scenario
-opt_args <- list(list(), list(), list(C=3), list(rotate=TRUE), list())
+opt_args <- list(list(), list(), list(C=3), list(), list())
 ndim <- c(10, 10, 10, 20, 10)
 sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "QDA")
 
@@ -101,8 +101,7 @@ Next, we aggregate over the respective iterations, and subset plots for each fun
 
 ```{r}
 # read the results in
-results_agg <- readRDS(paste(local_path, '/docs/lol-paper/lol_fig3_lda.rds', sep=""))
-results.means <- results_agg[[2]]
+results.means <- readRDS(paste(local_path, '/docs/lol-paper/lol_fig3_lda.rds', sep=""))
 
 sim_plots <- list()
 counter <- 1

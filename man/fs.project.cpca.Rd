@@ -30,7 +30,7 @@ cr [K, r] the centroids in reduced dimensionality.
 A function that performs PCA on the class-centered data. Same as low-rank LDA.
 }
 \examples{
-library(fselect)
+library(lol)
 data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 model <- fs.project.pca(X=X, Y=Y, r=2)  # use cpca to project into 2 dimensions

@@ -47,7 +47,7 @@ A function for performing leave-one-out cross-validation for a given model.
 }
 \examples{
 # train model and analyze with loo validation using lda classifier
-library(fselect)
+library(lol)
 data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 r=5  # embed into r=5 dimensions

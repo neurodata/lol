@@ -5,21 +5,22 @@
 #' @import abind
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
-#' @param rotate=FALSE whether to apply a random rotation.
-#' @param f=15 the fatness scaling of the tail.
+#' @param rotate=FALSE whether to apply a random rotation to the mean and covariance. With random rotataion matrix Q, mu = Q*mu, and S = Q*S*Q.
+#' @param priors=NULL the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.
+#' @param f=15 the fatness scaling of the tail. S2 = f*S1, where S1_{ij} = rho if i != j, and 1 if i == j.
 #' @param s0=10 the number of dimensions with a difference in the means. s0 should be < d.
-#' @param rho=0.2 the scaling of the covariance terms, should be < 1.
+#' @param rho=0.2 the scaling of the off-diagonal covariance terms, should be < 1.
 #' @return X the data as a [n, d] matrix.
 #' @return Y the labels as a [d] array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
-#' @author Eric Bridgeford, adapted from Joshua Vogelstein
+#' @author Eric Bridgeford
 #' @examples
-#' library(fselect)
+#' library(lol)
 #' data <- fs.sims.fat_tails(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-fs.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2) {
+fs.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, priors=NULL) {
   if  (s0 > d) {
     stop(sprintf("s0 = %d, d=%d. s0 should be < d.", s0, d))
   }
@@ -27,7 +28,7 @@ fs.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2) {
   mu1 <- c(array(0, dim=c(s0)), array(1, dim=c(d - s0)))
   mus <- abind::abind(mu0, mu1, along=2)
 
-  S <- rho*array(1, dim=c(d, d))
+  S <- array(rho, dim=c(d, d))
   diag(S) <- 1
 
   S <- abind::abind(S, 15*S, along=3)
@@ -39,9 +40,24 @@ fs.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2) {
   }
 
   # simulate from GMM
-  sim <- fs.sims.sim_gmm(mus, S, n)
+  sim <- fs.sims.sim_gmm(mus, S, n, priors)
   return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
 }
+
+#' Mean Difference Simulation
+#'
+#' A function for simulating data in which a difference in the means is present only in a subset of dimensions, and equal covariance.
+#' @param n the number of samples of the simulated data.
+#' @param d the dimensionality of the simulated data.
+#' @param rotate=FALSE whether to apply a random rotation to the mean and covariance. With random rotataion matrix Q, mu = Q*mu, and S = Q*S*Q.
+#' @param priors=NULL the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.
+#' @param md=1 the difference in the means in the specified subset of dimensions.
+#' @param offdiag=0 the off-diagonal elements of the covariance matrix. Should be < 1. S_{ij} = offdiag if i != j, or 1 if i == j.
+#' @param scaling=1 the scaling parameter of the covariance matrix. S_{ij} = scaling*1 if i == j, or scaling*offdiag if i != j.
+#' @return X [n, d] the data as a matrix.
+#' @return Y [n] the labels as a array.
+#' @return mus [d, K] the per-class means.
+#' @return Sigmas [d, d, K] the per-class covariance matrices.
 
 #' Toeplitz Simulation
 #'
@@ -51,20 +67,24 @@ fs.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2) {
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
 #' @param D1=10 the dimensionality for the non-equal covariance terms.
-#' @param rotate=FALSE whether to apply a random rotation.
+#' @param rotate=FALSE whether to apply a random rotation to the mean and covariance. With random rotataion matrix Q, mu = Q*mu, and S = Q*S*Q.
+#' @param priors=NULL the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.
 #' @param b=0.4 a scaling parameter for the means.
 #' @param rho=0.5 the scaling of the covariance terms, should be < 1.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
-#' @author Eric Bridgeford, adapted from Joshua Vogelstein
+#' @author Eric Bridgeford
 #' @examples
-#' library(fselect)
+#' library(lol)
 #' data <- fs.sims.toep(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-fs.sims.toep <- function(n, d, D1=10, rotate=FALSE, b=0.4, rho=0.5) {
+fs.sims.toep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0.5) {
+  if (rho >= 1) {
+    stop(sprintf("rho should be < 1; user specified %.3f", rho))
+  }
   c <- rho^(0:(D1 - 1))
   A <- toeplitz(c)
   K1 <- sum(A)
@@ -85,7 +105,7 @@ fs.sims.toep <- function(n, d, D1=10, rotate=FALSE, b=0.4, rho=0.5) {
     S <- res$S
   }
   # simulate from GMM
-  sim <- fs.sims.sim_gmm(mus, S, n)
+  sim <- fs.sims.sim_gmm(mus, S, n, priors)
   return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
 }
 
@@ -97,20 +117,27 @@ fs.sims.toep <- function(n, d, D1=10, rotate=FALSE, b=0.4, rho=0.5) {
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
 #' @param D1=10 the dimensionality for the non-equal covariance terms.
-#' @param rotate=FALSE whether to apply a random rotation.
+#' @param rotate=FALSE whether to apply a random rotation to the mean and covariance. With random rotataion matrix Q, mu = Q*mu, and S = Q*S*Q.
+#' @param priors=NULL the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.
 #' @param b=0.4 a scaling parameter for the means.
 #' @param rho=0.5 the scaling of the covariance terms, should be < 1.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
-#' @author Eric Bridgeford, adapted from Joshua Vogelstein
+#' @author Eric Bridgeford
 #' @examples
-#' library(fselect)
+#' library(lol)
 #' data <- fs.sims.qdtoep(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-fs.sims.qdtoep <- function(n, d, D1=10, rotate=FALSE, b=0.4, rho=0.5) {
+fs.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0.5) {
+  if (rho >= 1) {
+    stop(sprintf("rho should be < 1; user specified %.3f", rho))
+  }
+  if (D1 > d) {
+    stop(sprintf("User has specified more dimensions for non-equal cov terms. D1 is %d, yet d is %d", D1, d.))
+  }
   tR <- rho^(0:(D1 - 1))
   A <- toeplitz(tR)
   K1 <- sum(A)
@@ -134,7 +161,7 @@ fs.sims.qdtoep <- function(n, d, D1=10, rotate=FALSE, b=0.4, rho=0.5) {
     S <- res$S
   }
   # simulate from GMM
-  sim <- fs.sims.sim_gmm(mus, S, n)
+  sim <- fs.sims.sim_gmm(mus, S, n, priors)
   return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
 }
 
@@ -144,20 +171,21 @@ fs.sims.qdtoep <- function(n, d, D1=10, rotate=FALSE, b=0.4, rho=0.5) {
 #' @import abind
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
+#' @param rotate=FALSE whether to apply a random rotation to the mean and covariance. With random rotataion matrix Q, mu = Q*mu, and S = Q*S*Q.
+#' @param priors=NULL the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.
 #' @param b=4 scalar for mu scaling.
-#' @param rotate=FALSE whether to apply a random rotation.
 #' @param C=2 number of classes, should be <4.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
-#' @author Eric Bridgeford, adapted from Joshua Vogelstein
+#' @author Eric Bridgeford
 #' @examples
-#' library(fselect)
+#' library(lol)
 #' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-fs.sims.rtrunk <- function(n, d, b=4, rotate=FALSE, C=2) {
+fs.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, C=2) {
   mu1 <- b/sqrt(0:(d-1)*2 + 1)
   if (C == 2) {
     mus <- abind::abind(mu1, -mu1, along=2)
@@ -177,7 +205,7 @@ fs.sims.rtrunk <- function(n, d, b=4, rotate=FALSE, C=2) {
     S <- res$S
   }
   # simulate from GMM
-  sim <- fs.sims.sim_gmm(mus, S, n)
+  sim <- fs.sims.sim_gmm(mus, S, n, priors)
   return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
 }
 
@@ -187,20 +215,21 @@ fs.sims.rtrunk <- function(n, d, b=4, rotate=FALSE, C=2) {
 #' @import abind
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
+#' @param rotate=FALSE whether to apply a random rotation to the mean and covariance. With random rotataion matrix Q, mu = Q*mu, and S = Q*S*Q.
+#' @param priors=NULL the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.
 #' @param a=0.15 scalar for all of the mu1 but 2nd dimension.
-#' @param b=4 scalar for 2nd dimension value of mu2.
-#' @param rotate=FALSE whether to apply a random rotation.
+#' @param b=4 scalar for 2nd dimension value of mu2 and the 2nd variance term of S.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
-#' @author Eric Bridgeford, adapted from Joshua Vogelstein
+#' @author Eric Bridgeford
 #' @examples
-#' library(fselect)
+#' library(lol)
 #' data <- fs.sims.cigar(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-fs.sims.cigar <- function(n, d, a=0.15, b=4, rotate=FALSE) {
+fs.sims.cigar <- function(n, d, rotate=FALSE, priors=NULL, a=0.15, b=4) {
   mu1 <- array(a, dim=c(d))
   mu1[2] <- b
   mus <- cbind(array(0, dim=c(d)), mu1)
@@ -216,7 +245,7 @@ fs.sims.cigar <- function(n, d, a=0.15, b=4, rotate=FALSE) {
     S <- res$S
   }
   # simulate from GMM
-  sim <- fs.sims.sim_gmm(mus, S, n)
+  sim <- fs.sims.sim_gmm(mus, S, n, priors)
   return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
 }
 
@@ -226,18 +255,19 @@ fs.sims.cigar <- function(n, d, a=0.15, b=4, rotate=FALSE) {
 #' A function to simulate from the 2-class xor problem.
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
-#' @param fall=100 the sigma for the covariance structuring.
+#' @param priors=NULL the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.
+#' @param fall=100 the sigma for the covariance structuring. Sigma declines by ndim/fall across the variance terms.
 #' @return X [n, d] the data as a matrix.
 #' @return Y [n] the labels as a array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
-#' @author Eric Bridgeford, adapted from Joshua Vogelstein
+#' @author Eric Bridgeford
 #' @examples
-#' library(fselect)
+#' library(lol)
 #' data <- fs.sims.xor2(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-fs.sims.xor2 <- function(n, d, fall=100) {
+fs.sims.xor2 <- function(n, d, priors=NULL, fall=100) {
   n1 <- ceiling(n/2)
   n2 <- floor(n/2)
   # first simulation set
@@ -267,13 +297,19 @@ fs.sims.xor2 <- function(n, d, fall=100) {
 #' @param mus [d, C] the mus for each class.
 #' @param Sigmas [d,d,C] the Sigmas for each class.
 #' @param n the of examples.
+#' @param priors=NULL the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector.
 #' @return X [n, d] the simulated data.
 #' @return Y [n] the labels for each data point.
 #' @author Eric Bridgeford
 #' @import MASS
-fs.sims.sim_gmm <- function(mus, Sigmas, n) {
+fs.sims.sim_gmm <- function(mus, Sigmas, n, priors=NULL) {
   C <- dim(mus)[2]
-  labs <- sample(1:C, size=n, replace=TRUE)
+  if (is.null(priors)) {
+    priors <- array(1/C, dim=c(C))
+  } else if (length(priors) != C) {
+    stop(sprintf("You have specified %d priors for %d classes.", length(priors), length(C)))
+  }
+  labs <- sample(1:C, size=n, prob=priors, replace=TRUE)
   ylabs <- as.vector(sort(unique(labs)))
   res <- sapply(ylabs, function(y) mvrnorm(n=sum(labs == y), mus[,y], Sigmas[,,y]), USE.NAMES=TRUE, simplify=FALSE)
   X <- array(0, dim=c(n, dim(Sigmas)[1]))
@@ -299,15 +335,19 @@ fs.sims.rotation <- function(d) {
 #'
 #' A helper function for applying a random rotation to gaussian parameter set.
 #' @author Eric Bridgeford
-fs.sims.random_rotate <- function(mus, Sigmas) {
+fs.sims.random_rotate <- function(mus, Sigmas, Q=NULL) {
   dimm <- dim(mus)
   C <- dimm[2]
   d <- dim(mus)[1]
-  Q <- fs.sims.rotation(d)
+  if (is.null(Q)) {
+    Q <- fs.sims.rotation(d)
+  } else if (!isTRUE(all.equal(dim(Q), c(d, d)))) {
+    stop(sprintf("You have specified a rotation matrix with dimensions (%d, %d), but should be (%d, %d).", dim(Q)[1], dim(Q)[2], d, d))
+  }
 
   for (i in 1:C) {
     mus[,i] <- Q %*% mus[,i,drop=FALSE]
     Sigmas[,,i] <- Q %*% Sigmas[,,i] %*% t(Q)
   }
-  return(list(mus=mus, S=Sigmas))
+  return(list(mus=mus, S=Sigmas, Q=Q))
 }
