@@ -60,6 +60,12 @@ lol.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, priors=
 #' @return Y [n] the labels as a array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
+#' @author Eric Bridgeford
+#' @examples
+#' library(lol)
+#' data <- lol.sims.mean_diff(n=200, d=30)  # 200 examples of 30 dimensions
+#' X <- data$X; Y <- data$Y
+#' @export
 lol.sims.mean_diff <- function(n, d, rotate=FALSE, priors=NULL, K=2, md=1, subset=c(1), offdiag=0, s=1) {
   if (max(subset) > d) {
     stop(sprintf("Specified a difference in dimension %d; maximum should be %d.", max(subset), d))
