@@ -14,20 +14,20 @@
 #' @author Eric Bridgeford
 #' @examples
 #' library(lol)
-#' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+#' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
-#' model <- fs.project.lol(X=X, Y=Y, r=5)  # use lol to project into 5 dimensions
+#' model <- lol.project.lol(X=X, Y=Y, r=5)  # use lol to project into 5 dimensions
 #' @export
-fs.project.lol <- function(X, Y, r) {
+lol.project.lol <- function(X, Y, r) {
   # class data
-  classdat <- lol:::fs.utils.classdat(X, Y)
+  classdat <- lol:::lol.utils.classdat(X, Y)
   priors <- classdat$priors; centroids <- classdat$centroids
   K <- classdat$K; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d
   nv <- r - K
 
   if (nv > 0) {
-    A <- cbind(t(centroids), fs.project.cpca(X, Y, nv)$A)
+    A <- cbind(t(centroids), lol.project.cpca(X, Y, nv)$A)
   } else {
     A <- t(centroids)
     A <- A[,1:r,drop=FALSE]

@@ -1,8 +1,20 @@
+---
+title: "Figure 3 Mean Difference"
+author: "Eric Bridgeford"
+date: "January 12, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
 # Parallelize Stuff
 #=========================#
 library(parallel)
 
-no_cores = detectCores() - 5
+no_cores = detectCores() - 1
 
 cl = makeCluster(no_cores)
 
@@ -10,15 +22,15 @@ cl = makeCluster(no_cores)
 #==========================#
 require(lol)
 n=100
-niter <- 500  # number of iterations per simulation
+niter <- 50  # number of iterations per simulation
 rlen <- 30
 # the simulations to call themselves
-sims <- list(lol.sims.rtrunk, lol.sims.toep, lol.sims.rtrunk, lol.sims.fat_tails, lol.sims.qdtoep)
-maxr <- c(30, 90, 30, 30, 30)
-ds <- c(100, 100, 100, 1000, 100)
+sims <- list(lol.sims.mean_diff)
+maxr <- c(30)
+ds <- c(100)
 # additional arguments for each simulation scenario
-opt_args <- list(list(), list(), list(C=3), list(rotate=TRUE), list())
-sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "QDA")
+opt_args <- list(list(md=1))
+sim_names = c("Mean Difference")
 
 simulations <- list()
 counter <- 1
@@ -33,8 +45,8 @@ for (i in 1:length(sims)) {
 
 # Setup Algorithms
 #=========================#
-algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol)
-alg_name <- c("PCA", "cPCA", "LR-CCA", "LOL")
+algs <- list(lol.project.lrcca, lol.project.lol)
+alg_name <- c("LR-CCA", "LOL")
 
 clusterExport(cl, "algs"); clusterExport(cl, "alg_name")
 clusterExport(cl, "simulations"); clusterExport(cl, "rlen")
@@ -56,6 +68,7 @@ results <- parLapply(cl, simulations, function(sim) {
   return(results)
 })
 
+
 # Aggregate and save
 #=================================#
 require(data.table)
@@ -63,6 +76,29 @@ results <- do.call(rbind, results)
 results <- data.table(results)
 # aggregate over the iterations, retaining the other factors
 results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = mean)
-results_agg <- list(overall=results, means=results.means)
-saveRDS(results_agg, 'lol_fig3_lda.rds')
-stopCluster(cl)
+```
+
+```{r}
+cov_plots <- list()
+mean_plots <- list()
+counter <- 1
+
+for (i in 1:length(sims)) {
+  simn <- do.call(sims[[i]], c(list(n, ds[i]), opt_args[[i]]))
+  cov_plots[[counter]] <- sim_cov_plot(simn$Sigmas, title=sim_names[i])
+  mean_plots[[counter]] <- sim_mean_plot(simn$mus, title=sim_names[i], ndim=ndim[i])
+  counter <- counter + 1
+}
+
+sim_plots <- list()
+counter <- 1
+for (sim in unique(results.means$sim)) {
+  data_sub <- results.means[results.means$sim == sim,]
+  sim_plots[[counter]] <- plot_sim_lhats(data_sub, ylab=sim)
+  counter <- counter + 1
+}
+```
+
+```{r}
+
+```

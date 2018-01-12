@@ -14,8 +14,8 @@ require(latex2exp)
 require(MASS)
 require(gridExtra)
 
-n <- 100
-d <- 1000
+n <- 40
+d <- 40
 plot_sim <- function(X, Y, name) {
   data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
   data$y <- factor(data$y)
@@ -30,7 +30,7 @@ plot_sim <- function(X, Y, name) {
 
 # project into top 20 dimensions for X and Y and returns
 # LDA projection plot
-run_sim <- function(X, Y, func, ylab="", title="", r=20) {
+run_sim <- function(X, Y, func, ylab="", title="", r=1) {
   result <- do.call(func, list(X=X, Y=Y, r=r))
   
   liney <- lda(result$Xr, Y)
@@ -38,13 +38,14 @@ run_sim <- function(X, Y, func, ylab="", title="", r=20) {
   data <- data.frame(x1=result$x[,1], y=Y)
   data$y <- factor(data$y)
   proj_plot <- ggplot(data, aes(x=x1, fill=y, linetype=y)) +
-    geom_density(adjust=2, alpha=0.6) +
+    geom_density(alpha=0.6) +
     xlab(TeX("")) +
     ylab(TeX(ylab)) +
     theme_bw() +
     ggtitle(title) +
     scale_fill_discrete(name="Class Posterior") +
-    guides(linetype=FALSE)
+    guides(linetype=FALSE) +
+    geom_jitter(data=data, aes(x=x1, y=0, group=y, color=y, shape=y), position = position_jitter(width=0, height=0.2))
   return(proj_plot)
 }
 
@@ -61,37 +62,27 @@ In this notebook, we will consider 3 simulations with $K=2$ classes: Stacked Cig
 We begin by generating the simulations:
 
 ```{r, message=FALSE}
-sims <- list(fs.sims.cigar, fs.sims.rtrunk, fs.sims.rtrunk)
-rotate <- c(FALSE, FALSE, TRUE)
-sim_names <-  c("Stacked Cigars", "Trunk", "Rotated Trunk")
-funcs <- list(fs.project.pca, fs.project.cpca, fs.project.lrcca,
-              fs.project.lol)
+sims <- list(lol.sims.cigar, lol.sims.rtrunk, lol.sims.rtrunk, lol.sims.mean_diff)
+rotate <- c(FALSE, FALSE, TRUE, FALSE)
+sim_names <-  c("Stacked Cigars", "Trunk", "Rotated Trunk", "Mean Difference")
+funcs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca,
+              lol.project.lol)
 alg_names <- c("PCA", "PCA'", "LR-CCA", "LOL")
   
-settings <- list()
-for (i in 1:length(sims)) {
-  data <- do.call(sims[[i]], list(n=n, d=d, rotate=rotate[i]))
-  settings[[i]] <- list(X=data$X, Y=data$Y)
-}
+settings <- list(list(), list(), list(), list(md=4.4))
 
 sim_plots <- list()
-counter <- 1
-for (i in 1:length(settings)) {
-  sim_plots[[counter]] <- plot_sim(settings[[i]]$X, settings[[i]]$Y,
-                               sim_names[i])
-  counter <- counter + 1
-}
-```
-
-```{r, message=FALSE}
 res_plots <- list()
-counter <- 1
-for (j in 1:length(funcs)) {
-  for (i in 1:length(settings)) {
-    res_plots[[counter]] <- run_sim(settings[[i]]$X, settings[[i]]$Y, funcs[[j]],
-                                ylab=alg_names[j], title=sim_names[i])
-    counter <- counter + 1
+counter1 <- 1; counter2 <- 1
+for (i in 1:length(settings)) {
+  data <- do.call(sims[[i]], c(list(n, d), settings[[i]]))
+  sim_plots[[counter1]] <- plot_sim(data$X, data$Y, sim_names[i])
+  for (j in 1:length(funcs)) {
+    res_plots[[counter2]] <- run_sim(data$X, data$Y, funcs[[j]], ylab=alg_names[j],
+                                     title=sim_names[i])
+    counter2 <- counter2 + 1
   }
+  counter1 <- counter1 + 1
 }
 ```
 
@@ -107,13 +98,13 @@ sim_plots <- sapply(sim_plots, function(simp) {
 res_plots <- sapply(1:length(res_plots), function(j) {
     resp <- res_plots[[j]] + xlab("") + ggtitle("") +theme(legend.position=NaN)
     # remove the ylabel of only the non-left most columns
-    if (((j - 1) %% length(sim_names)) != 0) {
+    if (j > length(sim_names)) {
       resp <- resp + ylab("")
     }
     return(resp)
   }, simplify=FALSE)
 sim_grid <- grid.arrange(grobs=sim_plots, ncol=length(sim_names))
-res_grid <- grid.arrange(grobs=res_plots, ncol=length(sim_names))
+res_grid <- grid.arrange(grobs=res_plots, ncol=length(sim_names), as.table=FALSE)
 
 res_bottom <- grid.arrange(res_grid, bottom_legend, nrow=1, widths=c(.88, .12))
 res_top <- grid.arrange(sim_grid, top_legend, nrow=1, widths=c(.88, .12))

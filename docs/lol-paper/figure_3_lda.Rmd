@@ -78,7 +78,7 @@ First, we prepare the plots of subsets of the mean and covariance matrices:
 require(lol)
 n=100
 # the simulations to call themselves
-sims <- list(fs.sims.rtrunk, fs.sims.toep, fs.sims.rtrunk, fs.sims.fat_tails, fs.sims.qdtoep)
+sims <- list(lol.sims.rtrunk, lol.sims.toep, lol.sims.rtrunk, lol.sims.fat_tails, lol.sims.qdtoep)
 ds <- c(100, 100, 100, 1000, 100)
 # additional arguments for each simulation scenario
 opt_args <- list(list(), list(), list(C=3), list(), list())

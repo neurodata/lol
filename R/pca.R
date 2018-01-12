@@ -16,20 +16,20 @@
 #' @author Eric Bridgeford
 #' @examples
 #' library(lol)
-#' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+#' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
-#' model <- fs.project.pca(X=X, r=2)  # use pca to project into 2 dimensions
+#' model <- lol.project.pca(X=X, r=2)  # use pca to project into 2 dimensions
 #' @export
-fs.project.pca <- function(X, r, ...) {
+lol.project.pca <- function(X, r, ...) {
   # mean center by the global mean
   Xc <- sweep(X, 2, colMeans(X), '-')
-  A <- fs.utils.pca(Xc, r)
+  A <- lol.utils.pca(Xc, r)
 
   return(list(A=A, Xr=X %*% A))
 }
 
 # A utility for pre-centered data to do PCA faster.
-fs.utils.pca <- function(X, r, ...) {
+lol.utils.pca <- function(X, r, ...) {
   # take the svd and retain the top r left singular vectors as our components
   svd <- irlba::irlba(t(as.matrix(X)), nv=0, nu=r)
   A <- svd$u
@@ -52,13 +52,13 @@ fs.utils.pca <- function(X, r, ...) {
 #' @author Eric Bridgeford
 #' @examples
 #' library(lol)
-#' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+#' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
-#' model <- fs.project.pca(X=X, Y=Y, r=2)  # use cpca to project into 2 dimensions
+#' model <- lol.project.pca(X=X, Y=Y, r=2)  # use cpca to project into 2 dimensions
 #' @export
-fs.project.cpca <- function(X, Y, r) {
+lol.project.cpca <- function(X, Y, r) {
   # class data
-  classdat <- lol:::fs.utils.classdat(X, Y)
+  classdat <- lol:::lol.utils.classdat(X, Y)
   priors <- classdat$priors; centroids <- classdat$centroids
   K <- classdat$K; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d
@@ -67,7 +67,7 @@ fs.project.cpca <- function(X, Y, r) {
   Yidx <- sapply(Y, function(y) which(ylabs == y))
   Xt <- X - centroids[Yidx,]
   # compute the standard PCA but with the pre-centered data.
-  A <- fs.utils.pca(Xt, r)
+  A <- lol.utils.pca(Xt, r)
 
   return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
               Xr=X %*% A, cr=centroids %*% A))

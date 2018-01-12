@@ -19,7 +19,7 @@ for (i in 1:length(ds)) {
   Xe <- array(0, dim=c(nsim, n, d))
   Ye <- array(0, dim=c(nsim, n))
   for (j in 1:nsim) {
-    res <- fs.sims.xor2(n, d, fall=100)
+    res <- lol.sims.xor2(n, d, fall=100)
     Xe[j,,] <- res$X
     Ye[j,] <- res$Y
   }
@@ -35,7 +35,7 @@ for (i in 1:length(ds)) {
   Xe <- array(0, dim=c(nsim, n, d))
   Ye <- array(0, dim=c(nsim, n))
   for (j in 1:nsim) {
-    res <- fs.sims.cigar(n, d)
+    res <- lol.sims.cigar(n, d)
     Xe[j,,] <- res$X
     Ye[j,] <- res$Y
   }
@@ -53,7 +53,7 @@ for (i in 1:length(ds)) {
   Xe <- array(0, dim=c(nsim, n, d))
   Ye <- array(0, dim=c(nsim, n))
   for (j in 1:nsim) {
-    res <- fs.sims.rtrunk(n, d, r=TRUE)
+    res <- lol.sims.rtrunk(n, d, r=TRUE)
     Xe[j,,] <- res$X
     Ye[j,] <- res$Y
   }
@@ -71,7 +71,7 @@ for (i in 1:length(ds)) {
   Xe <- array(0, dim=c(nsim, n, d))
   Ye <- array(0, dim=c(nsim, n))
   for (j in 1:nsim) {
-    res <- fs.sims.rtrunk(n, d, C=3, r=TRUE)
+    res <- lol.sims.rtrunk(n, d, C=3, r=TRUE)
     Xe[j,,] <- res$X
     Ye[j,] <- res$Y
   }
@@ -88,7 +88,7 @@ for (i in 1:length(ds)) {
   Xe <- array(0, dim=c(nsim, n, d))
   Ye <- array(0, dim=c(nsim, n))
   for (j in 1:nsim) {
-    res <- fs.sims.toep(n, d)
+    res <- lol.sims.toep(n, d)
     Xe[j,,] <- res$X
     Ye[j,] <- res$Y
   }
@@ -105,7 +105,7 @@ for (i in 1:length(ds)) {
   Xe <- array(0, dim=c(nsim, n, d))
   Ye <- array(0, dim=c(nsim, n))
   for (j in 1:nsim) {
-    res <- fs.sims.fat_tails(n, d, s0 = 1, r=TRUE)
+    res <- lol.sims.fat_tails(n, d, s0 = 1, r=TRUE)
     Xe[j,,] <- res$X
     Ye[j,] <- res$Y
   }

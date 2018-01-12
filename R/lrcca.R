@@ -15,12 +15,12 @@
 #' @author Jason Yim and Eric Bridgeford
 #' @examples
 #' library(lol)
-#' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+#' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
-#' model <- fs.project.lrcca(X=X, Y=Y, r=5)  # use lrcca to project into 5 dimensions
+#' model <- lol.project.lrcca(X=X, Y=Y, r=5)  # use lrcca to project into 5 dimensions
 #' @export
-fs.project.lrcca <- function(X, Y, r) {
-  classdat <- lol:::fs.utils.classdat(X, Y)
+lol.project.lrcca <- function(X, Y, r) {
+  classdat <- lol:::lol.utils.classdat(X, Y)
   priors <- classdat$priors; centroids <- classdat$centroids
   K <- classdat$K; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d
@@ -37,7 +37,7 @@ fs.project.lrcca <- function(X, Y, r) {
   S_xi <- MASS::ginv(S_x); S_yi <- MASS::ginv(S_y)
   S_xy <- cov(X, y=Yind); S_yx <- cov(Yind, y=X)
   # decompose
-  A <- fs.utils.pca(S_xi %*% S_xy %*% S_yi %*% S_yx, r)
+  A <- lol.utils.pca(S_xi %*% S_xy %*% S_yi %*% S_yx, r)
 
   return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
               Xr=X %*% A, cr=centroids %*% A))

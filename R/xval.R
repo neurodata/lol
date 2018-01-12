@@ -6,7 +6,7 @@
 #' @param X [n, d] the data as n samples in d dimensions.
 #' @param Y [n] the labels for each for each of the n samples.
 #' @param r the number of dimensions to project the data onto.
-#' @param alg=fs.project.lol the algorithm to use for feature selection.
+#' @param alg=lol.project.lol the algorithm to use for feature selection.
 #' @param classifier='lda' the classifier to use for assessing performance.
 #' \itemize{
 #' \item{'lda'}{Use the lda classifier for assessing performance.}
@@ -28,15 +28,15 @@
 #' @examples
 #' # train model and analyze with loo validation using lda classifier
 #' library(lol)
-#' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+#' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' r=5  # embed into r=5 dimensions
-#' xval.fit <- fs.xval.eval(X, Y, r, fs.project.lol, classifier='lda', k='loo')
+#' xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='lda', k='loo')
 #' @export
-fs.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo') {
+lol.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo') {
   Y <- factor(Y)
   n <- length(Y)
-  sets <- fs.xval.split(X, Y, k=k)
+  sets <- lol.xval.split(X, Y, k=k)
   Lhat.fold <- sapply(sets, function(set) {
     mod <- do.call(alg, list(X=set$X.train, Y=set$Y.train, r=r))  # learn the projection with the algorithm specified
     X.test.proj <- set$X.test %*% mod$A  # project the data with the projection just learned
@@ -73,14 +73,14 @@ fs.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo') {
 #' @examples
 #' # prepare data for 10-fold validation
 #' library(lol)
-#' data <- fs.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+#' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
-#' sets.xval.10fold <- fs.xval.split(X, Y, k=10)
+#' sets.xval.10fold <- lol.xval.split(X, Y, k=10)
 #' # prepare data for loo validation
-#' sets.xval.loo <- fs.xval.split(X, Y, k='loo')
+#' sets.xval.loo <- lol.xval.split(X, Y, k='loo')
 #'
 #' @export
-fs.xval.split <- function(X, Y, k='loo') {
+lol.xval.split <- function(X, Y, k='loo') {
   Y <- factor(Y)
   n <- length(Y)
   if (k == 'loo') {

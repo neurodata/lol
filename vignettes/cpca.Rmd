@@ -29,7 +29,7 @@ Data for this notebook will be n=400 examples of d=30 dimensions.
 We first visualize the first 2 dimensions:
 
 ```{r, fig.width=5}
-testdat <- fs.sims.cigar(n, d)
+testdat <- lol.sims.cigar(n, d)
 X <- testdat$X
 Y <- testdat$Y
 
@@ -45,7 +45,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 Projecting with cPCA to 3 dimensions and visualizing the first 2:
 
 ```{r, fig.width=5}
-result <- fs.project.cpca(X, Y, r)
+result <- lol.project.cpca(X, Y, r)
 
 data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
 data$y <- factor(data$y)
@@ -77,7 +77,7 @@ ggplot(data, aes(x=x1, fill=y)) +
 We visualize the first 2 dimensions:
 
 ```{r, fig.width=5}
-testdat <- fs.sims.rtrunk(n, d)
+testdat <- lol.sims.rtrunk(n, d)
 X <- testdat$X
 Y <- testdat$Y
 
@@ -93,7 +93,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 Projecting with cPCA to 3 dimensions and visualizing the first 2:
 
 ```{r, fig.width=5}
-result <- fs.project.cpca(X, Y, r)
+result <- lol.project.cpca(X, Y, r)
 
 data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
 data$y <- factor(data$y)
@@ -125,7 +125,7 @@ ggplot(data, aes(x=x1, fill=y)) +
 We visualize the first 2 dimensions:
 
 ```{r, fig.width=5}
-testdat <- fs.sims.rtrunk(n, d, rotate=TRUE)
+testdat <- lol.sims.rtrunk(n, d, rotate=TRUE)
 X <- testdat$X
 Y <- testdat$Y
 
@@ -141,7 +141,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 Projecting with cPCA to 3 dimensions and visualizing the first 2:
 
 ```{r, fig.width=5}
-result <- fs.project.cpca(X, Y, r)
+result <- lol.project.cpca(X, Y, r)
 
 data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
 data$y <- factor(data$y)

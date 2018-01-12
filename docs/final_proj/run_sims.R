@@ -17,7 +17,7 @@ files = c('xor_sim.rds', 'cig_sim.rds', 'rtr_sim.rds', 'rtr3_sim.rds', 'toe_sim.
 
 performance <- data.frame(dimensions=c(), algorithm=c(), classification=c(), simulation=c(), simid=c(), lhat=c())
 sims = c('xor', 'cigar', 'rtrunk', 'rtrunk3', 'toep', 'fat tails')
-algorithms = c(fs.project.pca, fs.project.cpca, fs.project.lol, fs.project.lrcca)
+algorithms = c(lol.project.pca, lol.project.cpca, lol.project.lol, lol.project.lrcca)
 algnames =c("PCA", "cPCA", "LOL", "LRCCA")
 classalgs <- c("lda", "rf")
 
@@ -36,7 +36,7 @@ for (i in 1:length(sims)) {
       Y <- Yd[k,]
       for (l in 1:length(algorithms)) {
         for (m in 1:length(classalgs)) {
-          res <- suppressWarnings(fs.eval.xval(X, Y, r=r, alg=algorithms[l][[1]], classifier=classalgs[m], k='loo'))
+          res <- suppressWarnings(lol.eval.xval(X, Y, r=r, alg=algorithms[l][[1]], classifier=classalgs[m], k='loo'))
           performance <- rbind(performance, data.frame(dimensions=ds[j], algorithm=algnames[l], classification=classalgs[m],
                                                        simulation=sims[i], simid=k, lhat=res$Lhat))
         }
