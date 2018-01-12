@@ -43,8 +43,8 @@ run_sim <- function(X, Y, func, ylab="", title="", r=1) {
     ylab(TeX(ylab)) +
     theme_bw() +
     ggtitle(title) +
-    scale_fill_discrete(name="Class Posterior")# +
-    #guides(linetype=FALSE) +
+    scale_fill_discrete(name="Class Posterior") +
+    guides(linetype=FALSE) #+
     #geom_jitter(data=data, aes(x=x1, y=0, group=y, color=y, shape=y), position = position_jitter(width=0, height=0.2))
   return(proj_plot)
 }
