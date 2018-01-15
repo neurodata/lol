@@ -18,18 +18,20 @@
 #' X <- data$X; Y <- data$Y
 #' model <- lol.project.lol(X=X, Y=Y, r=5)  # use lol to project into 5 dimensions
 #' @export
-lol.project.lol <- function(X, Y, r) {
+lol.project.lol <- function(X, Y, r, ...) {
   # class data
-  classdat <- lol:::lol.utils.classdat(X, Y)
-  priors <- classdat$priors; centroids <- classdat$centroids
-  K <- classdat$K; ylabs <- classdat$ylabs
-  n <- classdat$n; d <- classdat$d
-  nv <- r - K
+  info <- lol:::lol.utils.info(X, Y)
+  priors <- info$priors; centroids <- info$centroids
+  K <- info$K; ylabs <- info$ylabs
+  n <- info$n; d <- info$d
+  deltas <- lol:::lol.utils.deltas(centroids, priors)
+  centroids <- t(centroids)
 
+  nv <- r - (K - 1)
   if (nv > 0) {
-    A <- cbind(t(centroids), lol.project.cpca(X, Y, nv)$A)
+    A <- cbind(deltas, lol.project.cpca(X, Y, nv)$A)
   } else {
-    A <- t(centroids)
+    A <- deltas
     A <- A[,1:r,drop=FALSE]
   }
 

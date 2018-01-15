@@ -4,7 +4,7 @@
 \alias{lol.xval.eval}
 \title{Cross-Validation}
 \usage{
-lol.xval.eval(X, Y, r, alg, classifier = "lda", k = "loo")
+lol.xval.eval(X, Y, r, alg, classifier = "lda", k = "loo", ...)
 }
 \arguments{
 \item{X}{[n, d] the data as n samples in d dimensions.}

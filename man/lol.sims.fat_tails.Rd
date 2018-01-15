@@ -30,6 +30,8 @@ Y the labels as a [d] array.
 mus [d, K] the per-class means.
 
 Sigmas [d, d, K] the per-class covariance matrices.
+
+priors [K] the priors for each class.
 }
 \description{
 A function for simulating from 2 classes, one of which has fatter tails.

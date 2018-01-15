@@ -4,7 +4,7 @@
 \alias{lol.project.cpca}
 \title{Class PCA}
 \usage{
-lol.project.cpca(X, Y, r)
+lol.project.cpca(X, Y, r, ...)
 }
 \arguments{
 \item{X}{[n, d] the data with n samples in d dimensions.}

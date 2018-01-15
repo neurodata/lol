@@ -30,6 +30,8 @@ Y [n] the labels as a array.
 mus [d, K] the per-class means.
 
 Sigmas [d, d, K] the per-class covariance matrices.
+
+priors [K] the priors for each class.
 }
 \description{
 A function for simulating data in which the covariance is a non-symmetric toeplitz matrix.

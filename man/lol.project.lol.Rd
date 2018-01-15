@@ -4,7 +4,7 @@
 \alias{lol.project.lol}
 \title{Linear Optimal Low-Rank Projection (LOL)}
 \usage{
-lol.project.lol(X, Y, r)
+lol.project.lol(X, Y, r, ...)
 }
 \arguments{
 \item{X}{[n, d] the data with n samples in d dimensions.}

@@ -14,6 +14,7 @@
 #' @return Y the labels as a [d] array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
+#' @return priors [K] the priors for each class.
 #' @author Eric Bridgeford
 #' @examples
 #' library(lol)
@@ -21,6 +22,14 @@
 #' X <- data$X; Y <- data$Y
 #' @export
 lol.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, priors=NULL) {
+  K <- 2
+  if (is.null(priors)) {
+    priors <- array(1/K, dim=c(K))
+  } else if (length(priors) != K) {
+    stop(sprintf("You have specified %d priors for %d classes.", length(priors), K))
+  } else if (sum(priors) != 1) {
+    stop(sprintf("You have passed invalid priors. The sum(priors) should be 1; yours is %.3f", sum(priors)))
+  }
   if  (s0 > d) {
     stop(sprintf("s0 = %d, d=%d. s0 should be < d.", s0, d))
   }
@@ -41,7 +50,7 @@ lol.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, priors=
 
   # simulate from GMM
   sim <- lol.sims.sim_gmm(mus, S, n, priors)
-  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
+  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors))
 }
 
 #' Mean Difference Simulation
@@ -60,6 +69,7 @@ lol.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, priors=
 #' @return Y [n] the labels as a array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
+#' @return priors [K] the priors for each class.
 #' @author Eric Bridgeford
 #' @examples
 #' library(lol)
@@ -67,6 +77,13 @@ lol.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, priors=
 #' X <- data$X; Y <- data$Y
 #' @export
 lol.sims.mean_diff <- function(n, d, rotate=FALSE, priors=NULL, K=2, md=1, subset=c(1), offdiag=0, s=1) {
+  if (is.null(priors)) {
+    priors <- array(1/K, dim=c(K))
+  } else if (length(priors) != K) {
+    stop(sprintf("You have specified %d priors for %d classes.", length(priors), K))
+  } else if (sum(priors) != 1) {
+    stop(sprintf("You have passed invalid priors. The sum(priors) should be 1; yours is %.3f", sum(priors)))
+  }
   if (max(subset) > d) {
     stop(sprintf("Specified a difference in dimension %d; maximum should be %d.", max(subset), d))
   }
@@ -87,7 +104,7 @@ lol.sims.mean_diff <- function(n, d, rotate=FALSE, priors=NULL, K=2, md=1, subse
   }
   # simulate from GMM
   sim <- lol.sims.sim_gmm(mus, S, n, priors)
-  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
+  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors))
 }
 
 #' Toeplitz Simulation
@@ -106,6 +123,7 @@ lol.sims.mean_diff <- function(n, d, rotate=FALSE, priors=NULL, K=2, md=1, subse
 #' @return Y [n] the labels as a array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
+#' @return priors [K] the priors for each class.
 #' @author Eric Bridgeford
 #' @examples
 #' library(lol)
@@ -113,6 +131,14 @@ lol.sims.mean_diff <- function(n, d, rotate=FALSE, priors=NULL, K=2, md=1, subse
 #' X <- data$X; Y <- data$Y
 #' @export
 lol.sims.toep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0.5) {
+  K <- 2
+  if (is.null(priors)) {
+    priors <- array(1/K, dim=c(K))
+  } else if (length(priors) != K) {
+    stop(sprintf("You have specified %d priors for %d classes.", length(priors), K))
+  } else if (sum(priors) != 1) {
+    stop(sprintf("You have passed invalid priors. The sum(priors) should be 1; yours is %.3f", sum(priors)))
+  }
   if (rho >= 1) {
     stop(sprintf("rho should be < 1; user specified %.3f", rho))
   }
@@ -137,7 +163,7 @@ lol.sims.toep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0.5
   }
   # simulate from GMM
   sim <- lol.sims.sim_gmm(mus, S, n, priors)
-  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
+  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors))
 }
 
 #' Quadratic Discriminant Toeplitz Simulation
@@ -156,6 +182,7 @@ lol.sims.toep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0.5
 #' @return Y [n] the labels as a array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
+#' @return priors [K] the priors for each class.
 #' @author Eric Bridgeford
 #' @examples
 #' library(lol)
@@ -163,6 +190,14 @@ lol.sims.toep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0.5
 #' X <- data$X; Y <- data$Y
 #' @export
 lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0.5) {
+  K <- 2
+  if (is.null(priors)) {
+    priors <- array(1/K, dim=c(K))
+  } else if (length(priors) != K) {
+    stop(sprintf("You have specified %d priors for %d classes.", length(priors), K))
+  } else if (sum(priors) != 1) {
+    stop(sprintf("You have passed invalid priors. The sum(priors) should be 1; yours is %.3f", sum(priors)))
+  }
   if (rho >= 1) {
     stop(sprintf("rho should be < 1; user specified %.3f", rho))
   }
@@ -193,7 +228,7 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
   }
   # simulate from GMM
   sim <- lol.sims.sim_gmm(mus, S, n, priors)
-  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
+  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors))
 }
 
 #' Random Trunk
@@ -210,6 +245,7 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
 #' @return Y [n] the labels as a array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
+#' @return priors [K] the priors for each class.
 #' @author Eric Bridgeford
 #' @examples
 #' library(lol)
@@ -217,6 +253,13 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
 #' X <- data$X; Y <- data$Y
 #' @export
 lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2) {
+  if (is.null(priors)) {
+    priors <- array(1/K, dim=c(K))
+  } else if (length(priors) != K) {
+    stop(sprintf("You have specified %d priors for %d classes.", length(priors), K))
+  } else if (sum(priors) != 1) {
+    stop(sprintf("You have passed invalid priors. The sum(priors) should be 1; yours is %.3f", sum(priors)))
+  }
   mu1 <- b/sqrt(0:(d-1)*2 + 1)
   if (K == 2) {
     mus <- abind::abind(mu1, -mu1, along=2)
@@ -237,7 +280,7 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2) {
   }
   # simulate from GMM
   sim <- lol.sims.sim_gmm(mus, S, n, priors)
-  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
+  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors))
 }
 
 #' Stacked Cigar
@@ -254,6 +297,7 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2) {
 #' @return Y [n] the labels as a array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
+#' @return priors [K] the priors for each class.
 #' @author Eric Bridgeford
 #' @examples
 #' library(lol)
@@ -261,6 +305,14 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2) {
 #' X <- data$X; Y <- data$Y
 #' @export
 lol.sims.cigar <- function(n, d, rotate=FALSE, priors=NULL, a=0.15, b=4) {
+  K <- 2
+  if (is.null(priors)) {
+    priors <- array(1/K, dim=c(K))
+  } else if (length(priors) != K) {
+    stop(sprintf("You have specified %d priors for %d classes.", length(priors), K))
+  } else if (sum(priors) != 1) {
+    stop(sprintf("You have passed invalid priors. The sum(priors) should be 1; yours is %.3f", sum(priors)))
+  }
   mu1 <- array(a, dim=c(d))
   mu1[2] <- b
   mus <- cbind(array(0, dim=c(d)), mu1)
@@ -277,7 +329,7 @@ lol.sims.cigar <- function(n, d, rotate=FALSE, priors=NULL, a=0.15, b=4) {
   }
   # simulate from GMM
   sim <- lol.sims.sim_gmm(mus, S, n, priors)
-  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S))
+  return(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors))
 }
 
 
@@ -292,6 +344,7 @@ lol.sims.cigar <- function(n, d, rotate=FALSE, priors=NULL, a=0.15, b=4) {
 #' @return Y [n] the labels as a array.
 #' @return mus [d, K] the per-class means.
 #' @return Sigmas [d, d, K] the per-class covariance matrices.
+#' @return priors [K] the priors for each class.
 #' @author Eric Bridgeford
 #' @examples
 #' library(lol)
@@ -299,6 +352,14 @@ lol.sims.cigar <- function(n, d, rotate=FALSE, priors=NULL, a=0.15, b=4) {
 #' X <- data$X; Y <- data$Y
 #' @export
 lol.sims.xor2 <- function(n, d, priors=NULL, fall=100) {
+  K <- 2
+  if (is.null(priors)) {
+    priors <- array(1/K, dim=c(K))
+  } else if (length(priors) != K) {
+    stop(sprintf("You have specified %d priors for %d classes.", length(priors), K))
+  } else if (sum(priors) != 1) {
+    stop(sprintf("You have passed invalid priors. The sum(priors) should be 1; yours is %.3f", sum(priors)))
+  }
   n1 <- ceiling(n/2)
   n2 <- floor(n/2)
   # first simulation set
@@ -307,19 +368,19 @@ lol.sims.xor2 <- function(n, d, priors=NULL, fall=100) {
   S <- abind::abind(S, S, along=3)
 
   # simulate from GMM for first set of training examples
-  sim1 <- lol.sims.sim_gmm(mus, S, n1)
+  sim1 <- lol.sims.sim_gmm(mus, S, n1, priors)
 
   # second simulation set
   mus <- abind::abind(array(1, dim=c(d)), array(c(0, 1), dim=c(d)), along=2)
 
   # simulate from GMM for second set of training examples
-  sim2 <- lol.sims.sim_gmm(mus, S, n2)
+  sim2 <- lol.sims.sim_gmm(mus, S, n2, priors=priors)
 
   X <- abind::abind(sim1$X, sim2$X, along=1)
   Y <- abind::abind(sim1$Y, sim2$Y, along=1)
 
   reorder <- sample(n)
-  return(list(X=X[reorder,], Y=Y[reorder], mus=mus, Sigmas=S))
+  return(list(X=X[reorder,], Y=Y[reorder], mus=mus, Sigmas=S, priors=sim2$priors))
 }
 
 #' GMM Simulate
@@ -328,20 +389,14 @@ lol.sims.xor2 <- function(n, d, priors=NULL, fall=100) {
 #' @param mus [d, K] the mus for each class.
 #' @param Sigmas [d,d,K] the Sigmas for each class.
 #' @param n the of examples.
-#' @param priors=NULL the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector for K classes.
+#' @param priors the priors for each class.
 #' @return X [n, d] the simulated data.
 #' @return Y [n] the labels for each data point.
+#' @return priors [K] the priors for each class.
 #' @author Eric Bridgeford
 #' @import MASS
-lol.sims.sim_gmm <- function(mus, Sigmas, n, priors=NULL) {
+lol.sims.sim_gmm <- function(mus, Sigmas, n, priors) {
   K <- dim(mus)[2]
-  if (is.null(priors)) {
-    priors <- array(1/K, dim=c(K))
-  } else if (length(priors) != K) {
-    stop(sprintf("You have specified %d priors for %d classes.", length(priors), K))
-  } else if (sum(priors) != 1) {
-    stop(sprintf("You have passed invalid priors. The sum(priors) should be 1; yours is %.3f", sum(priors)))
-  }
   labs <- sample(1:K, size=n, prob=priors, replace=TRUE)
   ylabs <- as.vector(sort(unique(labs)))
   res <- sapply(ylabs, function(y) mvrnorm(n=sum(labs == y), mus[,y], Sigmas[,,y]), USE.NAMES=TRUE, simplify=FALSE)
@@ -349,7 +404,7 @@ lol.sims.sim_gmm <- function(mus, Sigmas, n, priors=NULL) {
   for (y in ylabs) {
     X[labs == y,] <- res[[y]]
   }
-  return(list(X=X, Y=labs))
+  return(list(X=X, Y=labs, priors=priors))
 }
 
 #' Sample Random Rotation

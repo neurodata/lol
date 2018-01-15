@@ -30,12 +30,12 @@ plot_sim <- function(X, Y, name) {
 
 # project into top 20 dimensions for X and Y and returns
 # LDA projection plot
-run_sim <- function(X, Y, func, ylab="", title="", r=1) {
-  result <- do.call(func, list(X=X, Y=Y, r=r))
+run_sim <- function(inps, func, ylab="", title="", r=20) {
+  result <- do.call(func, c(inps, list(r=r)))
   
-  liney <- lda(result$Xr, Y)
+  liney <- lda(result$Xr, inps$Y)
   result <- predict(liney, result$Xr)
-  data <- data.frame(x1=result$x[,1], y=Y)
+  data <- data.frame(x1=result$x[,1], y=inps$Y)
   data$y <- factor(data$y)
   proj_plot <- ggplot(data, aes(x=x1, fill=y, linetype=y)) +
     geom_density(adjust=2, alpha=0.6) +
@@ -66,10 +66,10 @@ sims <- list(lol.sims.cigar, lol.sims.rtrunk, lol.sims.rtrunk, lol.sims.mean_dif
 rotate <- c(FALSE, FALSE, TRUE, FALSE)
 sim_names <-  c("Stacked Cigars", "Trunk", "Rotated Trunk", "Mean Difference")
 funcs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca,
-              lol.project.lol)
-alg_names <- c("PCA", "PCA'", "LR-CCA", "LOL")
+              lol.project.lol, lol.project.bayes_optimal)
+alg_names <- c("PCA", "PCA'", "LR-CCA", "LOL", "Bayes Optimal")
   
-settings <- list(list(), list(), list(), list(md=1))
+settings <- list(list(), list(), list(), list(md=4.4))
 
 sim_plots <- list()
 res_plots <- list()
@@ -78,10 +78,12 @@ for (i in 1:length(settings)) {
   data <- do.call(sims[[i]], c(list(n, d), settings[[i]]))
   sim_plots[[counter1]] <- plot_sim(data$X, data$Y, sim_names[i])
   for (j in 1:length(funcs)) {
-    res_plots[[counter2]] <- run_sim(data$X, data$Y, funcs[[j]], ylab=alg_names[j],
+    inps <- list(X=data$X, Y=data$Y, mus=data$mus, Sigmas=data$Sigmas, priors=data$priors)
+    res_plots[[counter2]] <- run_sim(inps, funcs[[j]], ylab=alg_names[j],
                                      title=sim_names[i])
     counter2 <- counter2 + 1
   }
+  
   counter1 <- counter1 + 1
 }
 ```
@@ -98,7 +100,7 @@ sim_plots <- sapply(sim_plots, function(simp) {
 res_plots <- sapply(1:length(res_plots), function(j) {
     resp <- res_plots[[j]] + xlab("") + ggtitle("") +theme(legend.position=NaN)
     # remove the ylabel of only the non-left most columns
-    if (j > length(sim_names)) {
+    if (j > length(alg_names)) {
       resp <- resp + ylab("")
     }
     return(resp)

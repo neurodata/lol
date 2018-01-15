@@ -33,7 +33,7 @@
 #' r=5  # embed into r=5 dimensions
 #' xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='lda', k='loo')
 #' @export
-lol.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo') {
+lol.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo', ...) {
   Y <- factor(Y)
   n <- length(Y)
   sets <- lol.xval.split(X, Y, k=k)

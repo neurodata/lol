@@ -4,7 +4,7 @@
 #'
 #' @import irlba
 #' @param X [n, p] the data with n samples in d dimensions.
-#' @param Y [n, q] the labels of the samples.
+#' @param Y [n] the labels of the samples.
 #' @param r the rank of the projection.
 #' @return A [d, r] the projection matrix from d to r dimensions.
 #' @return ylabs [K] vector containing the unique, ordered class labels.
@@ -19,25 +19,25 @@
 #' X <- data$X; Y <- data$Y
 #' model <- lol.project.lrcca(X=X, Y=Y, r=5)  # use lrcca to project into 5 dimensions
 #' @export
-lol.project.lrcca <- function(X, Y, r) {
-  classdat <- lol:::lol.utils.classdat(X, Y)
-  priors <- classdat$priors; centroids <- classdat$centroids
-  K <- classdat$K; ylabs <- classdat$ylabs
-  n <- classdat$n; d <- classdat$d
-
-  Yind <- array(0, dim=c(n, K))
+lol.project.lrcca <- function(X, Y, r, ...) {
+  info <- lol:::lol.utils.info(X, Y)
+  priors <- info$priors; centroids <- t(info$centroids)
+  K <- info$K; ylabs <- info$ylabs
+  n <- info$n; d <- info$d
+  # hot-encoding of Y categorical variables
+  Yh <- array(0, dim=c(n, K))
   # Yind is a indicator of membership in each respective class
   for (i in 1:length(ylabs)) {
-    Yind[Y == ylabs[i],i] <- 1
+    Yh[Y == ylabs[i],i] <- 1
   }
-  X <- as.array(X)
+
   # covariance matrices
-  S_x <- cov(X); S_y <- cov(Yind)
+  S_x <- cov(X); S_y <- cov(Yh)
   # inverse covariance matrices are ginverse in the low-rank case
   S_xi <- MASS::ginv(S_x); S_yi <- MASS::ginv(S_y)
-  S_xy <- cov(X, y=Yind); S_yx <- cov(Yind, y=X)
-  # decompose
-  A <- lol.utils.pca(S_xi %*% S_xy %*% S_yi %*% S_yx, r)
+  S_xy <- cov(X, y=Yh)
+  # decompose Sxi*Sxy*Syi*Syx
+  A <- lol.utils.pca(S_xi %*% S_xy %*% S_yi %*% t(S_xy), r)
 
   return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
               Xr=X %*% A, cr=centroids %*% A))

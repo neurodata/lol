@@ -29,9 +29,18 @@ lol.project.pca <- function(X, r, ...) {
 }
 
 # A utility for pre-centered data to do PCA faster.
-lol.utils.pca <- function(X, r, ...) {
-  # take the svd and retain the top r left singular vectors as our components
-  svd <- irlba::irlba(t(as.matrix(X)), nv=0, nu=r)
+lol.utils.pca <- function(X, r=NULL, ...) {
+  d <- dim(X)[2]  # dimensions of X
+  if (is.null(r)) {
+    r <- d
+  }
+  if (r < .2*d) {
+    # take the svd and retain the top r left singular vectors as our components
+    # using more efficient irlba if we only need a fraction of singular vecs
+    svd <- irlba::irlba(t(as.matrix(X)), nv=0, nu=r)
+  } else {
+    svd <- svd(t(as.matrix(X)), nv=0, nu=r)
+  }
   A <- svd$u
   return(A)
 }
@@ -56,10 +65,10 @@ lol.utils.pca <- function(X, r, ...) {
 #' X <- data$X; Y <- data$Y
 #' model <- lol.project.pca(X=X, Y=Y, r=2)  # use cpca to project into 2 dimensions
 #' @export
-lol.project.cpca <- function(X, Y, r) {
+lol.project.cpca <- function(X, Y, r, ...) {
   # class data
-  classdat <- lol:::lol.utils.classdat(X, Y)
-  priors <- classdat$priors; centroids <- classdat$centroids
+  classdat <- lol:::lol.utils.info(X, Y)
+  priors <- classdat$priors; centroids <- t(classdat$centroids)
   K <- classdat$K; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d
 
@@ -67,7 +76,7 @@ lol.project.cpca <- function(X, Y, r) {
   Yidx <- sapply(Y, function(y) which(ylabs == y))
   Xt <- X - centroids[Yidx,]
   # compute the standard PCA but with the pre-centered data.
-  A <- lol.utils.pca(Xt, r)
+  A <- lol.utils.pca(Xt, r=r)
 
   return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
               Xr=X %*% A, cr=centroids %*% A))

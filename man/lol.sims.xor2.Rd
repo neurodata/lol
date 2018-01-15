@@ -23,6 +23,8 @@ Y [n] the labels as a array.
 mus [d, K] the per-class means.
 
 Sigmas [d, d, K] the per-class covariance matrices.
+
+priors [K] the priors for each class.
 }
 \description{
 A function to simulate from the 2-class xor problem.

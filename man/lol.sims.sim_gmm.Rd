@@ -4,7 +4,7 @@
 \alias{lol.sims.sim_gmm}
 \title{GMM Simulate}
 \usage{
-lol.sims.sim_gmm(mus, Sigmas, n, priors = NULL)
+lol.sims.sim_gmm(mus, Sigmas, n, priors)
 }
 \arguments{
 \item{mus}{[d, K] the mus for each class.}
@@ -13,12 +13,14 @@ lol.sims.sim_gmm(mus, Sigmas, n, priors = NULL)
 
 \item{n}{the of examples.}
 
-\item{priors=NULL}{the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector for K classes.}
+\item{priors}{the priors for each class.}
 }
 \value{
 X [n, d] the simulated data.
 
 Y [n] the labels for each data point.
+
+priors [K] the priors for each class.
 }
 \description{
 A helper function for simulating from Gaussian Mixture.
