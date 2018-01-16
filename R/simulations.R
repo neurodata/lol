@@ -36,7 +36,7 @@ lol.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, priors=
   mu0 <- array(0, dim=c(d, 1))
   mu1 <- c(array(1, dim=c(s0)), array(0, dim=c(d - s0)))
   Q <- lol:::lol.sims.rotation(d)
-  mus <- abind::abind(mu0, -Q*mu1, along=2)
+  mus <- abind::abind(mu0, mu1, along=2)
 
   S <- array(rho, dim=c(d, d))
   diag(S) <- 1
