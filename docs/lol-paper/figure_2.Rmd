@@ -57,7 +57,7 @@ g_legend<-function(a.gplot){
 }
 ```
 
-In this notebook, we will consider 3 simulations with $K=2$ classes: Stacked Cigars, trunk, and rotated trunk. We will simulate $n=100$ examples in $d=1000$ dimensions, and will use LDA to estimate the $K-1=1$ dimensional projection optimizing the class discriminant boundary using `MASS::lda`.
+In this notebook, we will consider 3 simulations with $K=2$ classes: Stacked Cigars, trunk, and rotated trunk. We will simulate $n=100$ examples in $d=1000$ dimensions, reduce dimensionality to $r=20$ using the indicated technique, and will use LDA to estimate the $K-1=1$ dimensional projection optimizing the class discriminant boundary using `MASS::lda`.
 
 We begin by generating the simulations:
 
@@ -88,7 +88,7 @@ for (i in 1:length(settings)) {
 }
 ```
 
-Below, we plot the top column showing the simulation setup colored by class, showing the first 2 dimensions. The next 4 rows show the 2-class conditional posteriors resulting from projecting the data using the manifold technique indicated in the left-most column:
+Below, we plot the top column showing the simulation setup colored by class, showing the first 2 dimensions. The next 4 rows show the 2-class conditional posteriors resulting from projecting the data onto the LDA-estimated discriminants after using the manifold technique indicated in the left-most column for reducing dimensionality:
 
 ```{r, message=FALSE, fig.show='hide'}
 top_legend <- g_legend(sim_plots[[1]])  # legend for the top most row

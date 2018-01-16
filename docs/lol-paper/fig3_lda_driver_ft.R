@@ -13,13 +13,17 @@ n=100
 niter <- 500  # number of iterations per simulation
 rlen <- 30
 # the simulations to call themselves
-sims <- list(lol.sims.rtrunk, lol.sims.toep, lol.sims.rtrunk, lol.sims.fat_tails, lol.sims.qdtoep)
-maxr <- c(30, 90, 30, 30, 30)
-ds <- c(100, 100, 100, 1000, 100)
+#sims <- list(lol.sims.rtrunk, lol.sims.toep, lol.sims.rtrunk, lol.sims.fat_tails, lol.sims.qdtoep)
+#maxr <- c(30, 90, 30, 30, 30)
+#ds <- c(100, 100, 100, 1000, 100)
 # additional arguments for each simulation scenario
-opt_args <- list(list(), list(), list(K=3), list(rotate=TRUE, priors=c(0.8, 0.2)), list())
-sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "QDA")
-
+#opt_args <- list(list(), list(), list(K=3), list(rotate=TRUE, priors=c(0.8, 0.2)), list())
+#sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "QDA")
+sims <- c(lol.sims.fat_tails)
+maxr <- c(30)
+ds <- c(1000)
+opt_args <- list(list(rotate=TRUE, priors=c(0.8, 0.2)))
+sim_names <- c("Fat-Tails (D=1000)")
 simulations <- list()
 counter <- 1
 
@@ -64,5 +68,5 @@ results <- data.table(results)
 # aggregate over the iterations, retaining the other factors
 results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = mean)
 results_agg <- list(overall=results, means=results.means)
-saveRDS(results_agg, 'lol_fig3_lda.rds')
+saveRDS(results_agg, 'lol_fig3_lda_ft.rds')
 stopCluster(cl)

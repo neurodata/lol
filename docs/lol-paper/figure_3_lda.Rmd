@@ -17,6 +17,8 @@ require(MASS)
 require(gridExtra)
 require(graphstats)  # for graph plotting
 require(data.table)
+require(reshape2)
+
 local_path <- '~/Documents/research/R-fmri/lol'  # local path to the package
 
 sim_cov_plot <- function(Sigmas, title="", ylab="Dimension", xlab="Dimension", ndim=10, legend.name="norm cov") {
@@ -75,13 +77,12 @@ First, we prepare the plots of subsets of the mean and covariance matrices:
 
 ```{r}
 # run the simulations once to obtain some basic visualizations
-require(lol)
 n=100
 # the simulations to call themselves
 sims <- list(lol.sims.rtrunk, lol.sims.toep, lol.sims.rtrunk, lol.sims.fat_tails, lol.sims.qdtoep)
 ds <- c(100, 100, 100, 1000, 100)
 # additional arguments for each simulation scenario
-opt_args <- list(list(), list(), list(C=3), list(), list())
+opt_args <- list(list(), list(), list(K=3), list(), list())
 ndim <- c(10, 10, 10, 20, 10)
 sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "QDA")
 
@@ -101,7 +102,8 @@ Next, we aggregate over the respective iterations, and subset plots for each fun
 
 ```{r}
 # read the results in
-results.means <- readRDS(paste(local_path, '/docs/lol-paper/lol_fig3_lda.rds', sep=""))
+results <- readRDS(paste(local_path, '/docs/lol-paper/lol_fig3_lda.rds', sep=""))
+results.means <- results$means
 
 sim_plots <- list()
 counter <- 1
