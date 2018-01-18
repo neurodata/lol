@@ -30,8 +30,8 @@ plot_sim <- function(X, Y, name) {
 
 # project into top 20 dimensions for X and Y and returns
 # LDA projection plot
-run_sim <- function(inps, func, ylab="", title="", r=20) {
-  result <- do.call(func, c(inps, list(r=r)))
+run_sim <- function(inps, func, ylab="", title="", r=10) {
+  result <- do.call(func, c(inps, list(r=4)))
   
   liney <- lda(result$Xr, inps$Y)
   result <- predict(liney, result$Xr)
@@ -69,7 +69,7 @@ funcs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca,
               lol.project.lol, lol.project.bayes_optimal)
 alg_names <- c("PCA", "PCA'", "LR-CCA", "LOL", "Bayes Optimal")
   
-settings <- list(list(), list(), list(), list(md=4.4))
+settings <- list(list(), list(), list(rotate=TRUE), list(md=4.4))
 
 sim_plots <- list()
 res_plots <- list()
