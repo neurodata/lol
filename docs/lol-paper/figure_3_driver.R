@@ -17,7 +17,7 @@ sims <- list(lol.sims.rtrunk, lol.sims.toep, lol.sims.rtrunk, lol.sims.fat_tails
 maxr <- c(30, 90, 30, 30, 30)
 ds <- c(100, 100, 100, 1000, 100)
 # additional arguments for each simulation scenario
-opt_args <- list(list(), list(), list(K=3), list(rotate=TRUE, priors=c(0.8, 0.2)), list())
+opt_args <- list(list(), list(), list(K=3), list(rotate=TRUE), list())
 sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "QDA")
 
 simulations <- list()
@@ -59,10 +59,10 @@ results <- parLapply(cl, simulations, function(sim) {
 # Aggregate and save
 #=================================#
 require(data.table)
-results <- do.call(rbind, results)
-results <- data.table(results)
+resultso <- do.call(rbind, results)
+results <- data.table(resultso)
 # aggregate over the iterations, retaining the other factors
 results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = mean)
-results_agg <- list(overall=results, means=results.means)
+results_agg <- list(overall=resultso, means=results.means)
 saveRDS(results_agg, 'lol_fig3_lda.rds')
 stopCluster(cl)

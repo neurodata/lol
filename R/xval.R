@@ -17,13 +17,14 @@
 #' \item{'loo'}{Leave-one-out cross validation}
 #' \item{isinteger(k)}{perform k-fold cross-validation with k as the number of folds.}
 #' }
-#' @return Lhat the cross-validated error.
+#' @return Lhat the mean cross-validated error.
 #' @return A [d, r] the projection matrix.
 #' @return ylabs [K] vector containing the unique, ordered class labels.
 #' @return centroids [K, d] centroid matrix of the unique, ordered classes.
 #' @return priors [K] vector containing prior probability for the unique, ordered classes.
 #' @return Xr [n, r] the data in reduced dimensionality.
 #' @return cr [K, r] the centroids in reduced dimensionality.
+#' @return Lhats the cross-validated error for each of the k-folds.
 #' @author Eric Bridgeford
 #' @examples
 #' # train model and analyze with loo validation using lda classifier
@@ -53,7 +54,7 @@ lol.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo', ...) {
   model <- do.call(alg, list(X=X, Y=Y, r=r))
 
   return(list(Lhat=mean(Lhat.fold), A=model$A, ylabs=model$ylabs, centroids=model$centroids,
-              priors=model$priors, Xr=model$Xr, cr=model$cr))
+              priors=model$priors, Xr=model$Xr, cr=model$cr, Lhats=Lhat.fold))
 }
 
 #' Cross-Validation Data Splitter
