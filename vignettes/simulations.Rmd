@@ -26,7 +26,7 @@ plot_sim <- function(X, Y, name) {
     ggtitle(name)
 }
 ```
-Below, we visualize the different simulation settings with $n=400$ in $d=50$ dimensions:
+Below, we visualize the different simulation settings with `n=400` in `d=50` dimensions:
 
 # Trunk, 2 Class
 

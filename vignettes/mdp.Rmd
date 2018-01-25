@@ -19,13 +19,13 @@ d=30
 r=3
 ```
 
-Data for this notebook will be n=400 examples of d=30 dimensions.
+Data for this notebook will be `n=400` examples of `d=30` dimensions.
 
 # MDP
 
 ## Stacked Cigar Simulation
 
-We first visualize the first 2 dimensions:
+We first visualize the first `2` dimensions:
 
 ```{r, fig.width=5}
 testdat <- lol.sims.cigar(n, d)
@@ -41,7 +41,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-Projecting with MDP to K-1=1 dimension and visualizing:
+Projecting with MDP to `K-1=1` dimension and visualizing:
 
 ```{r, fig.width=5}
 result <- lol.project.mdp(X, Y)
@@ -57,7 +57,7 @@ ggplot(data, aes(x=x1, y=y, color=y)) +
 
 ## Trunk Simulation
 
-We visualize the first 2 dimensions:
+We visualize the first `2` dimensions:
 
 ```{r, fig.width=5}
 testdat <- lol.sims.rtrunk(n, d)
@@ -73,7 +73,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-Projecting with MDP to K-1=1 dimensions and visualizing:
+Projecting with MDP to `K-1=1` dimensions and visualizing:
 
 ```{r, fig.width=5}
 result <- lol.project.mdp(X, Y)
@@ -89,7 +89,7 @@ ggplot(data, aes(x=x1, y=y, color=y)) +
 
 ## Rotated Trunk Simulation
 
-We visualize the first 2 dimensions:
+We visualize the first `2` dimensions:
 
 ```{r, fig.width=5}
 testdat <- lol.sims.rtrunk(n, d, rotate=TRUE)
@@ -105,7 +105,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-Projecting with MDP to K-1=1 dimensions and visualizing:
+Projecting with MDP to `K-1=1` dimensions and visualizing:
 
 ```{r, fig.width=5}
 result <- lol.project.mdp(X, Y)

@@ -20,7 +20,7 @@ d = 30
 r = 3
 ```
 
-Here, we look at how to see the generalizability of a given model in the form of the cross-validated error. We simulate data with n=200 and d=30:
+Here, we look at how to see the generalizability of a given model in the form of the cross-validated error. We simulate data with `n=200` and `d=30`:
 
 ```{r, fig.width=5}
 testdat <- lol.sims.rtrunk(n, d)
@@ -36,7 +36,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-We arbitrarily select LOL as our algorithm, and look at the leave-one-out (loo) cross-validated error with the LDA classifier. We project the resulting model to 3 dimensions and visualize the first 2:
+We arbitrarily select LOL as our algorithm, and look at the leave-one-out (loo) cross-validated error with the LDA classifier. We project the resulting model to `3` dimensions and visualize the first `2`:
 
 ```{r, fig.width=5}
 result <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='lda', k='loo')

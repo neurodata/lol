@@ -7,7 +7,7 @@
 \method{predict}{nearestCentroid}(model, X, ...)
 }
 \arguments{
-\item{model}{An object of class nearest centroid, with the following attributes:
+\item{model}{An object of class \code{nearestCentroid}, with the following attributes:
 \itemize{
 \item{centroids}{\code{[K, d]} the centroids of each class with \code{K} classes in \code{d} dimensions.}
 \item{ylabs}{\code{[K]} the ylabels for each of the \code{K} unique classes, ordered.}

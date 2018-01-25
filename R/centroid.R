@@ -27,7 +27,7 @@ lol.classify.nearestCentroid <- function(X, Y, ...) {
 #' Nearest Centroid Classifier Prediction
 #'
 #' A function that predicts the class of points based on the nearest centroid
-#' @param model An object of class nearest centroid, with the following attributes:
+#' @param model An object of class \code{nearestCentroid}, with the following attributes:
 #' \itemize{
 #' \item{centroids}{\code{[K, d]} the centroids of each class with \code{K} classes in \code{d} dimensions.}
 #' \item{ylabs}{\code{[K]} the ylabels for each of the \code{K} unique classes, ordered.}
@@ -49,7 +49,7 @@ predict.nearestCentroid <- function(model, X, ...) {
   dists <- array(0, dim=c(n, K))
   for (i in 1:n) {
     for (j in 1:K) {
-      dists[i, j] <- sqrt(sum((X[i,] - centroids[j])^2))
+      dists[i, j] <- sqrt(sum((X[i,] - model$centroids[j,])^2))
     }
   }
   Yass <- apply(dists, c(1), which.min)

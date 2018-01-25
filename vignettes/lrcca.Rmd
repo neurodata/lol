@@ -19,13 +19,13 @@ d=30
 r=3
 ```
 
-Data for this notebook will be n=400 examples of d=30 dimensions.
+Data for this notebook will be `n=400` examples of `d=30` dimensions.
 
 # LR-CCA: non-efficient
 
 ## Stacked Cigar Simulation
 
-We first visualize the first 2 dimensions:
+We first visualize the first `2` dimensions:
 
 ```{r, fig.width=5}
 testdat <- lol.sims.cigar(n, d)
@@ -41,7 +41,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-Projecting with LR-CCA to 3 dimensions and visualizing the first 2:
+Projecting with LR-CCA to `3` dimensions and visualizing the first `2`:
 
 ```{r, fig.width=5}
 result <- lol.project.lrcca(X, Y, r)
@@ -55,7 +55,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Projected Data using LR-CCA")
 ```
 
-Projecting with LDA to K-1=1 dimensions:
+Projecting with LDA to `K-1=1` dimensions:
 
 ```{r, fig.width=5}
 liney <- MASS::lda(result$Xr, Y)
@@ -73,7 +73,7 @@ ggplot(data, aes(x=x1, fill=y)) +
 
 ## Trunk Simulation
 
-We visualize the first 2 dimensions:
+We visualize the first `2` dimensions:
 
 ```{r, fig.width=5}
 testdat <- lol.sims.rtrunk(n, d)
@@ -89,7 +89,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-Projecting with LR-CCA to 3 dimensions and visualizing the first 2:
+Projecting with LR-CCA to `3` dimensions and visualizing the first `2`:
 
 ```{r, fig.width=5}
 result <- lol.project.lrcca(X, Y, r)
@@ -103,7 +103,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Projected Data using LR-CCA")
 ```
 
-Projecting with LDA to K-1=1 dimensions:
+Projecting with LDA to `K-1=1` dimensions:
 
 ```{r, fig.width=5}
 liney <- MASS::lda(result$Xr, Y)
@@ -121,7 +121,7 @@ ggplot(data, aes(x=x1, fill=y)) +
 
 ## Rotated Trunk Simulation
 
-We visualize the first 2 dimensions:
+We visualize the first `2` dimensions:
 
 ```{r, fig.width=5}
 testdat <- lol.sims.rtrunk(n, d, rotate=TRUE)
@@ -137,7 +137,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-Projecting with LRCCA to 3 dimensions and visualizing the first 2:
+Projecting with LRCCA to `3` dimensions and visualizing the first `2`:
 
 ```{r, fig.width=5}
 result <- lol.project.lrcca(X, Y, r)
@@ -151,7 +151,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Projected Data using LR-CCA")
 ```
 
-Projecting with LDA to K-1=1 dimensions:
+Projecting with LDA to `K-1=1` dimensions:
 
 ```{r, fig.width=5}
 liney <- MASS::lda(result$Xr, Y)
@@ -171,7 +171,7 @@ ggplot(data, aes(x=x1, fill=y)) +
 
 ## Stacked Cigar Simulation
 
-We first visualize the first 2 dimensions:
+We first visualize the first `2` dimensions:
 
 ```{r, fig.width=5}
 testdat <- lol.sims.cigar(n, d)
@@ -187,7 +187,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-Projecting with LR-CCA to 3 dimensions and visualizing the first 2:
+Projecting with LR-CCA to `3` dimensions and visualizing the first `2`:
 
 ```{r, fig.width=5}
 result <- lol.project.lrcca(X, Y, r, method='partial')
@@ -201,7 +201,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Projected Data using LR-CCA")
 ```
 
-Projecting with LDA to K-1=1 dimensions:
+Projecting with LDA to `K-1=1` dimensions:
 
 ```{r, fig.width=5}
 liney <- MASS::lda(result$Xr, Y)
@@ -219,7 +219,7 @@ ggplot(data, aes(x=x1, fill=y)) +
 
 ## Trunk Simulation
 
-We visualize the first 2 dimensions:
+We visualize the first `2` dimensions:
 
 ```{r, fig.width=5}
 testdat <- lol.sims.rtrunk(n, d)
@@ -235,7 +235,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-Projecting with LR-CCA to 3 dimensions and visualizing the first 2:
+Projecting with LR-CCA to `3` dimensions and visualizing the first `2`:
 
 ```{r, fig.width=5}
 result <- lol.project.lrcca(X, Y, r, method='partial')
@@ -249,7 +249,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Projected Data using LR-CCA")
 ```
 
-Projecting with LDA to K-1=1 dimensions:
+Projecting with LDA to `K-1=1` dimensions:
 
 ```{r, fig.width=5}
 liney <- MASS::lda(result$Xr, Y)
@@ -267,7 +267,7 @@ ggplot(data, aes(x=x1, fill=y)) +
 
 ## Rotated Trunk Simulation
 
-We visualize the first 2 dimensions:
+We visualize the first `2` dimensions:
 
 ```{r, fig.width=5}
 testdat <- lol.sims.rtrunk(n, d, rotate=TRUE)
@@ -283,7 +283,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Simulated Data")
 ```
 
-Projecting with LRCCA to 3 dimensions and visualizing the first 2:
+Projecting with LRCCA to `3` dimensions and visualizing the first `2`:
 
 ```{r, fig.width=5}
 result <- lol.project.lrcca(X, Y, r, method='partial')
@@ -297,7 +297,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
   ggtitle("Projected Data using LR-CCA")
 ```
 
-Projecting with LDA to K-1=1 dimensions:
+Projecting with LDA to `K-1=1` dimensions:
 
 ```{r, fig.width=5}
 liney <- MASS::lda(result$Xr, Y)
