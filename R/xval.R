@@ -64,7 +64,7 @@ lol.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo', ...) {
       shrubbery <- randomForest(mod$Xr, set$Y.train)
       Yhat <- predict(shrubbery, X.test.proj)
     } else if (classifier == 'cent') {
-      droid <- lol:::lol.classify.nearestCentroid(mod$Xr, set$Y.train)
+      droid <- lol.classify.nearestCentroid(mod$Xr, set$Y.train)
       Yhat <- predict(droid, X.test.proj)
     }
     return(1 - sum(Yhat == set$Y.test)/length(Yhat))

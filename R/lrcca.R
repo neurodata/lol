@@ -43,7 +43,7 @@ lol.project.lrcca <- function(X, Y, r, method='full', ...) {
 }
 
 lol.project.full_lrcca <- function(X, Y, r, ...) {
-  info <- lol:::lol.utils.info(X, Y)
+  info <- lol.utils.info(X, Y)
   priors <- info$priors; centroids <- t(info$centroids)
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
@@ -68,7 +68,7 @@ lol.project.full_lrcca <- function(X, Y, r, ...) {
 }
 
 lol.project.partial_lrcca <- function(X, Y, r, ...) {
-  info <- lol:::lol.utils.info(X, Y)
+  info <- lol.utils.info(X, Y)
   priors <- info$priors; centroids <- t(info$centroids)
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d

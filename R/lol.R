@@ -22,11 +22,11 @@
 #' @export
 lol.project.lol <- function(X, Y, r, ...) {
   # class data
-  info <- lol:::lol.utils.info(X, Y)
+  info <- lol.utils.info(X, Y)
   priors <- info$priors; centroids <- info$centroids
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
-  deltas <- lol:::lol.utils.deltas(centroids, priors)
+  deltas <- lol.utils.deltas(centroids, priors)
   centroids <- t(centroids)
 
   nv <- r - (K - 1)
@@ -38,7 +38,7 @@ lol.project.lol <- function(X, Y, r, ...) {
   }
 
   # orthogonalize and normalize
-  A <- Matrix::qr.Q(Matrix::qr(A))
+  A <- qr.Q(qr(A))
   return(structure(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
                         Xr=lol.embed(X, A), cr=lol.embed(centroids, A)), class="embedding"))
 }

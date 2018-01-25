@@ -18,7 +18,7 @@
 #' @export
 lol.classify.nearestCentroid <- function(X, Y, ...) {
   # class data
-  classdat <- lol:::lol.utils.info(X, Y)
+  classdat <- lol.utils.info(X, Y)
   priors <- classdat$priors; centroids <- t(classdat$centroids)
   K <- classdat$K; ylabs <- classdat$ylabs
   model <-  list(centroids=centroids, ylabs=ylabs, priors=priors)

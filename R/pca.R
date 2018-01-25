@@ -75,7 +75,7 @@ lol.utils.pca <- function(X, r=NULL, trans=TRUE, ...) {
 #' @export
 lol.project.cpca <- function(X, Y, r, ...) {
   # class data
-  classdat <- lol:::lol.utils.info(X, Y)
+  classdat <- lol.utils.info(X, Y)
   priors <- classdat$priors; centroids <- t(classdat$centroids)
   K <- classdat$K; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d

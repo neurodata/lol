@@ -36,7 +36,7 @@ lol.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, priors=
   }
   mu0 <- array(0, dim=c(d, 1))
   mu1 <- c(array(1, dim=c(s0)), array(0, dim=c(d - s0)))
-  Q <- lol:::lol.sims.rotation(d)
+  Q <- lol.sims.rotation(d)
   mus <- abind::abind(mu0, mu1, along=2)
 
   S <- array(rho, dim=c(d, d))
@@ -422,7 +422,7 @@ lol.sims.sim_gmm <- function(mus, Sigmas, n, priors) {
 #' @param d dimensions
 #' @author Eric Bridgeford
 lol.sims.rotation <- function(d) {
-  Q <- Matrix::qr.Q(Matrix::qr(array(rnorm(d*d), dim=c(d, d))))
+  Q <- qr.Q(qr(array(rnorm(d*d), dim=c(d, d))))
   if (det(Q) < -.99) {
     Q[,1] <- -Q[,1]
   }

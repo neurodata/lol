@@ -26,11 +26,11 @@
 #'                                    S=data$Sigmas, priors=data$priors)
 #' @export
 lol.project.bayes_optimal <- function(X, Y, mus, Sigmas, priors, ...) {
-  info <- lol:::lol.utils.info(X, Y)
+  info <- lol.utils.info(X, Y)
   priors <- info$priors; centroids <- info$centroids
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
-  deltas <- lol:::lol.utils.deltas(centroids, priors)
+  deltas <- lol.utils.deltas(centroids, priors)
   centroids <- t(centroids)
   E <- lol.mvr(Sigmas, mus, priors)
 
