@@ -3,21 +3,27 @@
 #' A function for implementing the Low-rank Canonical Correlation Analysis (LR-CCA) Algorithm.
 #'
 #' @import irlba
-#' @param X [n, d] the data with n samples in d dimensions.
-#' @param Y [n] the labels of the samples.
+#' @param X [n, d] the data with \code{n} samples in \code{d} dimensions.
+#' @param Y [n] the labels of the samples with \code{K} unique labels.
 #' @param r the rank of the projection.
 #' @param method='full' The method to use for LR-CCA.
 #' \itemize{
-#' \item{'full'}{Requires O(d^2) storage, but is faster.}
-#' \item{'partial'}{Requires O(n^2) storage, but is slower.}
+#' \item{'full'}{Requires \code{O(d^2)} storage, but is faster.}
+#' \item{'partial'}{Requires \code{O(n^2)} storage, but is slower.}
 #' }
-#' @return A [d, r] the projection matrix from d to r dimensions. Only returned if method='full'.
-#' @return ylabs [K] vector containing the unique, ordered class labels.
-#' @return centroids [K, d] centroid matrix of the unique, ordered classes.
-#' @return priors [K] vector containing prior probability for the unique, ordered classes.
-#' @return Xr [n, r] the data in reduced dimensionality.
-#' @return cr [K, r] the centroids in reduced dimensionality. Only returned if method='full'.
-#' @author Jason Yim and Eric Bridgeford
+#' @return If \code{method == 'full'} A list of class \code{embedding} containing the following:
+#' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+#' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
+#' \item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
+#' \item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+#' \item{Xr}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
+#' \item{cr}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
+#' @return If \code{method == 'partial'} A list containing the following:
+#' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
+#' \item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
+#' \item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+#' \item{Xr}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
+#' @author Eric Bridgeford and Minh Tang
 #' @examples
 #' library(lol)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
@@ -46,17 +52,18 @@ lol.project.full_lrcca <- function(X, Y, r, ...) {
   for (i in 1:length(ylabs)) {
     Yh[Y == ylabs[i],i] <- 1
   }
-
+  Xc <- X - outer(rep(1, n), colMeans(X))
+  Yc <- Yh - outer(rep(1, n), colMeans(Yh))
   # covariance matrices
-  S_x <- cov(X); S_y <- cov(Yh)
+  S_x <- 1/n*t(Xc) %*% Xc; S_y <- 1/n*t(Yc) %*% Yc
   # inverse covariance matrices are ginverse in the low-rank case
-  S_xi <- MASS::ginv(S_x); S_yi <- MASS::ginv(S_y)
-  S_xy <- cov(X, y=Yh)
+  S_xi <- ginv(S_x); S_yi <- MASS::ginv(S_y)
+  S_xy <- 1/n*t(Xc) %*% Yc
   # decompose Sxi*Sxy*Syi*Syx
-  A <- lol.utils.pca(S_xi %*% S_xy %*% S_yi %*% t(S_xy), r)
+  A <- lol.utils.pca(S_xi %*% S_xy %*% S_yi %*% t(S_xy), r, trans=FALSE)
 
-  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
-              Xr=X %*% A, cr=centroids %*% A))
+  return(structure(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
+                        Xr=lol.embed(X, A), cr=lol.embed(centroids, A)), class="embedding"))
 }
 
 lol.project.partial_lrcca <- function(X, Y, r, ...) {
@@ -65,10 +72,17 @@ lol.project.partial_lrcca <- function(X, Y, r, ...) {
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
 
-  Y <- array(Y, dim=c(n, 1))  # force dimensionality of Y
-  svd_out <- svd(X)  # svd of X
+  # hot-encoding of Y categorical variables
+  Yh <- array(0, dim=c(n, K))
+  # Yind is a indicator of membership in each respective class
+  for (i in 1:length(ylabs)) {
+    Yh[Y == ylabs[i],i] <- 1
+  }
+  Xc <- X - outer(rep(1, n), colMeans(X))
+  Yc <- Yh - outer(rep(1, n), colMeans(Yh))
+
+  svd_out <- svd(Xc, nv=0)  # svd of X
   vxvxt <- svd_out$u %*% t(svd_out$u)
-  M <- svd(1/n*vxvxt %*% Y %*% t(Y))$u
-  Xr <- M[, 1:r]  # dimension-reduced vectors are top r columns
+  Xr <- svd(1/n*vxvxt %*% Yc %*% t(Yc), nv=0, nu=r)$u
   return(list(Xr=Xr, centroids=centroids, priors=priors, ylabs=ylabs))
 }

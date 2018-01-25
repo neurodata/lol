@@ -4,27 +4,35 @@
 \alias{lol.project.lrcca}
 \title{Low-rank Canonical Correlation Analysis (LR-CCA)}
 \usage{
-lol.project.lrcca(X, Y, r, ...)
+lol.project.lrcca(X, Y, r, method = "full", ...)
 }
 \arguments{
-\item{X}{[n, p] the data with n samples in d dimensions.}
+\item{X}{[n, d] the data with \code{n} samples in \code{d} dimensions.}
 
-\item{Y}{[n] the labels of the samples.}
+\item{Y}{[n] the labels of the samples with \code{K} unique labels.}
 
 \item{r}{the rank of the projection.}
+
+\item{method='full'}{The method to use for LR-CCA.
+\itemize{
+\item{'full'}{Requires \code{O(d^2)} storage, but is faster.}
+\item{'partial'}{Requires \code{O(n^2)} storage, but is slower.}
+}}
 }
 \value{
-A [d, r] the projection matrix from d to r dimensions.
+If \code{method == 'full'} A list of class \code{embedding} containing the following:
+\item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+\item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
+\item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
+\item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+\item{Xr}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
+\item{cr}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
 
-ylabs [K] vector containing the unique, ordered class labels.
-
-centroids [K, d] centroid matrix of the unique, ordered classes.
-
-priors [K] vector containing prior probability for the unique, ordered classes.
-
-Xr [n, r] the data in reduced dimensionality.
-
-cr [K, r] the centroids in reduced dimensionality.
+If \code{method == 'partial'} A list containing the following:
+\item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
+\item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
+\item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+\item{Xr}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
 }
 \description{
 A function for implementing the Low-rank Canonical Correlation Analysis (LR-CCA) Algorithm.
@@ -36,5 +44,5 @@ X <- data$X; Y <- data$Y
 model <- lol.project.lrcca(X=X, Y=Y, r=5)  # use lrcca to project into 5 dimensions
 }
 \author{
-Jason Yim and Eric Bridgeford
+Eric Bridgeford and Minh Tang
 }

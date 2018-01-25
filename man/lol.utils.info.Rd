@@ -7,18 +7,18 @@
 lol.utils.info(X, Y, ...)
 }
 \arguments{
-\item{X}{[n, d] the data with n samples in d dimensions.}
+\item{X}{\code{[n, d]} the data with n samples in d dimensions.}
 
-\item{Y}{[n] the labels of the samples.}
+\item{Y}{\code{[n]} the labels of the samples.}
 }
 \value{
-n the number of samples.
+\code{n} the number of samples.
 
-d the number of dimensions.
+\code{d} the number of dimensions.
 
-ylabs [K] vector containing the unique, ordered class labels.
+ylabs \code{[K]} vector containing the unique, ordered class labels.
 
-priors [K] vector containing prior probability for the unique, ordered classes.
+priors \code{[K]} vector containing prior probability for the unique, ordered classes.
 }
 \description{
 A function that performs basic utilities about the data.

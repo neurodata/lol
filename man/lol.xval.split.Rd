@@ -7,18 +7,18 @@
 lol.xval.split(X, Y, k = "loo")
 }
 \arguments{
-\item{X}{[n, d] an array of input data.}
+\item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
 
-\item{Y}{[s] the class labels.}
+\item{Y}{\code{[n]} the labels of the samples with \code{K} unique labels.}
 
 \item{k='loo'}{the cross-validated method to perform.
 \itemize{
-\item{'loo'}{Leave-one-out cross validation, setting k=n.}
-\item{isinteger(k)}{perform k-fold cross-validation with k as the number of folds.}
+\item{\code{'loo'}}{ Leave-one-out cross validation}
+\item{\code{isinteger(k)}}{ perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
 }}
 }
 \value{
-sets the cross-validation sets as a list, each element with an X.train, X.test, Y.train, and Y.test.
+sets the cross-validation sets as a list, each element with an \code{X.train}, \code{X.test}, \code{Y.train}, and \code{Y.test}.
 }
 \description{
 \code{sg.bern.xval_split_data} A function to split a dataset into
@@ -30,6 +30,7 @@ library(lol)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 sets.xval.10fold <- lol.xval.split(X, Y, k=10)
+
 # prepare data for loo validation
 sets.xval.loo <- lol.xval.split(X, Y, k='loo')
 

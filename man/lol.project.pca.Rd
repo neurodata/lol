@@ -7,26 +7,22 @@
 lol.project.pca(X, r, ...)
 }
 \arguments{
-\item{X}{[n, d] the data with n samples in d dimensions.}
+\item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
 
 \item{r}{the rank of the projection.}
 
-\item{Y}{[n] the labels of the samples.}
+\item{Y}{\code{[n]} the labels of the samples with \code{K} unique labels.}
 
 \item{center=TRUE}{whether to center the data before applying PCA.}
 }
 \value{
-A [d, r] the projection matrix from d to r dimensions.
-
-ylabs [K] vector containing the unique, ordered class labels.
-
-centroids [K, d] centroid matrix of the unique, ordered classes.
-
-priors [K] vector containing prior probability for the unique, ordered classes.
-
-Xr [n, r] the data in reduced dimensionality.
-
-cr [K, r] the centroids in reduced dimensionality.
+A list of class \code{embedding} containing the following:
+\item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+\item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
+\item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
+\item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+\item{Xr}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
+\item{cr}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
 }
 \description{
 A function that performs PCA on data.

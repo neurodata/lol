@@ -1,11 +1,11 @@
 #' A function that performs basic utilities about the data.
 #' @import irlba
-#' @param X [n, d] the data with n samples in d dimensions.
-#' @param Y [n] the labels of the samples.
-#' @return n the number of samples.
-#' @return d the number of dimensions.
-#' @return ylabs [K] vector containing the unique, ordered class labels.
-#' @return priors [K] vector containing prior probability for the unique, ordered classes.
+#' @param X \code{[n, d]} the data with n samples in d dimensions.
+#' @param Y \code{[n]} the labels of the samples.
+#' @return \code{n} the number of samples.
+#' @return \code{d} the number of dimensions.
+#' @return ylabs \code{[K]} vector containing the unique, ordered class labels.
+#' @return priors \code{[K]} vector containing prior probability for the unique, ordered classes.
 #' @author Eric Bridgeford
 lol.utils.info <- function(X, Y, ...) {
   ylabs <- as.vector(sort(unique(Y)))
@@ -20,10 +20,10 @@ lol.utils.info <- function(X, Y, ...) {
 
 #' A function that performs a utility computation of information about the differences of the classes.
 #' @import irlba
-#' @param centroids [d, K] centroid matrix of the unique, ordered classes.
-#' @param priors [K] vector containing prior probability for the unique, ordered classes.
-#' @param Y [n] the labels of the samples.
-#' @return deltas [d, K] the K difference vectors.
+#' @param centroids \code{[d, K]} centroid matrix of the unique, ordered classes.
+#' @param priors \code{[K]} vector containing prior probability for the unique, ordered classes.
+#' @param Y \code{[n]} the labels of the samples.
+#' @return deltas \code{[d, K]} the K difference vectors.
 #' @author Eric Bridgeford
 lol.utils.deltas <- function(centroids, priors, ...) {
   d <- dim(centroids)[1]; K <- length(priors)

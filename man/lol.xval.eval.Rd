@@ -2,48 +2,45 @@
 % Please edit documentation in R/xval.R
 \name{lol.xval.eval}
 \alias{lol.xval.eval}
-\title{Cross-Validation}
+\title{Embedding Cross Validation}
 \usage{
 lol.xval.eval(X, Y, r, alg, classifier = "lda", k = "loo", ...)
 }
 \arguments{
-\item{X}{[n, d] the data as n samples in d dimensions.}
+\item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
 
-\item{Y}{[n] the labels for each for each of the n samples.}
+\item{Y}{\code{[n]} the labels of the samples with \code{K} unique labels.}
 
-\item{r}{the number of dimensions to project the data onto.}
+\item{r}{the number of dimensions to project the data onto. Should have \code{r < d}.}
 
-\item{alg=lol.project.lol}{the algorithm to use for feature selection.}
+\item{alg=lol.project.lol}{the algorithm to use for embedding. Should be a function returning something of class \code{embedding}.}
 
 \item{classifier='lda'}{the classifier to use for assessing performance.
 \itemize{
-\item{'lda'}{Use the lda classifier for assessing performance.}
-\item{'rf'}{Use the random forest classifier for assessing performance.}
+\item{'lda'}{ Use the lda classifier for assessing performance. \code{\link[MASS]{lda}}}
+\item{'rf'}{ Use the random forest classifier for assessing performance. \code{\link[randomForest]{randomForest}}}
+\item{'cent'}{ Use the nearest centroid classifier for assessing performance \code{\link{lol.classifier.nearestCentroid}}}
 }}
 
-\item{k='loo'}{the cross-validated method to perform.
+\item{k='loo'}{the cross-validated method to perform. \code{\link{lol.xval.split}}
 \itemize{
-\item{'loo'}{Leave-one-out cross validation}
-\item{isinteger(k)}{perform k-fold cross-validation with k as the number of folds.}
+\item{\code{'loo'}}{Leave-one-out cross validation}
+\item{\code{isinteger(k)}}{ perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
 }}
 }
 \value{
-Lhat the cross-validated error.
-
-A [d, r] the projection matrix.
-
-ylabs [K] vector containing the unique, ordered class labels.
-
-centroids [K, d] centroid matrix of the unique, ordered classes.
-
-priors [K] vector containing prior probability for the unique, ordered classes.
-
-Xr [n, r] the data in reduced dimensionality.
-
-cr [K, r] the centroids in reduced dimensionality.
+Returns a list containing:
+\item{Lhat}{the mean cross-validated error.}
+\item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+\item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
+\item{centroids}{\code{[K, d]} centroid matrix of \code{K} the unique, ordered classes in \code{d} dimensions.}
+\item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+\item{Xr}{\code{[n, r]} the \code{n} data points  in reduced dimensionality \code{r}.}
+\item{cr}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
+\item{Lhats}{the cross-validated error for each of the \code{k}-folds.}
 }
 \description{
-A function for performing leave-one-out cross-validation for a given model.
+A function for performing leave-one-out cross-validation for a given embedding model.
 }
 \examples{
 # train model and analyze with loo validation using lda classifier
@@ -52,6 +49,13 @@ data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 r=5  # embed into r=5 dimensions
 xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='lda', k='loo')
+
+# train model and analyze with loo val5-fold validation using rf classifier
+library(lol)
+data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+X <- data$X; Y <- data$Y
+r=5  # embed into r=5 dimensions
+xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='rf', k='5')
 }
 \author{
 Eric Bridgeford

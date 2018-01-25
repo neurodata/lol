@@ -3,16 +3,17 @@
 #' A function that performs PCA on data.
 #'
 #' @import irlba
-#' @param X [n, d] the data with n samples in d dimensions.
-#' @param Y [n] the labels of the samples.
+#' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
+#' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param r the rank of the projection.
 #' @param center=TRUE whether to center the data before applying PCA.
-#' @return A [d, r] the projection matrix from d to r dimensions.
-#' @return ylabs [K] vector containing the unique, ordered class labels.
-#' @return centroids [K, d] centroid matrix of the unique, ordered classes.
-#' @return priors [K] vector containing prior probability for the unique, ordered classes.
-#' @return Xr [n, r] the data in reduced dimensionality.
-#' @return cr [K, r] the centroids in reduced dimensionality.
+#' @return A list of class \code{embedding} containing the following:
+#' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+#' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
+#' \item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
+#' \item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+#' \item{Xr}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
+#' \item{cr}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
 #' @author Eric Bridgeford
 #' @examples
 #' library(lol)
@@ -25,23 +26,29 @@ lol.project.pca <- function(X, r, ...) {
   Xc <- sweep(X, 2, colMeans(X), '-')
   A <- lol.utils.pca(Xc, r)
 
-  return(list(A=A, Xr=X %*% A))
+  return(structure(list(A=A, Xr=lol.embed(X, A)), class="embedding"))
 }
 
 # A utility for pre-centered data to do PCA faster.
-lol.utils.pca <- function(X, r=NULL, ...) {
+lol.utils.pca <- function(X, r=NULL, trans=TRUE, ...) {
   d <- dim(X)[2]  # dimensions of X
   if (is.null(r)) {
     r <- d
   }
+  if (trans) {
+    X <- t(as.matrix(X))
+  } else {
+    X <- as.matrix(X)
+  }
   if (r < .2*d) {
     # take the svd and retain the top r left singular vectors as our components
     # using more efficient irlba if we only need a fraction of singular vecs
-    svd <- irlba::irlba(t(as.matrix(X)), nv=0, nu=r)
+    svdX <- irlba::irlba(X, nv=0, nu=r)
   } else {
-    svd <- svd(t(as.matrix(X)), nv=0, nu=r)
+    svdX <- svd(X, nv=0, nu=r)
   }
-  A <- svd$u
+  A <- svdX$u
+
   return(A)
 }
 
@@ -49,15 +56,16 @@ lol.utils.pca <- function(X, r=NULL, ...) {
 #'
 #' A function that performs PCA on the class-centered data. Same as low-rank LDA.
 #'
-#' @param X [n, d] the data with n samples in d dimensions.
-#' @param Y [n] the labels of the samples.
+#' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
+#' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param r the rank of the projection.
-#' @return A [d, r] the projection matrix from d to r dimensions.
-#' @return ylabs [K] vector containing the unique, ordered class labels.
-#' @return centroids [K, d] centroid matrix of the unique, ordered classes.
-#' @return priors [K] vector containing prior probability for the unique, ordered classes.
-#' @return Xr [n, r] the data in reduced dimensionality.
-#' @return cr [K, r] the centroids in reduced dimensionality.
+#' @return A list of class \code{embedding} containing the following:
+#' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+#' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
+#' \item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
+#' \item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+#' \item{Xr}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
+#' \item{cr}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
 #' @author Eric Bridgeford
 #' @examples
 #' library(lol)
@@ -78,6 +86,6 @@ lol.project.cpca <- function(X, Y, r, ...) {
   # compute the standard PCA but with the pre-centered data.
   A <- lol.utils.pca(Xt, r=r)
 
-  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
-              Xr=X %*% A, cr=centroids %*% A))
+  return(structure(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
+                        Xr=lol.embed(X, A), cr=lol.embed(centroids, A)), class="embedding"))
 }

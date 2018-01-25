@@ -7,20 +7,19 @@
 lol.sims.sim_gmm(mus, Sigmas, n, priors)
 }
 \arguments{
-\item{mus}{[d, K] the mus for each class.}
+\item{mus}{\code{[d, K]} the mus for each class.}
 
-\item{Sigmas}{[d,d,K] the Sigmas for each class.}
+\item{Sigmas}{\code{[d,d,K]} the Sigmas for each class.}
 
-\item{n}{the of examples.}
+\item{n}{the number of examples.}
 
-\item{priors}{the priors for each class.}
+\item{priors}{\code{K} the priors for each class.}
 }
 \value{
-X [n, d] the simulated data.
-
-Y [n] the labels for each data point.
-
-priors [K] the priors for each class.
+A list with the following:
+\item{X}{\code{[n, d]} the simulated data.}
+\item{Y}{\code{[n]} the labels for each data point.}
+\item{priors}{\code{[K]} the priors for each class.}
 }
 \description{
 A helper function for simulating from Gaussian Mixture.

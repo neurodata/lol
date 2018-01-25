@@ -11,24 +11,21 @@ lol.sims.cigar(n, d, rotate = FALSE, priors = NULL, a = 0.15, b = 4)
 
 \item{d}{the dimensionality of the simulated data.}
 
-\item{rotate=FALSE}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix Q, mu = Q*mu, and S = Q*S*Q.}
+\item{rotate=FALSE}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}.}
 
-\item{priors=NULL}{the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector for K classes.}
+\item{priors=NULL}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.}
 
 \item{a=0.15}{scalar for all of the mu1 but 2nd dimension.}
 
 \item{b=4}{scalar for 2nd dimension value of mu2 and the 2nd variance term of S.}
 }
 \value{
-X [n, d] the data as a matrix.
-
-Y [n] the labels as a array.
-
-mus [d, K] the per-class means.
-
-Sigmas [d, d, K] the per-class covariance matrices.
-
-priors [K] the priors for each class.
+A list of class \code{simulation} with the following:
+\item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
+\item{Y}{\code{[n]} the \code{n} labels as an array.}
+\item{mus}{\code{[d, K]} the \code{K} class means in \code{d} dimensions.}
+\item{Sigmas}{\code{[d, d, K]} the \code{K} class covariance matrices in \code{d} dimensions.}
+\item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 }
 \description{
 A simulation for the stacked cigar experiment.

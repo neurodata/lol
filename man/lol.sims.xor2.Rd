@@ -11,20 +11,17 @@ lol.sims.xor2(n, d, priors = NULL, fall = 100)
 
 \item{d}{the dimensionality of the simulated data.}
 
-\item{priors=NULL}{the priors for each class. If NULL, class priors are all equal. If not null, should be |priors| = K, a length K vector for K classes.}
+\item{priors=NULL}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.}
 
-\item{fall=100}{the sigma for the covariance structuring. Sigma declines by ndim/fall across the variance terms.}
+\item{fall=100}{the falloff for the covariance structuring. Sigma declines by ndim/fall across the variance terms.}
 }
 \value{
-X [n, d] the data as a matrix.
-
-Y [n] the labels as a array.
-
-mus [d, K] the per-class means.
-
-Sigmas [d, d, K] the per-class covariance matrices.
-
-priors [K] the priors for each class.
+A list of class \code{simulation} with the following:
+\item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
+\item{Y}{\code{[n]} the \code{n} labels as an array.}
+\item{mus}{\code{[d, K]} the \code{K} class means in \code{d} dimensions.}
+\item{Sigmas}{\code{[d, d, K]} the \code{K} class covariance matrices in \code{d} dimensions.}
+\item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 }
 \description{
 A function to simulate from the 2-class xor problem.

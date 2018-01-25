@@ -7,14 +7,14 @@
 lol.utils.deltas(centroids, priors, ...)
 }
 \arguments{
-\item{centroids}{[d, K] centroid matrix of the unique, ordered classes.}
+\item{centroids}{\code{[d, K]} centroid matrix of the unique, ordered classes.}
 
-\item{priors}{[K] vector containing prior probability for the unique, ordered classes.}
+\item{priors}{\code{[K]} vector containing prior probability for the unique, ordered classes.}
 
-\item{Y}{[n] the labels of the samples.}
+\item{Y}{\code{[n]} the labels of the samples.}
 }
 \value{
-deltas [d, K] the K difference vectors.
+deltas \code{[d, K]} the K difference vectors.
 }
 \description{
 A function that performs a utility computation of information about the differences of the classes.
