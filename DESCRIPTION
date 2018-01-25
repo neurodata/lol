@@ -30,4 +30,4 @@ RoxygenNote: 6.0.1
 Suggests: knitr,
     rmarkdown,
     parallel
-BugReporting: https://github.com/neurodata/lol/issues
+BugReport: https://github.com/neurodata/lol/issues
