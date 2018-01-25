@@ -12,19 +12,19 @@ lol.sims.mean_diff(n, d, rotate = FALSE, priors = NULL, K = 2, md = 1,
 
 \item{d}{the dimensionality of the simulated data.}
 
-\item{rotate=FALSE}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}.}
+\item{rotate}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.}
 
-\item{priors=NULL}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.}
+\item{priors}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.}
 
-\item{K=2}{the number of classes.}
+\item{K}{the number of classes. Defaults to \code{2}.}
 
-\item{md=1}{the magnitude of the difference in the means in the specified subset of dimensions.}
+\item{md}{the magnitude of the difference in the means in the specified subset of dimensions. Ddefaults to \code{1}.}
 
-\item{subset=c(1)}{the dimensions to have a difference in the means. Defaults to only the first dimension. max(subset) < d.}
+\item{subset}{the dimensions to have a difference in the means. Defaults to only the first dimension. \code{max(subset) < d}. Defaults to \code{c(1)}.}
 
-\item{offdiag=0}{the off-diagonal elements of the covariance matrix. Should be < 1. S_{ij} = offdiag if i != j, or 1 if i == j.}
+\item{offdiag}{the off-diagonal elements of the covariance matrix. Should be < 1. \code{S_{ij} = offdiag} if \code{i != j}, or 1 if \code{i == j}. Defaults to \code{0}.}
 
-\item{s=1}{the scaling parameter of the covariance matrix. S_{ij} = scaling*1 if i == j, or scaling*offdiag if i != j.}
+\item{s}{the scaling parameter of the covariance matrix. S_{ij} = scaling*1 if i == j, or scaling*offdiag if i != j. Defaults to \code{1}.}
 }
 \value{
 A list of class \code{simulation} with the following:

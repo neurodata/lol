@@ -12,6 +12,8 @@ lol.project.cpca(X, Y, r, ...)
 \item{Y}{\code{[n]} the labels of the samples with \code{K} unique labels.}
 
 \item{r}{the rank of the projection.}
+
+\item{...}{optional args.}
 }
 \value{
 A list of class \code{embedding} containing the following:

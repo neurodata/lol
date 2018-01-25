@@ -10,6 +10,8 @@ lol.classify.nearestCentroid(X, Y, ...)
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
 
 \item{Y}{\code{[n]} the labels of the \code{n} samples.}
+
+\item{...}{optional args.}
 }
 \value{
 A list of class \code{nearestCentroid}, with the following attributes:

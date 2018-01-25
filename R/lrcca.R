@@ -6,11 +6,12 @@
 #' @param X [n, d] the data with \code{n} samples in \code{d} dimensions.
 #' @param Y [n] the labels of the samples with \code{K} unique labels.
 #' @param r the rank of the projection.
-#' @param method='full' The method to use for LR-CCA.
+#' @param method The method to use for LR-CCA. Defaults to \code{'full'}.
 #' \itemize{
 #' \item{'full'}{Requires \code{O(d^2)} storage, but is faster.}
 #' \item{'partial'}{Requires \code{O(n^2)} storage, but is slower.}
 #' }
+#' @param ... optional args.
 #' @return If \code{method == 'full'} A list of class \code{embedding} containing the following:
 #' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}

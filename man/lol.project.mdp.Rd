@@ -10,6 +10,8 @@ lol.project.mdp(X, Y, ...)
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
 
 \item{Y}{\code{[n]} the labels of the samples with \code{K} unique labels.}
+
+\item{...}{optional args.}
 }
 \value{
 A list of class \code{embedding} containing the following:

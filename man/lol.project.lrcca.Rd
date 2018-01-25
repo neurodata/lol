@@ -13,11 +13,13 @@ lol.project.lrcca(X, Y, r, method = "full", ...)
 
 \item{r}{the rank of the projection.}
 
-\item{method='full'}{The method to use for LR-CCA.
+\item{method}{The method to use for LR-CCA. Defaults to \code{'full'}.
 \itemize{
 \item{'full'}{Requires \code{O(d^2)} storage, but is faster.}
 \item{'partial'}{Requires \code{O(n^2)} storage, but is slower.}
 }}
+
+\item{...}{optional args.}
 }
 \value{
 If \code{method == 'full'} A list of class \code{embedding} containing the following:

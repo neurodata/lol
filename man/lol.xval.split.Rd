@@ -4,18 +4,20 @@
 \alias{lol.xval.split}
 \title{Cross-Validation Data Splitter}
 \usage{
-lol.xval.split(X, Y, k = "loo")
+lol.xval.split(X, Y, k = "loo", ...)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
 
 \item{Y}{\code{[n]} the labels of the samples with \code{K} unique labels.}
 
-\item{k='loo'}{the cross-validated method to perform.
+\item{k}{the cross-validated method to perform. Defaults to \code{'loo'}.
 \itemize{
 \item{\code{'loo'}}{ Leave-one-out cross validation}
 \item{\code{isinteger(k)}}{ perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
 }}
+
+\item{...}{optional args.}
 }
 \value{
 sets the cross-validation sets as a list, each element with an \code{X.train}, \code{X.test}, \code{Y.train}, and \code{Y.test}.

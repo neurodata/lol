@@ -6,6 +6,13 @@
 \usage{
 lol.sims.random_rotate(mus, Sigmas, Q = NULL)
 }
+\arguments{
+\item{mus}{means}
+
+\item{Sigmas}{covariances}
+
+\item{Q}{rotation to use, if any}
+}
 \description{
 A helper function for applying a random rotation to gaussian parameter set.
 }

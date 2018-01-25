@@ -11,9 +11,7 @@ lol.project.pca(X, r, ...)
 
 \item{r}{the rank of the projection.}
 
-\item{Y}{\code{[n]} the labels of the samples with \code{K} unique labels.}
-
-\item{center=TRUE}{whether to center the data before applying PCA.}
+\item{...}{optional args.}
 }
 \value{
 A list of class \code{embedding} containing the following:

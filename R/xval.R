@@ -2,23 +2,25 @@
 #'
 #' A function for performing leave-one-out cross-validation for a given embedding model.
 #'
-#' @import randomForest
-#' @import MASS
+#' @importFrom randomForest randomForest
+#' @importFrom MASS lda
+#' @importFrom stats predict rnorm toeplitz
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param r the number of dimensions to project the data onto. Should have \code{r < d}.
-#' @param alg=lol.project.lol the algorithm to use for embedding. Should be a function returning something of class \code{embedding}.
-#' @param classifier='lda' the classifier to use for assessing performance.
+#' @param alg the algorithm to use for embedding. Should be a function returning something of class \code{embedding}. Defaults to \code{lol.project.lol}.
+#' @param classifier the classifier to use for assessing performance. Defaults to \code{'lda'}.
 #' \itemize{
 #' \item{'lda'}{ Use the lda classifier for assessing performance. \code{\link[MASS]{lda}}}
 #' \item{'rf'}{ Use the random forest classifier for assessing performance. \code{\link[randomForest]{randomForest}}}
-#' \item{'cent'}{ Use the nearest centroid classifier for assessing performance \code{\link{lol.classifier.nearestCentroid}}}
+#' \item{'cent'}{ Use the nearest centroid classifier for assessing performance \code{\link{lol.classify.nearestCentroid}}}
 #' }
-#' @param k='loo' the cross-validated method to perform. \code{\link{lol.xval.split}}
+#' @param k the cross-validated method to perform. Defaults to \code{'loo'}. \code{\link{lol.xval.split}}
 #' \itemize{
 #' \item{\code{'loo'}}{Leave-one-out cross validation}
 #' \item{\code{isinteger(k)}}{ perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
 #' }
+#' @param ... optional args.
 #' @return Returns a list containing:
 #' \item{Lhat}{the mean cross-validated error.}
 #' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
@@ -42,7 +44,7 @@
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' r=5  # embed into r=5 dimensions
-#' xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='rf', k='5')
+#' xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='rf', k=5)
 #' @export
 lol.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo', ...) {
   d <- dim(X)[2]
@@ -56,13 +58,13 @@ lol.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo', ...) {
     mod <- do.call(alg, list(X=set$X.train, Y=set$Y.train, r=r)) # learn the projection with the algorithm specified
     X.test.proj <- set$X.test %*% mod$A  # project the data with the projection just learned
     if (classifier == 'lda') {
-      liney <- MASS::lda(mod$Xr, set$Y.train)
+      liney <- lda(mod$Xr, set$Y.train)
       Yhat <- predict(liney, X.test.proj)$class
     } else if (classifier == 'rf') {
-      shrubbery <- randomForest::randomForest(mod$Xr, set$Y.train)
+      shrubbery <- randomForest(mod$Xr, set$Y.train)
       Yhat <- predict(shrubbery, X.test.proj)
     } else if (classifier == 'cent') {
-      droid <- lol::lol.classify.nearestCentroid(mod$Xr, set$Y.train)
+      droid <- lol:::lol.classify.nearestCentroid(mod$Xr, set$Y.train)
       Yhat <- predict(droid, X.test.proj)
     }
     return(1 - sum(Yhat == set$Y.test)/length(Yhat))
@@ -81,11 +83,12 @@ lol.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo', ...) {
 #'
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
-#' @param k='loo' the cross-validated method to perform.
+#' @param k the cross-validated method to perform. Defaults to \code{'loo'}.
 #' \itemize{
 #' \item{\code{'loo'}}{ Leave-one-out cross validation}
 #' \item{\code{isinteger(k)}}{ perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
 #' }
+#' @param ... optional args.
 #' @return sets the cross-validation sets as a list, each element with an \code{X.train}, \code{X.test}, \code{Y.train}, and \code{Y.test}.
 #' @author Eric Bridgeford
 #' @examples
@@ -99,7 +102,7 @@ lol.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo', ...) {
 #' sets.xval.loo <- lol.xval.split(X, Y, k='loo')
 #'
 #' @export
-lol.xval.split <- function(X, Y, k='loo') {
+lol.xval.split <- function(X, Y, k='loo', ...) {
   Y <- factor(Y)
   n <- length(Y)
   if (k == 'loo') {

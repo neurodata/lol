@@ -12,15 +12,15 @@ lol.sims.fat_tails(n, d, rotate = FALSE, f = 15, s0 = 10, rho = 0.2,
 
 \item{d}{the dimensionality of the simulated data.}
 
-\item{rotate=FALSE}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}.}
+\item{rotate}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.}
 
-\item{priors=NULL}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.}
+\item{f}{the fatness scaling of the tail. S2 = f*S1, where S1_{ij} = rho if i != j, and 1 if i == j. Defaults to \code{15}.}
 
-\item{f=15}{the fatness scaling of the tail. S2 = f*S1, where S1_{ij} = rho if i != j, and 1 if i == j.}
+\item{s0}{the number of dimensions with a difference in the means. s0 should be < d. Defaults to \code{10}.}
 
-\item{s0=10}{the number of dimensions with a difference in the means. s0 should be < d.}
+\item{rho}{the scaling of the off-diagonal covariance terms, should be < 1. Defaults to \code{0.2}.}
 
-\item{rho=0.2}{the scaling of the off-diagonal covariance terms, should be < 1.}
+\item{priors}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.}
 }
 \value{
 A list of class \code{simulation} with the following:

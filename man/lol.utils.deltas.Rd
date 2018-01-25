@@ -11,7 +11,7 @@ lol.utils.deltas(centroids, priors, ...)
 
 \item{priors}{\code{[K]} vector containing prior probability for the unique, ordered classes.}
 
-\item{Y}{\code{[n]} the labels of the samples.}
+\item{...}{optional args.}
 }
 \value{
 deltas \code{[d, K]} the K difference vectors.

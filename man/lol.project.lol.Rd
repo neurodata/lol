@@ -12,6 +12,8 @@ lol.project.lol(X, Y, r, ...)
 \item{Y}{\code{[n]} the labels of the samples with \code{K} unique labels.}
 
 \item{r}{the rank of the projection. Note that \code{r >= K}, and \code{r < d}.}
+
+\item{...}{optional args.}
 }
 \value{
 A list of class \code{embedding} containing the following:

@@ -13,20 +13,22 @@ lol.xval.eval(X, Y, r, alg, classifier = "lda", k = "loo", ...)
 
 \item{r}{the number of dimensions to project the data onto. Should have \code{r < d}.}
 
-\item{alg=lol.project.lol}{the algorithm to use for embedding. Should be a function returning something of class \code{embedding}.}
+\item{alg}{the algorithm to use for embedding. Should be a function returning something of class \code{embedding}. Defaults to \code{lol.project.lol}.}
 
-\item{classifier='lda'}{the classifier to use for assessing performance.
+\item{classifier}{the classifier to use for assessing performance. Defaults to \code{'lda'}.
 \itemize{
 \item{'lda'}{ Use the lda classifier for assessing performance. \code{\link[MASS]{lda}}}
 \item{'rf'}{ Use the random forest classifier for assessing performance. \code{\link[randomForest]{randomForest}}}
-\item{'cent'}{ Use the nearest centroid classifier for assessing performance \code{\link{lol.classifier.nearestCentroid}}}
+\item{'cent'}{ Use the nearest centroid classifier for assessing performance \code{\link{lol.classify.nearestCentroid}}}
 }}
 
-\item{k='loo'}{the cross-validated method to perform. \code{\link{lol.xval.split}}
+\item{k}{the cross-validated method to perform. Defaults to \code{'loo'}. \code{\link{lol.xval.split}}
 \itemize{
 \item{\code{'loo'}}{Leave-one-out cross validation}
 \item{\code{isinteger(k)}}{ perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
 }}
+
+\item{...}{optional args.}
 }
 \value{
 Returns a list containing:
@@ -55,7 +57,7 @@ library(lol)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 r=5  # embed into r=5 dimensions
-xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='rf', k='5')
+xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='rf', k=5)
 }
 \author{
 Eric Bridgeford

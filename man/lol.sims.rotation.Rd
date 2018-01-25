@@ -6,6 +6,9 @@
 \usage{
 lol.sims.rotation(d)
 }
+\arguments{
+\item{d}{dimensions}
+}
 \description{
 A helper function for estimating a random rotation matrix.
 }

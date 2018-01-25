@@ -4,6 +4,7 @@
 #'
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
+#' @param ... optional args.
 #' @return A list of class \code{embedding} containing the following:
 #' \item{A}{\code{[d, K-1]} the projection matrix from \code{d} to \code{K-1} dimensions.}
 #' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}

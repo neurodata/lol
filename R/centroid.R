@@ -3,6 +3,7 @@
 #' A function that trains a classifier based on the nearest centroid.
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the \code{n} samples.
+#' @param ... optional args.
 #' @return A list of class \code{nearestCentroid}, with the following attributes:
 #' \item{centroids}{\code{[K, d]} the centroids of each class with \code{K}  classes in \code{d} dimensions.}
 #' \item{ylabs}{\code{[K]} the ylabels for each of the \code{K} unique classes, ordered.}
@@ -27,13 +28,14 @@ lol.classify.nearestCentroid <- function(X, Y, ...) {
 #' Nearest Centroid Classifier Prediction
 #'
 #' A function that predicts the class of points based on the nearest centroid
-#' @param model An object of class \code{nearestCentroid}, with the following attributes:
+#' @param object An object of class \code{nearestCentroid}, with the following attributes:
 #' \itemize{
 #' \item{centroids}{\code{[K, d]} the centroids of each class with \code{K} classes in \code{d} dimensions.}
 #' \item{ylabs}{\code{[K]} the ylabels for each of the \code{K} unique classes, ordered.}
 #' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 #' }
 #' @param X \code{[n, d]} the data to classify with \code{n} samples in \code{d} dimensions.
+#' @param ... optional args.
 #' @return Yhat \code{[n]} the predicted class of each of the \code{n} data point in \code{X}.
 #' @author Eric Bridgeford
 #'
@@ -44,15 +46,15 @@ lol.classify.nearestCentroid <- function(X, Y, ...) {
 #' model <- lol.classify.nearestCentroid(X, Y)
 #' Yh <- predict(model, X)
 #' @export
-predict.nearestCentroid <- function(model, X, ...) {
-  K <- length(model$ylabs); n <-  dim(X)[1]
+predict.nearestCentroid <- function(object, X, ...) {
+  K <- length(object$ylabs); n <-  dim(X)[1]
   dists <- array(0, dim=c(n, K))
   for (i in 1:n) {
     for (j in 1:K) {
-      dists[i, j] <- sqrt(sum((X[i,] - model$centroids[j,])^2))
+      dists[i, j] <- sqrt(sum((X[i,] - object$centroids[j,])^2))
     }
   }
   Yass <- apply(dists, c(1), which.min)
-  Yhat <- model$ylabs[Yass]
+  Yhat <- object$ylabs[Yass]
   return(Yhat)
 }

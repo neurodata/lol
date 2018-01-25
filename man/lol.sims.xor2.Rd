@@ -11,9 +11,9 @@ lol.sims.xor2(n, d, priors = NULL, fall = 100)
 
 \item{d}{the dimensionality of the simulated data.}
 
-\item{priors=NULL}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.}
+\item{priors}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.}
 
-\item{fall=100}{the falloff for the covariance structuring. Sigma declines by ndim/fall across the variance terms.}
+\item{fall}{the falloff for the covariance structuring. Sigma declines by ndim/fall across the variance terms. Defaults to \code{100}.}
 }
 \value{
 A list of class \code{simulation} with the following:

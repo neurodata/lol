@@ -10,6 +10,8 @@ lol.utils.info(X, Y, ...)
 \item{X}{\code{[n, d]} the data with n samples in d dimensions.}
 
 \item{Y}{\code{[n]} the labels of the samples.}
+
+\item{...}{optional args.}
 }
 \value{
 \code{n} the number of samples.

@@ -12,15 +12,15 @@ lol.sims.toep(n, d, rotate = FALSE, priors = NULL, D1 = 10, b = 0.4,
 
 \item{d}{the dimensionality of the simulated data.}
 
-\item{D1=10}{the dimensionality for the non-equal covariance terms.}
+\item{rotate}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.}
 
-\item{rotate=FALSE}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}.}
+\item{priors}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.}
 
-\item{priors=NULL}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.}
+\item{D1}{the dimensionality for the non-equal covariance terms. Defaults to \code{10}.}
 
-\item{b=0.4}{a scaling parameter for the means.}
+\item{b}{a scaling parameter for the means. Defaults to \code{0.4}.}
 
-\item{rho=0.5}{the scaling of the covariance terms, should be < 1.}
+\item{rho}{the scaling of the covariance terms, should be < 1. Defaults to \code{0.5}/}
 }
 \value{
 A list of class \code{simulation} with the following:

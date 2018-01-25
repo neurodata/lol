@@ -9,11 +9,15 @@ lol.project.bayes_optimal(X, Y, mus, Sigmas, priors, ...)
 \arguments{
 \item{X}{\code{[n, p]} the data with \code{n} samples in \code{d} dimensions.}
 
+\item{Y}{\code{[n]} the labels of the samples with \code{K} unique labels.}
+
 \item{mus}{\code{[d, K]} the \code{K} class means in \code{d} dimensions.}
 
 \item{Sigmas}{\code{[d, d, K]} the \code{K} class covariance matrices in \code{d} dimensions.}
 
 \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
+
+\item{...}{optional args.}
 }
 \value{
 A list of class \code{embedding} containing the following:
@@ -31,7 +35,9 @@ A function for recovering the Bayes Optimal Projection, which optimizes Bayes cl
 library(lol)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
-model <- lol.project.bayes_optimal(X=X, mus=data$mus, S=data$Sigmas, priors=data$priors)  # obtain bayes-optimal projection of the data
+# obtain bayes-optimal projection of the data
+model <- lol.project.bayes_optimal(X=X, Y=Y, mus=data$mus,
+                                   S=data$Sigmas, priors=data$priors)
 }
 \author{
 Eric Bridgeford

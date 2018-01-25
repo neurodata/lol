@@ -4,6 +4,7 @@
 #'
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param A \code{[d, r]} the embedding matrix from \code{d} to \code{r} dimensions.
+#' @param ... optional args.
 #' @return an array \code{[n, r]} the original \code{n} points embedded into \code{r} dimensions.
 #' @examples
 #' library(lol)

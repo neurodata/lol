@@ -4,10 +4,10 @@
 \alias{predict.nearestCentroid}
 \title{Nearest Centroid Classifier Prediction}
 \usage{
-\method{predict}{nearestCentroid}(model, X, ...)
+\method{predict}{nearestCentroid}(object, X, ...)
 }
 \arguments{
-\item{model}{An object of class \code{nearestCentroid}, with the following attributes:
+\item{object}{An object of class \code{nearestCentroid}, with the following attributes:
 \itemize{
 \item{centroids}{\code{[K, d]} the centroids of each class with \code{K} classes in \code{d} dimensions.}
 \item{ylabs}{\code{[K]} the ylabels for each of the \code{K} unique classes, ordered.}
@@ -15,6 +15,8 @@
 }}
 
 \item{X}{\code{[n, d]} the data to classify with \code{n} samples in \code{d} dimensions.}
+
+\item{...}{optional args.}
 }
 \value{
 Yhat \code{[n]} the predicted class of each of the \code{n} data point in \code{X}.

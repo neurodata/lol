@@ -11,13 +11,13 @@ lol.sims.rtrunk(n, d, rotate = FALSE, priors = NULL, b = 4, K = 2)
 
 \item{d}{the dimensionality of the simulated data.}
 
-\item{rotate=FALSE}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}.}
+\item{rotate}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.}
 
-\item{priors=NULL}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.}
+\item{priors}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.}
 
-\item{b=4}{scalar for mu scaling.}
+\item{b}{scalar for mu scaling. Default to \code{4}.}
 
-\item{K=2}{number of classes, should be <4.}
+\item{K}{number of classes, should be <4. Defaults to \code{2}.}
 }
 \value{
 A list of class \code{simulation} with the following:

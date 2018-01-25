@@ -10,6 +10,8 @@ lol.embed(X, A, ...)
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
 
 \item{A}{\code{[d, r]} the embedding matrix from \code{d} to \code{r} dimensions.}
+
+\item{...}{optional args.}
 }
 \value{
 an array \code{[n, r]} the original \code{n} points embedded into \code{r} dimensions.

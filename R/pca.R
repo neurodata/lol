@@ -4,9 +4,8 @@
 #'
 #' @import irlba
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
-#' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param r the rank of the projection.
-#' @param center=TRUE whether to center the data before applying PCA.
+#' @param ... optional args.
 #' @return A list of class \code{embedding} containing the following:
 #' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
@@ -59,6 +58,7 @@ lol.utils.pca <- function(X, r=NULL, trans=TRUE, ...) {
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param r the rank of the projection.
+#' @param ... optional args.
 #' @return A list of class \code{embedding} containing the following:
 #' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}

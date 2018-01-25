@@ -5,11 +5,11 @@
 #' @import abind
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
-#' @param rotate=FALSE whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}.
-#' @param priors=NULL the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.
-#' @param f=15 the fatness scaling of the tail. S2 = f*S1, where S1_{ij} = rho if i != j, and 1 if i == j.
-#' @param s0=10 the number of dimensions with a difference in the means. s0 should be < d.
-#' @param rho=0.2 the scaling of the off-diagonal covariance terms, should be < 1.
+#' @param rotate whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.
+#' @param priors the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.
+#' @param f the fatness scaling of the tail. S2 = f*S1, where S1_{ij} = rho if i != j, and 1 if i == j. Defaults to \code{15}.
+#' @param s0 the number of dimensions with a difference in the means. s0 should be < d. Defaults to \code{10}.
+#' @param rho the scaling of the off-diagonal covariance terms, should be < 1. Defaults to \code{0.2}.
 #' @return A list of class \code{simulation} with the following:
 #' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}
@@ -60,13 +60,13 @@ lol.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, priors=
 #' A function for simulating data in which a difference in the means is present only in a subset of dimensions, and equal covariance.
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
-#' @param rotate=FALSE whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}.
-#' @param priors=NULL the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.
-#' @param K=2 the number of classes.
-#' @param md=1 the magnitude of the difference in the means in the specified subset of dimensions.
-#' @param subset=c(1) the dimensions to have a difference in the means. Defaults to only the first dimension. max(subset) < d.
-#' @param offdiag=0 the off-diagonal elements of the covariance matrix. Should be < 1. S_{ij} = offdiag if i != j, or 1 if i == j.
-#' @param s=1 the scaling parameter of the covariance matrix. S_{ij} = scaling*1 if i == j, or scaling*offdiag if i != j.
+#' @param rotate whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.
+#' @param priors the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.
+#' @param K the number of classes. Defaults to \code{2}.
+#' @param md the magnitude of the difference in the means in the specified subset of dimensions. Ddefaults to \code{1}.
+#' @param subset the dimensions to have a difference in the means. Defaults to only the first dimension. \code{max(subset) < d}. Defaults to \code{c(1)}.
+#' @param offdiag the off-diagonal elements of the covariance matrix. Should be < 1. \code{S_{ij} = offdiag} if \code{i != j}, or 1 if \code{i == j}. Defaults to \code{0}.
+#' @param s the scaling parameter of the covariance matrix. S_{ij} = scaling*1 if i == j, or scaling*offdiag if i != j. Defaults to \code{1}.
 #' @return A list of class \code{simulation} with the following:
 #' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}
@@ -117,11 +117,11 @@ lol.sims.mean_diff <- function(n, d, rotate=FALSE, priors=NULL, K=2, md=1, subse
 #' @import abind
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
-#' @param D1=10 the dimensionality for the non-equal covariance terms.
-#' @param rotate=FALSE whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}.
-#' @param priors=NULL the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.
-#' @param b=0.4 a scaling parameter for the means.
-#' @param rho=0.5 the scaling of the covariance terms, should be < 1.
+#' @param rotate whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.
+#' @param priors the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.
+#' @param D1 the dimensionality for the non-equal covariance terms. Defaults to \code{10}.
+#' @param b a scaling parameter for the means. Defaults to \code{0.4}.
+#' @param rho the scaling of the covariance terms, should be < 1. Defaults to \code{0.5}/
 #' @return A list of class \code{simulation} with the following:
 #' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}
@@ -177,11 +177,11 @@ lol.sims.toep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0.5
 #' @import abind
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
-#' @param D1=10 the dimensionality for the non-equal covariance terms.
-#' @param rotate=FALSE whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}.
-#' @param priors=NULL the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.
-#' @param b=0.4 a scaling parameter for the means.
-#' @param rho=0.5 the scaling of the covariance terms, should be < 1.
+#' @param rotate whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.
+#' @param priors the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.
+#' @param D1 the dimensionality for the non-equal covariance terms. Defaults to \code{10}.
+#' @param b a scaling parameter for the means. Defaults to \code{0.4}.
+#' @param rho the scaling of the covariance terms, should be < 1. Defaults to \code{0.5}.
 #' @return A list of class \code{simulation} with the following:
 #' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}
@@ -207,7 +207,7 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
     stop(sprintf("rho should be < 1; user specified %.3f", rho))
   }
   if (D1 > d) {
-    stop(sprintf("User has specified more dimensions for non-equal cov terms. D1 is %d, yet d is %d", D1, d.))
+    stop(sprintf("User has specified more dimensions for non-equal cov terms. D1 is %d, yet d is %d", D1, d))
   }
   tR <- rho^(0:(D1 - 1))
   A <- toeplitz(tR)
@@ -242,10 +242,10 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
 #' @import abind
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
-#' @param rotate=FALSE whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}.
-#' @param priors=NULL the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.
-#' @param b=4 scalar for mu scaling.
-#' @param K=2 number of classes, should be <4.
+#' @param rotate whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.
+#' @param priors the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.
+#' @param b scalar for mu scaling. Default to \code{4}.
+#' @param K number of classes, should be <4. Defaults to \code{2}.
 #' @return A list of class \code{simulation} with the following:
 #' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}
@@ -295,10 +295,10 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2) {
 #' @import abind
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
-#' @param rotate=FALSE whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}.
-#' @param priors=NULL the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.
-#' @param a=0.15 scalar for all of the mu1 but 2nd dimension.
-#' @param b=4 scalar for 2nd dimension value of mu2 and the 2nd variance term of S.
+#' @param rotate whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.
+#' @param priors the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.
+#' @param a scalar for all of the mu1 but 2nd dimension. Defaults to \code{0.15}.
+#' @param b scalar for 2nd dimension value of mu2 and the 2nd variance term of S. Defaults to \code{4}.
 #' @return A list of class \code{simulation} with the following:
 #' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}
@@ -345,8 +345,8 @@ lol.sims.cigar <- function(n, d, rotate=FALSE, priors=NULL, a=0.15, b=4) {
 #' A function to simulate from the 2-class xor problem.
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
-#' @param priors=NULL the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.
-#' @param fall=100 the falloff for the covariance structuring. Sigma declines by ndim/fall across the variance terms.
+#' @param priors the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.
+#' @param fall the falloff for the covariance structuring. Sigma declines by ndim/fall across the variance terms. Defaults to \code{100}.
 #' @return A list of class \code{simulation} with the following:
 #' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}
@@ -419,6 +419,7 @@ lol.sims.sim_gmm <- function(mus, Sigmas, n, priors) {
 #' Sample Random Rotation
 #'
 #' A helper function for estimating a random rotation matrix.
+#' @param d dimensions
 #' @author Eric Bridgeford
 lol.sims.rotation <- function(d) {
   Q <- Matrix::qr.Q(Matrix::qr(array(rnorm(d*d), dim=c(d, d))))
@@ -431,6 +432,9 @@ lol.sims.rotation <- function(d) {
 #' Random Rotation
 #'
 #' A helper function for applying a random rotation to gaussian parameter set.
+#' @param mus means
+#' @param Sigmas covariances
+#' @param Q rotation to use, if any
 #' @author Eric Bridgeford
 lol.sims.random_rotate <- function(mus, Sigmas, Q=NULL) {
   dimm <- dim(mus)

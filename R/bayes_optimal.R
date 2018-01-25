@@ -4,9 +4,11 @@
 #'
 #' @import irlba
 #' @param X \code{[n, p]} the data with \code{n} samples in \code{d} dimensions.
+#' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param mus \code{[d, K]} the \code{K} class means in \code{d} dimensions.
 #' @param Sigmas \code{[d, d, K]} the \code{K} class covariance matrices in \code{d} dimensions.
 #' @param priors \code{[K]} the priors for each of the \code{K} classes.
+#' @param ... optional args.
 #' @return A list of class \code{embedding} containing the following:
 #' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
@@ -19,7 +21,9 @@
 #' library(lol)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
-#' model <- lol.project.bayes_optimal(X=X, mus=data$mus, S=data$Sigmas, priors=data$priors)  # obtain bayes-optimal projection of the data
+#' # obtain bayes-optimal projection of the data
+#' model <- lol.project.bayes_optimal(X=X, Y=Y, mus=data$mus,
+#'                                    S=data$Sigmas, priors=data$priors)
 #' @export
 lol.project.bayes_optimal <- function(X, Y, mus, Sigmas, priors, ...) {
   info <- lol:::lol.utils.info(X, Y)

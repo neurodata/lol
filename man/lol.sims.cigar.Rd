@@ -11,13 +11,13 @@ lol.sims.cigar(n, d, rotate = FALSE, priors = NULL, a = 0.15, b = 4)
 
 \item{d}{the dimensionality of the simulated data.}
 
-\item{rotate=FALSE}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}.}
+\item{rotate}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.}
 
-\item{priors=NULL}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes.}
+\item{priors}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.}
 
-\item{a=0.15}{scalar for all of the mu1 but 2nd dimension.}
+\item{a}{scalar for all of the mu1 but 2nd dimension. Defaults to \code{0.15}.}
 
-\item{b=4}{scalar for 2nd dimension value of mu2 and the 2nd variance term of S.}
+\item{b}{scalar for 2nd dimension value of mu2 and the 2nd variance term of S. Defaults to \code{4}.}
 }
 \value{
 A list of class \code{simulation} with the following:
