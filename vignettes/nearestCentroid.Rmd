@@ -1,6 +1,6 @@
 ---
-title: "Vignette Title"
-author: "Vignette Author"
+title: "Nearest Centroid Classifier"
+author: "Eric Bridgeford"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
