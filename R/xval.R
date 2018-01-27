@@ -11,11 +11,11 @@
 #' @param alg the algorithm to use for embedding. Should be a function returning something of class \code{embedding}. Defaults to \code{lol.project.lol}.
 #' @param classifier the classifier to use for assessing performance. Defaults to \code{'lda'}.
 #' \itemize{
-#' \item{'lda'}{ Use the lda classifier for assessing performance. \code{\link[MASS]{lda}}}
-#' \item{'rf'}{ Use the random forest classifier for assessing performance. \code{\link[randomForest]{randomForest}}}
-#' \item{'cent'}{ Use the nearest centroid classifier for assessing performance \code{\link{lol.classify.nearestCentroid}}}
+#' \item{'lda'}{ Use the lda classifier for assessing performance. See \code{\link[MASS]{lda}}}
+#' \item{'rf'}{ Use the random forest classifier for assessing performance. See \code{\link[randomForest]{randomForest}}}
+#' \item{'cent'}{ Use the nearest centroid classifier for assessing performance. See \code{\link{lol.classify.nearestCentroid}}}
 #' }
-#' @param k the cross-validated method to perform. Defaults to \code{'loo'}. \code{\link{lol.xval.split}}
+#' @param k the cross-validated method to perform. Defaults to \code{'loo'}. See \code{\link{lol.xval.split}}
 #' \itemize{
 #' \item{\code{'loo'}}{Leave-one-out cross validation}
 #' \item{\code{isinteger(k)}}{ perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
