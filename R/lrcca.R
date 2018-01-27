@@ -12,7 +12,7 @@
 #' \item{'partial'}{Requires \code{O(n^2)} storage, but is slower.}
 #' }
 #' @param ... optional args.
-#' @return If \code{method == 'full'} A list of class \code{embedding} containing the following:
+#' @return If \code{method == 'full'} A list of containing the following:
 #' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
 #' \item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
@@ -63,8 +63,8 @@ lol.project.full_lrcca <- function(X, Y, r, ...) {
   # decompose Sxi*Sxy*Syi*Syx
   A <- lol.utils.pca(S_xi %*% S_xy %*% S_yi %*% t(S_xy), r, trans=FALSE)
 
-  return(structure(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
-                        Xr=lol.embed(X, A), cr=lol.embed(centroids, A)), class="embedding"))
+  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
 }
 
 lol.project.partial_lrcca <- function(X, Y, r, ...) {

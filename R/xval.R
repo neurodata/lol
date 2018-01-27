@@ -4,31 +4,32 @@
 #'
 #' @importFrom randomForest randomForest
 #' @importFrom MASS lda
-#' @importFrom stats predict rnorm toeplitz
+#' @importFrom stats predict
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
-#' @param r the number of dimensions to project the data onto. Should have \code{r < d}.
-#' @param alg the algorithm to use for embedding. Should be a function returning something of class \code{embedding}. Defaults to \code{lol.project.lol}.
-#' @param classifier the classifier to use for assessing performance. Defaults to \code{'lda'}.
+#' @param alg the algorithm to use for embedding. Should be a function that accepts inputs \code{X} and \code{Y}, returning a list containing a matrix that embeds from {d} to {r < d} dimensions. Defaults to \code{lol.project.lol}.
+#' @param alg.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.
+#' @param alg.embedding the attribute returned by \code{alg} containing the embedding matrix. Defaults to assuming that \code{alg} returns an embgedding matrix as \code{"A"}.
 #' \itemize{
-#' \item{'lda'}{ Use the lda classifier for assessing performance. See \code{\link[MASS]{lda}}}
-#' \item{'rf'}{ Use the random forest classifier for assessing performance. See \code{\link[randomForest]{randomForest}}}
-#' \item{'cent'}{ Use the nearest centroid classifier for assessing performance. See \code{\link{lol.classify.nearestCentroid}}}
+#' \item{!is.nan(alg.embedding)}{Assumes that \code{alg} will return a list containing an attribute, \code{alg.embedding}, a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
+#' \item{is.nan(alg.embedding)}{Assumes that \code{alg}} returns a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
+#' }
+#' @param classifier the classifier to use for assessing performance. The classifier should accept \code{X}, a \code{[n, d]} array as the first input, and \code{Y}, a \code{[n]} array of labels, as the first 2 arguments. The class should implement a predict function, \code{predict.classifier}, that is compatible with the \code{stats::predict} \code{S3} method. Defaults to \code{MASS::lda}.
+#' @param classifier.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list.
+#' @param classifier.return if the return type is a list, \code{class} encodes the attribute containing the prediction labels from \code{stats::predict}. Defaults to the return type of \code{MASS::lda}, \code{class}.
+#' \itemize{
+#' \item{!is.nan(classifier.return)}{Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.}
+#' \item{is.nan(classifier.return)}{Assumes that \code{predict.classifer}} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.
 #' }
 #' @param k the cross-validated method to perform. Defaults to \code{'loo'}. See \code{\link{lol.xval.split}}
 #' \itemize{
 #' \item{\code{'loo'}}{Leave-one-out cross validation}
 #' \item{\code{isinteger(k)}}{ perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
 #' }
-#' @param ... optional args.
+#' @param ... trailing args.
 #' @return Returns a list containing:
 #' \item{Lhat}{the mean cross-validated error.}
-#' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
-#' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
-#' \item{centroids}{\code{[K, d]} centroid matrix of \code{K} the unique, ordered classes in \code{d} dimensions.}
-#' \item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
-#' \item{Xr}{\code{[n, r]} the \code{n} data points  in reduced dimensionality \code{r}.}
-#' \item{cr}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
+#' \item{model}{The model returned by \code{alg} computed on all of the data.}
 #' \item{Lhats}{the cross-validated error for each of the \code{k}-folds.}
 #' @author Eric Bridgeford
 #' @examples
@@ -37,43 +38,43 @@
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' r=5  # embed into r=5 dimensions
-#' xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='lda', k='loo')
+#' # run cross-validation with the nearestCentroid method and leave-one-out cross-validation, which returns only
+#' prediction labels so we specify classifier.return as NaN
+#' xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier=lol.classify.nearestCentroid,
+#'                           classifier.return=NaN, k='loo')
 #'
-#' # train model and analyze with loo val5-fold validation using rf classifier
-#' library(lol)
+#' # train model and analyze with 5-fold validation using rf classifier
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' r=5  # embed into r=5 dimensions
-#' xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='rf', k=5)
+#' xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, k=5)
 #' @export
-lol.xval.eval <- function(X, Y, r, alg, classifier='lda', k='loo', ...) {
+lol.xval.eval <- function(X, Y, r, alg, alg.opts=list(), alg.return="A", classifier=lda, classifier.opts=list(),
+                          classifier.return="class", k='loo', ...) {
   d <- dim(X)[2]
-  if (r > d) {
-    stop(sprintf("You have specified to reduce dimensionality to %d, but native dimensionality is %d.", r, d))
-  }
   Y <- factor(Y)
   n <- length(Y)
   sets <- lol.xval.split(X, Y, k=k)
   Lhat.fold <- sapply(sets, function(set) {
-    mod <- do.call(alg, list(X=set$X.train, Y=set$Y.train, r=r)) # learn the projection with the algorithm specified
-    X.test.proj <- set$X.test %*% mod$A  # project the data with the projection just learned
-    if (classifier == 'lda') {
-      liney <- lda(mod$Xr, set$Y.train)
-      Yhat <- predict(liney, X.test.proj)$class
-    } else if (classifier == 'rf') {
-      shrubbery <- randomForest(mod$Xr, set$Y.train)
-      Yhat <- predict(shrubbery, X.test.proj)
-    } else if (classifier == 'cent') {
-      droid <- lol.classify.nearestCentroid(mod$Xr, set$Y.train)
-      Yhat <- predict(droid, X.test.proj)
+    mod <- do.call(alg, c(list(X=set$X.train, Y=set$Y.train), alg.opts)) # learn the projection with the algorithm specified
+    if (is.nan(alg.return)) {
+      A <- mod
+    } else {
+      A <- mod[[alg.return]]
+    }
+    X.test.proj <- lol.embed(set$X.test, A)  # project the data with the projection just learned
+    trained_classifier <- do.call(classifier, c(list(mod$Xr, set$Y.train), class_opts))
+    if (is.nan(classifier.return)) {
+      Yhat <- predict(trained_classifier, list(X.test.proj))
+    } else {
+      Yhat <- predict(trained_classifier, list(X.test.proj))[[classifier.return]]
     }
     return(1 - sum(Yhat == set$Y.test)/length(Yhat))
   })
 
-  model <- do.call(alg, list(X=X, Y=Y, r=r))
+  model <- do.call(alg, c(list(X=X, Y=Y), alg.opts))
 
-  return(list(Lhat=mean(Lhat.fold), A=model$A, ylabs=model$ylabs, centroids=model$centroids,
-              priors=model$priors, Xr=model$Xr, cr=model$cr, Lhats=Lhat.fold))
+  return(list(Lhat=mean(Lhat.fold), model=model, Lhats=Lhat.fold))
 }
 
 #' Cross-Validation Data Splitter

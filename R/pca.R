@@ -25,7 +25,7 @@ lol.project.pca <- function(X, r, ...) {
   Xc <- sweep(X, 2, colMeans(X), '-')
   A <- lol.utils.pca(Xc, r)
 
-  return(structure(list(A=A, Xr=lol.embed(X, A)), class="embedding"))
+  return(list(A=A, Xr=lol.embed(X, A)))
 }
 
 # A utility for pre-centered data to do PCA faster.
@@ -86,6 +86,6 @@ lol.project.cpca <- function(X, Y, r, ...) {
   # compute the standard PCA but with the pre-centered data.
   A <- lol.utils.pca(Xt, r=r)
 
-  return(structure(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
-                        Xr=lol.embed(X, A), cr=lol.embed(centroids, A)), class="embedding"))
+  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
 }

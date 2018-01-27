@@ -34,6 +34,6 @@ lol.project.mdp <- function(X, Y, ...) {
   Q <- diag(d) - Xcc %*% ginv(Xcc)
 
   A <- Q %*% (deltas[, 2:dim(deltas)[2], drop=FALSE])
-  return(structure(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
-                        Xr=lol.embed(X, A), cr=lol.embed(centroids, A)), class="embedding"))
+  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
 }
