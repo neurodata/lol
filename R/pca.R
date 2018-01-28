@@ -23,13 +23,13 @@
 lol.project.pca <- function(X, r, ...) {
   # mean center by the global mean
   Xc <- sweep(X, 2, colMeans(X), '-')
-  A <- lol.utils.pca(Xc, r)
+  A <- lol.utils.projection(Xc, r)
 
-  return(structure(list(A=A, Xr=lol.embed(X, A)), class="embedding"))
+  return(list(A=A, Xr=lol.embed(X, A)))
 }
 
-# A utility for pre-centered data to do PCA faster.
-lol.utils.pca <- function(X, r=NULL, trans=TRUE, ...) {
+# A utility for pre-centered data to do projection faster.
+lol.utils.projection <- function(X, r=NULL, trans=TRUE, ...) {
   d <- dim(X)[2]  # dimensions of X
   if (is.null(r)) {
     r <- d
@@ -39,7 +39,7 @@ lol.utils.pca <- function(X, r=NULL, trans=TRUE, ...) {
   } else {
     X <- as.matrix(X)
   }
-  if (r < .2*d) {
+  if (r < .05*d) {
     # take the svd and retain the top r left singular vectors as our components
     # using more efficient irlba if we only need a fraction of singular vecs
     svdX <- irlba::irlba(X, nv=0, nu=r)
@@ -83,9 +83,9 @@ lol.project.cpca <- function(X, Y, r, ...) {
   # subtract column means per-class
   Yidx <- sapply(Y, function(y) which(ylabs == y))
   Xt <- X - centroids[Yidx,]
-  # compute the standard PCA but with the pre-centered data.
-  A <- lol.utils.pca(Xt, r=r)
+  # compute the standard projection but with the pre-centered data.
+  A <- lol.utils.projection(Xt, r=r)
 
-  return(structure(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
-                        Xr=lol.embed(X, A), cr=lol.embed(centroids, A)), class="embedding"))
+  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
 }

@@ -39,6 +39,6 @@ lol.project.lol <- function(X, Y, r, ...) {
 
   # orthogonalize and normalize
   A <- qr.Q(qr(A))
-  return(structure(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
-                        Xr=lol.embed(X, A), cr=lol.embed(centroids, A)), class="embedding"))
+  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
 }
