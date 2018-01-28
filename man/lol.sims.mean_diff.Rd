@@ -33,6 +33,8 @@ A list of class \code{simulation} with the following:
 \item{mus}{\code{[d, K]} the \code{K} class means in \code{d} dimensions.}
 \item{Sigmas}{\code{[d, d, K]} the \code{K} class covariance matrices in \code{d} dimensions.}
 \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
+\item{simtype}{The name of the simulation.}
+\item{params}{Any extraneous parameters the simulation was created with.}
 }
 \description{
 A function for simulating data in which a difference in the means is present only in a subset of dimensions, and equal covariance.

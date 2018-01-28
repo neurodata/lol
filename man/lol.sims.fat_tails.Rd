@@ -5,7 +5,7 @@
 \title{Fat Tails Simulation}
 \usage{
 lol.sims.fat_tails(n, d, rotate = FALSE, f = 15, s0 = 10, rho = 0.2,
-  priors = NULL)
+  t = 0.8, priors = NULL)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
@@ -20,6 +20,8 @@ lol.sims.fat_tails(n, d, rotate = FALSE, f = 15, s0 = 10, rho = 0.2,
 
 \item{rho}{the scaling of the off-diagonal covariance terms, should be < 1. Defaults to \code{0.2}.}
 
+\item{t}{the fraction of each class from the narrower-tailed distribution. Defaults to \code{0.8}.}
+
 \item{priors}{the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.}
 }
 \value{
@@ -29,9 +31,11 @@ A list of class \code{simulation} with the following:
 \item{mus}{\code{[d, K]} the \code{K} class means in \code{d} dimensions.}
 \item{Sigmas}{\code{[d, d, K]} the \code{K} class covariance matrices in \code{d} dimensions.}
 \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
+\item{simtype}{The name of the simulation.}
+\item{params}{Any extraneous parameters the simulation was created with.}
 }
 \description{
-A function for simulating from 2 classes, one of which has fatter tails.
+A function for simulating from 2 classes with differing means each with 2 sub-clusters, where one sub-cluster has a narrow tail and the other sub-cluster has a fat tail.
 }
 \examples{
 library(lol)

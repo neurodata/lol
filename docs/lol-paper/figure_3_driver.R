@@ -47,7 +47,7 @@ results <- parLapply(cl, simulations, function(sim) {
     rs <- round(seq(from=1, to=sim$rmax, length.out=rlen))
     for (r in rs) {
       tryCatch({
-        xv_res <- lol.xval.eval(X, Y, r, algs[[i]])
+        xv_res <- lol.xval.eval(X, Y, alg=algs[[i]], alg.opts=list(r=r), alg.return="A", k='loo')
         lhat <- xv_res$Lhat
       }, error=function(e) lhat <- NaN)
       results <- rbind(results, data.frame(sim=sim$sim, iter=sim$iter, alg=alg_name[i], r=r, lhat=lhat))

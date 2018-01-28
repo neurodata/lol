@@ -4,22 +4,27 @@
 \alias{lol.xval.eval}
 \title{Embedding Cross Validation}
 \usage{
-lol.xval.eval(X, Y, r, alg, classifier = "lda", k = "loo", ...)
+lol.xval.eval(X, Y, alg, alg.opts = list(), alg.return = "A",
+  classifier = lda, classifier.opts = list(), classifier.return = "class",
+  k = "loo", ...)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
 
 \item{Y}{\code{[n]} the labels of the samples with \code{K} unique labels.}
 
-\item{r}{the number of dimensions to project the data onto. Should have \code{r < d}.}
+\item{alg}{the algorithm to use for embedding. Should be a function that accepts inputs \code{X} and \code{Y}, returning a list containing a matrix that embeds from {d} to {r < d} dimensions. Defaults to \code{lol.project.lol}.}
 
-\item{alg}{the algorithm to use for embedding. Should be a function returning something of class \code{embedding}. Defaults to \code{lol.project.lol}.}
+\item{alg.opts}{any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.}
 
-\item{classifier}{the classifier to use for assessing performance. Defaults to \code{'lda'}.
+\item{classifier}{the classifier to use for assessing performance. The classifier should accept \code{X}, a \code{[n, d]} array as the first input, and \code{Y}, a \code{[n]} array of labels, as the first 2 arguments. The class should implement a predict function, \code{predict.classifier}, that is compatible with the \code{stats::predict} \code{S3} method. Defaults to \code{MASS::lda}.}
+
+\item{classifier.opts}{any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list.}
+
+\item{classifier.return}{if the return type is a list, \code{class} encodes the attribute containing the prediction labels from \code{stats::predict}. Defaults to the return type of \code{MASS::lda}, \code{class}.
 \itemize{
-\item{'lda'}{ Use the lda classifier for assessing performance. See \code{\link[MASS]{lda}}}
-\item{'rf'}{ Use the random forest classifier for assessing performance. See \code{\link[randomForest]{randomForest}}}
-\item{'cent'}{ Use the nearest centroid classifier for assessing performance. See \code{\link{lol.classify.nearestCentroid}}}
+\item{!is.nan(classifier.return)}{Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.}
+\item{is.nan(classifier.return)}{Assumes that \code{predict.classifer}} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.
 }}
 
 \item{k}{the cross-validated method to perform. Defaults to \code{'loo'}. See \code{\link{lol.xval.split}}
@@ -28,17 +33,12 @@ lol.xval.eval(X, Y, r, alg, classifier = "lda", k = "loo", ...)
 \item{\code{isinteger(k)}}{ perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
 }}
 
-\item{...}{optional args.}
+\item{...}{trailing args.}
 }
 \value{
 Returns a list containing:
 \item{Lhat}{the mean cross-validated error.}
-\item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
-\item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
-\item{centroids}{\code{[K, d]} centroid matrix of \code{K} the unique, ordered classes in \code{d} dimensions.}
-\item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
-\item{Xr}{\code{[n, r]} the \code{n} data points  in reduced dimensionality \code{r}.}
-\item{cr}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
+\item{model}{The model returned by \code{alg} computed on all of the data.}
 \item{Lhats}{the cross-validated error for each of the \code{k}-folds.}
 }
 \description{
@@ -50,14 +50,16 @@ library(lol)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 r=5  # embed into r=5 dimensions
-xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='lda', k='loo')
+# run cross-validation with the nearestCentroid method and leave-one-out cross-validation, which returns only
+prediction labels so we specify classifier.return as NaN
+xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier=lol.classify.nearestCentroid,
+                          classifier.return=NaN, k='loo')
 
-# train model and analyze with loo val5-fold validation using rf classifier
-library(lol)
+# train model and analyze with 5-fold validation using rf classifier
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 r=5  # embed into r=5 dimensions
-xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='rf', k=5)
+xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, k=5)
 }
 \author{
 Eric Bridgeford
