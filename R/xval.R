@@ -12,7 +12,7 @@
 #' @param alg.embedding the attribute returned by \code{alg} containing the embedding matrix. Defaults to assuming that \code{alg} returns an embgedding matrix as \code{"A"}.
 #' \itemize{
 #' \item{!is.nan(alg.embedding)}{Assumes that \code{alg} will return a list containing an attribute, \code{alg.embedding}, a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
-#' \item{is.nan(alg.embedding)}{Assumes that \code{alg}} returns a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
+#' \item{is.nan(alg.embedding)}{Assumes that \code{alg} returns a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
 #' }
 #' @param classifier the classifier to use for assessing performance. The classifier should accept \code{X}, a \code{[n, d]} array as the first input, and \code{Y}, a \code{[n]} array of labels, as the first 2 arguments. The class should implement a predict function, \code{predict.classifier}, that is compatible with the \code{stats::predict} \code{S3} method. Defaults to \code{MASS::lda}.
 #' @param classifier.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list.
@@ -39,15 +39,15 @@
 #' X <- data$X; Y <- data$Y
 #' r=5  # embed into r=5 dimensions
 #' # run cross-validation with the nearestCentroid method and leave-one-out cross-validation, which returns only
-#' prediction labels so we specify classifier.return as NaN
-#' xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier=lol.classify.nearestCentroid,
+#' # prediction labels so we specify classifier.return as NaN
+#' xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r), classifier=lol.classify.nearestCentroid,
 #'                           classifier.return=NaN, k='loo')
 #'
 #' # train model and analyze with 5-fold validation using rf classifier
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' r=5  # embed into r=5 dimensions
-#' xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, k=5)
+#' xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r), k=5)
 #' @export
 lol.xval.eval <- function(X, Y, alg, alg.opts=list(), alg.return="A", classifier=lda, classifier.opts=list(),
                           classifier.return="class", k='loo', ...) {

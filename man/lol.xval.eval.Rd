@@ -34,6 +34,12 @@ lol.xval.eval(X, Y, alg, alg.opts = list(), alg.return = "A",
 }}
 
 \item{...}{trailing args.}
+
+\item{alg.embedding}{the attribute returned by \code{alg} containing the embedding matrix. Defaults to assuming that \code{alg} returns an embgedding matrix as \code{"A"}.
+\itemize{
+\item{!is.nan(alg.embedding)}{Assumes that \code{alg} will return a list containing an attribute, \code{alg.embedding}, a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
+\item{is.nan(alg.embedding)}{Assumes that \code{alg} returns a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
+}}
 }
 \value{
 Returns a list containing:
@@ -51,15 +57,15 @@ data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 r=5  # embed into r=5 dimensions
 # run cross-validation with the nearestCentroid method and leave-one-out cross-validation, which returns only
-prediction labels so we specify classifier.return as NaN
-xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, classifier=lol.classify.nearestCentroid,
+# prediction labels so we specify classifier.return as NaN
+xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r), classifier=lol.classify.nearestCentroid,
                           classifier.return=NaN, k='loo')
 
 # train model and analyze with 5-fold validation using rf classifier
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 r=5  # embed into r=5 dimensions
-xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, k=5)
+xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r), k=5)
 }
 \author{
 Eric Bridgeford

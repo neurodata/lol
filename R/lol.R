@@ -29,7 +29,7 @@ lol.project.lol <- function(X, Y, r, ...) {
   deltas <- lol.utils.deltas(centroids, priors)
   centroids <- t(centroids)
 
-  nv <- r - (K - 1)
+  nv <- r - (K)
   if (nv > 0) {
     A <- cbind(deltas, lol.project.cpca(X, Y, nv)$A)
   } else {
