@@ -28,7 +28,7 @@ lol.project.pca <- function(X, r, ...) {
   return(list(A=A, Xr=lol.embed(X, A)))
 }
 
-# A utility for pre-centered data to do PCA faster.
+# A utility for pre-centered data to do projection faster.
 lol.utils.projection <- function(X, r=NULL, trans=TRUE, ...) {
   d <- dim(X)[2]  # dimensions of X
   if (is.null(r)) {
