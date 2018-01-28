@@ -49,7 +49,7 @@
 #' r=5  # embed into r=5 dimensions
 #' xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, k=5)
 #' @export
-lol.xval.eval <- function(X, Y, r, alg, alg.opts=list(), alg.return="A", classifier=lda, classifier.opts=list(),
+lol.xval.eval <- function(X, Y, alg, alg.opts=list(), alg.return="A", classifier=lda, classifier.opts=list(),
                           classifier.return="class", k='loo', ...) {
   d <- dim(X)[2]
   Y <- factor(Y)
@@ -63,11 +63,11 @@ lol.xval.eval <- function(X, Y, r, alg, alg.opts=list(), alg.return="A", classif
       A <- mod[[alg.return]]
     }
     X.test.proj <- lol.embed(set$X.test, A)  # project the data with the projection just learned
-    trained_classifier <- do.call(classifier, c(list(mod$Xr, set$Y.train), class_opts))
+    trained_classifier <- do.call(classifier, c(list(mod$Xr, set$Y.train), classifier.opts))
     if (is.nan(classifier.return)) {
-      Yhat <- predict(trained_classifier, list(X.test.proj))
+      Yhat <- predict(trained_classifier, X.test.proj)
     } else {
-      Yhat <- predict(trained_classifier, list(X.test.proj))[[classifier.return]]
+      Yhat <- predict(trained_classifier, X.test.proj)[[classifier.return]]
     }
     return(1 - sum(Yhat == set$Y.test)/length(Yhat))
   })

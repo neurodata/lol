@@ -39,9 +39,10 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 We arbitrarily select LOL as our algorithm, and look at the leave-one-out (loo) cross-validated error with the LDA classifier. We project the resulting model to `3` dimensions and visualize the first `2`:
 
 ```{r, fig.width=5}
-result <- lol.xval.eval(X, Y, r, lol.project.lol, classifier='lda', k='loo')
+result <- lol.xval.eval(X, Y, alg = lol.project.lol, alg.opts=list(r=r), alg.return="A",
+                        classifier=MASS::lda, classifier.return="class", k='loo')
 
-data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
+data <- data.frame(x1=result$model$Xr[,1], x2=result$model$Xr[,2], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point() +
