@@ -23,22 +23,18 @@
 lol.project.pca <- function(X, r, ...) {
   # mean center by the global mean
   Xc <- sweep(X, 2, colMeans(X), '-')
-  A <- lol.utils.projection(Xc, r)
+  A <- lol.utils.svd(t(Xc), r)
 
   return(list(A=A, Xr=lol.embed(X, A)))
 }
 
-# A utility for pre-centered data to do projection faster.
-lol.utils.projection <- function(X, r=NULL, trans=TRUE, ...) {
+# A utility for pre-centered data to do projection faster if possible with irlba
+lol.utils.svd <- function(X, r=NULL, ...) {
   d <- dim(X)[2]  # dimensions of X
   if (is.null(r)) {
     r <- d
   }
-  if (trans) {
-    X <- t(as.matrix(X))
-  } else {
-    X <- as.matrix(X)
-  }
+  X <- as.matrix(X)
   if (r < .05*d) {
     # take the svd and retain the top r left singular vectors as our components
     # using more efficient irlba if we only need a fraction of singular vecs
@@ -84,7 +80,7 @@ lol.project.cpca <- function(X, Y, r, ...) {
   Yidx <- sapply(Y, function(y) which(ylabs == y))
   Xt <- X - centroids[Yidx,]
   # compute the standard projection but with the pre-centered data.
-  A <- lol.utils.projection(Xt, r=r)
+  A <- lol.utils.svd(t(Xt), r=r)
 
   return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
               Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
