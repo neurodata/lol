@@ -61,7 +61,7 @@ lol.project.full_lrcca <- function(X, Y, r, ...) {
   S_xi <- ginv(S_x); S_yi <- MASS::ginv(S_y)
   S_xy <- 1/n*t(Xc) %*% Yc
   # decompose Sxi*Sxy*Syi*Syx
-  A <- lol.utils.svd(S_xi %*% S_xy %*% S_yi %*% t(S_xy), r)
+  A <- lol.utils.svd(S_xi %*% S_xy %*% S_yi %*% t(S_xy), r)$A
 
   return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
               Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))

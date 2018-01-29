@@ -20,7 +20,8 @@ require(reshape2)
 
 local_path <- '~/Documents/research/R-fmri/lol'  # local path to the package
 
-sim_cov_plot <- function(Sigmas, mus, priors, title="", yl="Dimension", xl="Dimension", ndim=10, nbreaks=4, legend.name=TeX("norm $\\hat{\\Sigma}$")) {
+sim_cov_plot <- function(Sigmas, mus, priors, title="", yl="Dimension", xl="Dimension", ndim=10,
+                         nbreaks=4, legend.name=TeX("norm $\\hat{\\Sigma}$")) {
   Sigma <- lol:::lol.mvr(Sigmas, mus, priors)
   Sigma <- Sigma[1:ndim, 1:ndim]  # subset
   Sigma <- (Sigma - min(Sigma))/(max(Sigma) - min(Sigma))
@@ -34,10 +35,13 @@ sim_cov_plot <- function(Sigmas, mus, priors, title="", yl="Dimension", xl="Dime
     theme_bw() +
     scale_x_continuous(breaks=labs) +
     scale_y_reverse(breaks=labs) +
-    scale_fill_gradientn(name=legend.name, colours=rev(c("#efedf5", "#bcbddc", "#756bb1")), limits=c(0, 1), breaks=c(0.0, 0.5, 1.0)) +
+    scale_fill_gradientn(name=legend.name, colours=rev(c("#fcfbfd", "#9e9ac8", "#3f007d")),
+                         limits=c(0, 1), breaks=c(0.0, 0.5, 1.0)) +
     theme(legend.position="bottom")
 }
 
+mcols <- c("#e41a1c", "#377eb8", "#4daf4a")
+names(mcols) <- c(1,2,3)
 sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndim=10, nbreaks=4) {
   dat <- data.frame(mus[1:ndim,])
   dat <- cbind(data.frame(1:ndim), dat)
@@ -47,7 +51,7 @@ sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndi
   dat <- melt(dat, id="Dimension")
   xlabs <- seq(from=1, to=ndim, length=4)
   colnames(dat) <- c("Dimension", "Class", "Magnitude")
-  dat$Class <- factor(dat$Class)
+  dat$Class <- factor(dat$Class, levels=c(1, 2, 3))
   plot_mean <- ggplot(dat, aes(x=Dimension, y=Magnitude, color=Class)) +
     geom_line(size=1) +
     theme_bw() +
@@ -55,6 +59,7 @@ sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndi
     xlab(xlab) +
     ylab(ylab) +
     scale_x_continuous(breaks=xlabs) +
+    scale_color_manual(values=mcols) +
     theme(legend.position="bottom")
 }
 
