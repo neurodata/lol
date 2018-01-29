@@ -10,7 +10,7 @@ cl = makeCluster(no_cores)
 #==========================#
 require(lol)
 n=100
-niter <- 500  # number of iterations per simulation
+niter <- 200  # number of iterations per simulation
 rlen <- 30
 # the simulations to call themselves
 sims <- list(lol.sims.rtrunk, lol.sims.toep, lol.sims.rtrunk, lol.sims.fat_tails, lol.sims.qdtoep)
