@@ -2,17 +2,14 @@
 #'
 #' A function that performs PCA on data.
 #'
-#' @import irlba
+#' @importFrom irlba irlba
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param r the rank of the projection.
-#' @param ... optional args.
+#' @param ... trailing args.
 #' @return A list of class \code{embedding} containing the following:
 #' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
-#' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
-#' \item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
-#' \item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+#' \item{d}{\code{[r]} the signular values associated with the projection matrix \code{A}.}
 #' \item{Xr}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
-#' \item{cr}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
 #' @author Eric Bridgeford
 #' @examples
 #' library(lol)
@@ -22,30 +19,23 @@
 #' @export
 lol.project.pca <- function(X, r, ...) {
   # mean center by the global mean
-  A <- lol.utils.svd(t(Xc), r=r, center=TRUE)$A
+  Xc  <- sweep(X, 2, colMeans(X), '-')
+  svdX <- lol.utils.svd(Xc, nv=r, nu=0)
 
-  return(list(A=A, Xr=lol.embed(X, A)))
+  return(list(A=svdX$v, d=svdX$d, Xr=lol.embed(X, svdX$v)))
 }
 
-# A utility for pre-centered data to do projection faster if possible with irlba
-lol.utils.svd <- function(X, r=NULL, center=FALSE, ...) {
-  d <- dim(X)[2]  # dimensions of X
-  if (is.null(r)) {
-    r <- d
-  }
-  if (center) {
-    X  <- sweep(X, 2, colMeans(X), '-')
-  }
-  X <- as.matrix(X)
-  if (r < .05*d) {
-    # take the svd and retain the top r left singular vectors as our components
-    # using more efficient irlba if we only need a fraction of singular vecs
-    svdX <- irlba::irlba(X, nv=0, nu=r)
+#' A utility to use irlba when necessary
+#' @importFrom irlba irlba
+#' @author Eric Bridgeford
+lol.utils.svd <- function(X, nu=0, nv=0, t=.05) {
+  n <- nrow(X)
+  if (nu > t*n | nv > t*n) {
+    svdX <- svd(X, nu=nu, nv=nv)
   } else {
-    svdX <- svd(X, nv=0, nu=r)
+    svdX <- irlba(X, nu=nu, nv=nv)
   }
-
-  return(list(A=svdX$u, v=svdX$d))
+  return(svdX)
 }
 
 #' Class PCA
@@ -55,9 +45,10 @@ lol.utils.svd <- function(X, r=NULL, center=FALSE, ...) {
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param r the rank of the projection.
-#' @param ... optional args.
+#' @param ... trailing args.
 #' @return A list of class \code{embedding} containing the following:
 #' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+#' \item{d}{\code{[r]} the signular values associated with the projection matrix \code{A}.}
 #' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
 #' \item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
 #' \item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
@@ -81,8 +72,8 @@ lol.project.cpca <- function(X, Y, r, ...) {
   Yidx <- sapply(Y, function(y) which(ylabs == y))
   Xt <- X - centroids[Yidx,]
   # compute the standard projection but with the pre-centered data.
-  A <- lol.utils.svd(t(Xt), r=r)$A
+  svdX <- lol.utils.svd(Xt, nv=r, nu=0)
 
-  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
-              Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
+  return(list(A=svdX$v, d=svdX$d, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=lol.embed(X, svdX$v), cr=lol.embed(centroids, svdX$v)))
 }

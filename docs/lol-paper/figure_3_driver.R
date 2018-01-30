@@ -33,10 +33,7 @@ for (i in 1:length(sims)) {
 
 # Setup Algorithms
 #=========================#
-algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol)
-alg_name <- c("PCA", "cPCA", "LR-CCA", "LOL")
 
-clusterExport(cl, "algs"); clusterExport(cl, "alg_name")
 clusterExport(cl, "simulations"); clusterExport(cl, "rlen")
 results <- parLapply(cl, simulations, function(sim) {
   require(lol)
@@ -44,10 +41,22 @@ results <- parLapply(cl, simulations, function(sim) {
   X <- sim_dat$X; Y <- sim_dat$Y
   results <- data.frame(sim=c(), iter=c(), alg=c(), r=c(), lhat=c())
   for (i in 1:length(algs)) {
+    if (sim$sim == "QDA") {
+      algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol, lol.project.qoq)
+      alg_name <- c("PCA", "cPCA", "CCA", "LOL", "QOQ")
+    } else {
+      algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol)
+      alg_name <- c("PCA", "cPCA", "CCA", "LOL")
+    }
     rs <- round(seq(from=1, to=sim$rmax, length.out=rlen))
     for (r in rs) {
+      if (alg_name %in% c("QOQ")) {
+        classifier.alg=qda
+      } else {
+        classifier.alg=lda
+      }
       tryCatch({
-        xv_res <- lol.xval.eval(X, Y, alg=algs[[i]], alg.opts=list(r=r), alg.return="A", k='loo')
+        xv_res <- lol.xval.eval(X, Y, alg=algs[[i]], alg.opts=list(r=r), alg.return="A", classifier=classifier.alg, k='loo')
         lhat <- xv_res$Lhat
       }, error=function(e) lhat <- NaN)
       results <- rbind(results, data.frame(sim=sim$sim, iter=sim$iter, alg=alg_name[i], r=r, lhat=lhat))

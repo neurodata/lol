@@ -19,11 +19,12 @@ lol.project.lrcca(X, Y, r, method = "full", ...)
 \item{'partial'}{Requires \code{O(n^2)} storage, but is slower.}
 }}
 
-\item{...}{optional args.}
+\item{...}{trailing args.}
 }
 \value{
 If \code{method == 'full'} A list of containing the following:
 \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+\item{d}{\code{[r]} the signular values associated with the projection matrix \code{A}.}
 \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
 \item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
 \item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}

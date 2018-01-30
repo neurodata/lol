@@ -5,7 +5,7 @@
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param r the rank of the projection. Note that \code{r >= K}, and \code{r < d}.
-#' @param ... optional args.
+#' @param ... trailing args.
 #' @return A list of class \code{embedding} containing the following:
 #' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
@@ -42,14 +42,14 @@ lol.project.lol <- function(X, Y, r, ...) {
               Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
 }
 
-#' Quadratic Optimal Projection (QOQ)
+#' Quadratic Optimal QDA (QOQ)
 #'
-#' A function for implementing the Quadratic Optimal Low-Rank Projection (QOQ) Algorithm, an intuitive adaptation of the Linear Optimal Low-Rank Projection (LOL).
+#' A function for implementing the Quadratic Optimal QDA Projection (QOQ) Algorithm, an intuitive adaptation of the Linear Optimal Low-Rank Projection (LOL).
 #'
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param r the rank of the projection. Note that \code{r >= K}, and \code{r < d}.
-#' @param ... optional args.
+#' @param ... trailing args.
 #' @return A list of class \code{embedding} containing the following:
 #' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
@@ -74,18 +74,18 @@ lol.project.qoq <- function(X, Y, r, ...) {
   centroids <- t(centroids)
 
   nv <- r - (K)
-  Aclass <- array(0, dim=c(n, 0))  # the class-wise egvecs
+  Aclass <- array(0, dim=c(d, 0))  # the class-wise egvecs
   vclass <- c()  # the class-wise egvals
   if (nv > 0) {
     for (ylab in ylabs) {
-      Xclass = X[Y == ylab, ]
-      obj <- lol.project.pca(Xclass, r=nv, center=TRUE)
+      Xclass = X[Y == ylab,]
+      obj <- lol.project.pca(Xclass, nv)
       Aclass <- cbind(Aclass, obj$A)
-      vclass <- c(vclass, obj$v)
+      vclass <- c(vclass, obj$d[1:nv])
     }
     # take the nv from the A computed for each class using the
     # nv with the top eigenvalues from Aclass
-    A <- cbind(deltas, Aclass[, sort(vclass, index=return=TRUE)$ix[1:nv]])
+    A <- cbind(deltas, Aclass[, sort(vclass, index.return=TRUE)$ix[1:nv]])
   } else {
     A <- deltas[, 1:r, drop=FALSE]
   }

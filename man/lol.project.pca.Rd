@@ -11,16 +11,13 @@ lol.project.pca(X, r, ...)
 
 \item{r}{the rank of the projection.}
 
-\item{...}{optional args.}
+\item{...}{trailing args.}
 }
 \value{
 A list of class \code{embedding} containing the following:
 \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
-\item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
-\item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
-\item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+\item{d}{\code{[r]} the signular values associated with the projection matrix \code{A}.}
 \item{Xr}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
-\item{cr}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
 }
 \description{
 A function that performs PCA on data.

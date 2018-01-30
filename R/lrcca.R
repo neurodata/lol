@@ -11,9 +11,10 @@
 #' \item{'full'}{Requires \code{O(d^2)} storage, but is faster.}
 #' \item{'partial'}{Requires \code{O(n^2)} storage, but is slower.}
 #' }
-#' @param ... optional args.
+#' @param ... trailing args.
 #' @return If \code{method == 'full'} A list of containing the following:
 #' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+#' \item{d}{\code{[r]} the signular values associated with the projection matrix \code{A}.}
 #' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
 #' \item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
 #' \item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
@@ -61,10 +62,10 @@ lol.project.full_lrcca <- function(X, Y, r, ...) {
   S_xi <- ginv(S_x); S_yi <- MASS::ginv(S_y)
   S_xy <- 1/n*t(Xc) %*% Yc
   # decompose Sxi*Sxy*Syi*Syx
-  A <- lol.utils.svd(S_xi %*% S_xy %*% S_yi %*% t(S_xy), r)$A
+  svdX <- lol.utils.svd(S_xi %*% S_xy %*% S_yi %*% t(S_xy), nu=r)
 
-  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
-              Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
+  return(list(A=svdX$u, d=svdX$d, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=lol.embed(X, svdX$u), cr=lol.embed(centroids, svdX$u)))
 }
 
 lol.project.partial_lrcca <- function(X, Y, r, ...) {
