@@ -17,8 +17,8 @@ require(MASS)
 require(gridExtra)
 require(data.table)
 require(reshape2)
-
-local_path <- '~/Documents/research/R-fmri/lol'  # local path to the package
+require(R.matlab)
+require(grid)
 
 sim_cov_plot <- function(Sigmas, mus, priors, title="", yl="Dimension", xl="Dimension", ndim=10,
                          nbreaks=4, legend.name=TeX("norm $\\hat{\\Sigma}$")) {
@@ -35,9 +35,10 @@ sim_cov_plot <- function(Sigmas, mus, priors, title="", yl="Dimension", xl="Dime
     theme_bw() +
     scale_x_continuous(breaks=labs) +
     scale_y_reverse(breaks=labs) +
+    theme(legend.position="bottom") +#, axis.title=element_text(size=14)) +
     scale_fill_gradientn(name=legend.name, colours=rev(c("#fcfbfd", "#9e9ac8", "#3f007d")),
-                         limits=c(0, 1), breaks=c(0.0, 0.5, 1.0)) +
-    theme(legend.position="bottom")
+                         limits=c(0, 1), breaks=c(0.0, 0.5, 1.0))#,
+                         #guide=guide_colorbar(title.position="top", title.hjust = .5, barheight=.75))
 }
 
 mcols <- c("#e41a1c", "#377eb8", "#4daf4a")
@@ -51,6 +52,8 @@ sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndi
   dat <- melt(dat, id="Dimension")
   xlabs <- seq(from=1, to=ndim, length=4)
   colnames(dat) <- c("Dimension", "Class", "Magnitude")
+  lims <- c(floor(10*min(dat$Magnitude))/10, ceiling(10*max(dat$Magnitude))/10)
+  breaks= c(lims[1], round((lims[1] + lims[2])/2), lims[2])
   dat$Class <- factor(dat$Class, levels=c(1, 2, 3))
   plot_mean <- ggplot(dat, aes(x=Dimension, y=Magnitude, color=Class)) +
     geom_line(size=1) +
@@ -58,19 +61,28 @@ sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndi
     ggtitle(title) +
     xlab(xlab) +
     ylab(ylab) +
+    scale_y_continuous(limits=lims, breaks=breaks) +
     scale_x_continuous(breaks=xlabs) +
-    scale_color_manual(values=mcols) +
-    theme(legend.position="bottom")
+    theme(legend.position="bottom") +
+    scale_color_manual(values=mcols)#, guide=guide_legend(title.position="top", title.hjust = .5))
 }
 
-plot_sim_lhats <- function(data, title="", ylab=TeX("$\\hat{L}$"), xlab="Embedded Dimensions") {
+plot_sim_lhats <- function(data, cols, title="", ylab=TeX("$\\hat{L}$"), xlab="Embedded Dimensions", fsize=12) {
+  lims <- c(floor(10*min(data$lhat))/10, ceiling(10*max(data$lhat))/10)
+  breaks= seq(from=lims[1], to=lims[2], by=0.1)
+  xlims <- c(min(data$r), max(data$r))
+  xbreaks <- c(xlims[1], round((xlims[1] + xlims[2])/2), xlims[2])
   plot_sims <- ggplot(data, aes(x=r, y=lhat, group=alg, color=alg)) +
     geom_line(size=1) +
     xlab(xlab) +
     ylab(ylab) +
     ggtitle(title) +
     theme_bw() +
-    theme(legend.position="bottom") +
+    scale_y_continuous(limits=lims, breaks=breaks) +
+    scale_x_continuous(limits=xlims, breaks=xbreaks) +
+    theme(legend.position="bottom", axis.title.y=element_text(size=fsize)) +
+    scale_color_manual(values=cols, limits=names(cols),
+                       guide=guide_legend(nrow=2, byrow=TRUE)) +#, title.position="top", title.hjust = .5)) +
     labs(color="Algorithm")
   return(plot_sims)
 }
@@ -86,7 +98,44 @@ g_legend<-function(a.gplot){
 The below code will produce the required data, which runs LOL, cPCA, PCA, and LR-CCA at the desired simulation settings. Note that this function will multi-thread natively, and took approximately 7 hours to run on a 96 core machine with $\frac{7}{8}$ of the cores active.
 
 ```{r, eval=FALSE}
-source(paste(local_path, '/docs/lol-paper/figure_3_driver.R', sep=""))
+source('./figure_3_driver.R')
+```
+
+Borrowing results from an earlier matlab implementation:
+
+```{r}
+toep <- readMat('./data/fig3/toeplitz.mat')
+tr2 <- readMat('./data/fig3/rtrunk.mat')
+tr3 <- readMat('./data/fig3/3trunk.mat')
+ft <- readMat('./data/fig3/fat_tails.mat')
+
+maxr <- c(90, 30, 30, 30)
+minr <- 1
+mats <- list(toep, tr2, tr3, ft)
+sim_name <- c("Toeplitz", "Trunk-2", "Trunk-3", "Fat-Tails (D=1000)")
+
+interest <- list(c("ROAD"), c("ROAD"), c("LASSO"), c("ROAD"))
+key <- c("ROAD", "lasso")
+names(key) <- c("ROAD", "LASSO")
+
+
+resultsm <- data.frame(sim=c(), iter=c(), alg=c(), r=c(), lhat=c())
+
+for (k in 1:length(mats)) { 
+  dat <- mats[[k]]
+  for (i in 1:length(dat$ks)) {  # i encodes simulation iteration
+    for (j in length(interest[[k]])) {
+      algname <- key[interest[[k]][j]]
+      algid <- which(dimnames(dat$ks[[i]][[1]])[[1]] == algname)
+      rs <- dat$ks[[i]][[1]][algid,,1][[algname]]
+      algid <- which(dimnames(dat$Lhat)[[1]] == algname)
+      lhats <- dat$Lhat[algid,,][[i]]
+      idx <- which(rs < maxr[k] & rs > minr)
+      resultsm <- rbind(resultsm, data.frame(sim=sim_name[k], iter=i, alg=interest[[k]][j],
+                                             r=as.vector(rs)[idx], lhat=as.vector(lhats)[idx]))
+    }
+  }
+}
 ```
 
 First, we prepare the plots of subsets of the mean and covariance matrices:
@@ -119,14 +168,19 @@ Next, we aggregate over the respective iterations, and subset plots for each fun
 
 ```{r}
 # read the results in
-results <- readRDS(paste(local_path, '/docs/lol-paper/lol_fig3_lda.rds', sep=""))
-results.means <- results$means
+results <- readRDS('./data/fig3/lol_fig3_lda.rds')
+results <- rbind(results$overall, resultsm)
+#results <- results$overall
+results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = mean)
+
+acols <- c("#006400", "#4daf4a", "#e41a1c", "#6b6b6b", "#d95f02", "#984EA3", "#00ffff")
+names(acols) <- c("LOL", "QOQ", "CCA", "ROAD", "LASSO", "PCA", "cPCA")
 
 sim_plots <- list()
 counter <- 1
-for (sim in unique(results.means$sim)) {
+for (sim in sim_names) {
   data_sub <- results.means[results.means$sim == sim,]
-  sim_plots[[counter]] <- plot_sim_lhats(data_sub, ylab=sim)
+  sim_plots[[counter]] <- plot_sim_lhats(data_sub, ylab=sim, cols=acols)
   counter <- counter + 1
 }
 ```
@@ -166,13 +220,17 @@ cov_plots <- sapply(1:length(cov_plots), function(j) {
     return(resp)
   }, simplify=FALSE)
 
-grid_sim <- grid.arrange(grid.arrange(grobs=sim_plots, nrow=nsim), sim_leg, nrow=2, heights=c(.95, .05), top="Misclassification Rate\n")
-grid_mean <- grid.arrange(grid.arrange(grobs=mean_plots, nrow=nsim), mean_leg, nrow=2, heights=c(.95, .05), top="Means\n(First 10 Dimensions)")
-grid_cov <- grid.arrange(grid.arrange(grobs=cov_plots, nrow=nsim), cov_leg, nrow=2, heights=c(.95, .05), top="Covariances\n(First 10 Dimensions)")
+tfonts = 14
+grid_sim <- grid.arrange(grid.arrange(grobs=sim_plots, nrow=nsim), sim_leg, nrow=2, heights=c(.95, .05),
+                         top=textGrob("Misclassification Rate\n", gp=gpar(fontsize=tfonts, face="bold")))
+grid_mean <- grid.arrange(grid.arrange(grobs=mean_plots, nrow=nsim), mean_leg, nrow=2, heights=c(.95, .05),
+                         top=textGrob("Means\n(First 10 Dimensions)", gp=gpar(fontsize=tfonts, face="bold")))
+grid_cov <- grid.arrange(grid.arrange(grobs=cov_plots, nrow=nsim), cov_leg, nrow=2, heights=c(.95, .05),
+                         top=textGrob("Covariances\n(First 10 Dimensions)", gp=gpar(fontsize=tfonts, face="bold")))
 ```
 
 We combine and plot:
 
-```{r, fig.height=10, fig.width=8}
-grid.arrange(grid_sim, grid_mean, grid_cov, ncol=3, widths=c(0.35, 0.35, 0.25))
+```{r, fig.height=11, fig.width=10}
+grid.arrange(grid_sim, grid_mean, grid_cov, ncol=3, widths=c(0.35, 0.35, 0.23))
 ```

@@ -14,7 +14,7 @@ require(latex2exp)
 require(MASS)
 require(gridExtra)
 
-n <- 100
+n <- 200
 d <- 1000
 plot_sim <- function(X, Y, name) {
   data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
@@ -32,18 +32,27 @@ plot_sim <- function(X, Y, name) {
 # LDA projection plot
 run_sim <- function(inps, func, ylab="", title="", r=10) {
   result <- do.call(func, c(inps, list(r=4)))
-  
-  liney <- lda(result$Xr, inps$Y)
-  result <- predict(liney, result$Xr)
-  data <- data.frame(x1=result$x[,1], y=inps$Y)
+  # since CCA will fail with CCA due to colinearity
+  xproj <- tryCatch({
+    liney <- lda(result$Xr, inps$Y)
+    resultl <- predict(liney, result$Xr)
+    xproj <- resultl$x[,1]
+  }, error=function(e) {
+    xproj <- result$Xr[,1]
+    return(xproj)
+  }, finally = function(f) {
+    return(xproj)
+  })
+  data <- data.frame(x1=xproj, y=inps$Y)
   data$y <- factor(data$y)
-  proj_plot <- ggplot(data, aes(x=x1, fill=y, linetype=y)) +
+  proj_plot <- ggplot(data, aes(x=x1, y=..scaled.., fill=y, linetype=y)) +
     geom_density(adjust=2, alpha=0.6) +
     xlab(TeX("")) +
     ylab(TeX(ylab)) +
     theme_bw() +
     ggtitle(title) +
     scale_fill_discrete(name="Class Posterior") +
+    scale_y_continuous(breaks=c(0, 0.5, 1)) +
     guides(linetype=FALSE) #+
     #geom_jitter(data=data, aes(x=x1, y=0, group=y, color=y, shape=y), position = position_jitter(width=0, height=0.2))
   return(proj_plot)
@@ -62,14 +71,14 @@ In this notebook, we will consider 3 simulations with $K=2$ classes: Stacked Cig
 We begin by generating the simulations:
 
 ```{r, message=FALSE}
-sims <- list(lol.sims.cigar, lol.sims.rtrunk, lol.sims.rtrunk, lol.sims.mean_diff)
+sims <- list(lol.sims.cigar, lol.sims.rtrunk, lol.sims.rtrunk)
 rotate <- c(FALSE, FALSE, TRUE, FALSE)
-sim_names <-  c("Stacked Cigars", "Trunk", "Rotated Trunk", "Mean Difference")
+sim_names <-  c("Stacked Cigars", "Trunk", "Rotated Trunk")
 funcs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca,
               lol.project.lol, lol.project.bayes_optimal)
-alg_names <- c("PCA", "PCA'", "LR-CCA", "LOL", "Bayes Optimal")
+alg_names <- c("PCA", "PCA'", "CCA", "LOL", "Bayes Optimal")
   
-settings <- list(list(), list(), list(rotate=TRUE), list(md=4.4))
+settings <- list(list(), list(), list(rotate=TRUE))
 
 sim_plots <- list()
 res_plots <- list()
@@ -114,8 +123,8 @@ res_top <- grid.arrange(sim_grid, top_legend, nrow=1, widths=c(.88, .12))
 
 Plotting:
 
-```{r, fig.height=10, fig.width=12}
+```{r, fig.height=9, fig.width=9}
 ncol <- length(alg_names) + 1
 fig2 <- grid.arrange(res_top, res_bottom, nrow=2,
-                     heights=c(1/ncol, (ncol - 1)/ncol))
+                     heights=c(.25, .75))
 ```
