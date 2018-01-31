@@ -108,13 +108,14 @@ toep <- readMat('./data/fig3/toeplitz.mat')
 tr2 <- readMat('./data/fig3/rtrunk.mat')
 tr3 <- readMat('./data/fig3/3trunk.mat')
 ft <- readMat('./data/fig3/fat_tails.mat')
+qd <- readMat('./data/fig3/r2toeplitz.mat')
 
-maxr <- c(90, 30, 30, 30)
-minr <- 1
-mats <- list(toep, tr2, tr3, ft)
-sim_name <- c("Toeplitz", "Trunk-2", "Trunk-3", "Fat-Tails (D=1000)")
+maxr <- c(90, 30, 30, 30, 30)
+minr <- 0
+mats <- list(toep, tr2, tr3, ft, qd)
+sim_name <- c("Toeplitz", "Trunk-2", "Trunk-3", "Fat-Tails (D=1000)", "QDA")
 
-interest <- list(c("ROAD"), c("ROAD"), c("LASSO"), c("ROAD"))
+interest <- list(c("ROAD"), c("ROAD"), c("LASSO"), c("ROAD"), c("ROAD"))
 key <- c("ROAD", "lasso")
 names(key) <- c("ROAD", "LASSO")
 
@@ -123,6 +124,7 @@ resultsm <- data.frame(sim=c(), iter=c(), alg=c(), r=c(), lhat=c())
 
 for (k in 1:length(mats)) { 
   dat <- mats[[k]]
+  desired_r <- 1:maxr[k]
   for (i in 1:length(dat$ks)) {  # i encodes simulation iteration
     for (j in length(interest[[k]])) {
       algname <- key[interest[[k]][j]]
@@ -130,9 +132,9 @@ for (k in 1:length(mats)) {
       rs <- dat$ks[[i]][[1]][algid,,1][[algname]]
       algid <- which(dimnames(dat$Lhat)[[1]] == algname)
       lhats <- dat$Lhat[algid,,][[i]]
-      idx <- which(rs < maxr[k] & rs > minr)
+      lhat_adjust <- spline(rs, lhats, xout=desired_r, method='fmm', ties=mean)
       resultsm <- rbind(resultsm, data.frame(sim=sim_name[k], iter=i, alg=interest[[k]][j],
-                                             r=as.vector(rs)[idx], lhat=as.vector(lhats)[idx]))
+                                             r=lhat_adjust$x, lhat=lhat_adjust$y))
     }
   }
 }
@@ -171,9 +173,10 @@ Next, we aggregate over the respective iterations, and subset plots for each fun
 results <- readRDS('./data/fig3/lol_fig3_lda.rds')
 results <- rbind(results$overall, resultsm)
 #results <- results$overall
-results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = mean)
+nan.mean <- function(x) mean(x, na.rm=TRUE)
+results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = nan.mean)
 
-acols <- c("#006400", "#4daf4a", "#e41a1c", "#6b6b6b", "#d95f02", "#984EA3", "#00ffff")
+acols <- c("#008000", "#4daf4a", "#e41a1c", "#ff7f00", "#377eb8", "#f781bf", "#00ffff")
 names(acols) <- c("LOL", "QOQ", "CCA", "ROAD", "LASSO", "PCA", "cPCA")
 
 sim_plots <- list()
@@ -221,11 +224,11 @@ cov_plots <- sapply(1:length(cov_plots), function(j) {
   }, simplify=FALSE)
 
 tfonts = 14
-grid_sim <- grid.arrange(grid.arrange(grobs=sim_plots, nrow=nsim), sim_leg, nrow=2, heights=c(.95, .05),
+grid_sim <- grid.arrange(grid.arrange(grobs=sim_plots, nrow=nsim), sim_leg, nrow=2, heights=c(.95, .07),
                          top=textGrob("Misclassification Rate\n", gp=gpar(fontsize=tfonts, face="bold")))
-grid_mean <- grid.arrange(grid.arrange(grobs=mean_plots, nrow=nsim), mean_leg, nrow=2, heights=c(.95, .05),
+grid_mean <- grid.arrange(grid.arrange(grobs=mean_plots, nrow=nsim), mean_leg, nrow=2, heights=c(.95, .07),
                          top=textGrob("Means\n(First 10 Dimensions)", gp=gpar(fontsize=tfonts, face="bold")))
-grid_cov <- grid.arrange(grid.arrange(grobs=cov_plots, nrow=nsim), cov_leg, nrow=2, heights=c(.95, .05),
+grid_cov <- grid.arrange(grid.arrange(grobs=cov_plots, nrow=nsim), cov_leg, nrow=2, heights=c(.95, .07),
                          top=textGrob("Covariances\n(First 10 Dimensions)", gp=gpar(fontsize=tfonts, face="bold")))
 ```
 
