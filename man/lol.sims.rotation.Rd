@@ -9,6 +9,9 @@ lol.sims.rotation(d)
 \arguments{
 \item{d}{dimensions}
 }
+\value{
+the rotation matrix
+}
 \description{
 A helper function for estimating a random rotation matrix.
 }

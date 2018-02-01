@@ -38,9 +38,11 @@
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' r=5  # embed into r=5 dimensions
-#' # run cross-validation with the nearestCentroid method and leave-one-out cross-validation, which returns only
+#' # run cross-validation with the nearestCentroid method and
+#' # 'eave-one-out cross-validation, which returns only
 #' # prediction labels so we specify classifier.return as NaN
-#' xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r), classifier=lol.classify.nearestCentroid,
+#' xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r),
+#'                           classifier=lol.classify.nearestCentroid,
 #'                           classifier.return=NaN, k='loo')
 #'
 #' # train model and analyze with 5-fold validation using lda classifier
@@ -49,7 +51,7 @@
 #' r=5  # embed into r=5 dimensions
 #' xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r), k=5)
 #' @export
-lol.xval.eval <- function(X, Y, alg, alg.opts=list(), alg.return="A", classifier=lda, classifier.opts=list(),
+lol.xval.eval <- function(X, Y, alg, alg.opts=list(), alg.embedding="A", classifier=lda, classifier.opts=list(),
                           classifier.return="class", k='loo', ...) {
   d <- dim(X)[2]
   Y <- factor(Y)
@@ -57,10 +59,10 @@ lol.xval.eval <- function(X, Y, alg, alg.opts=list(), alg.return="A", classifier
   sets <- lol.xval.split(X, Y, k=k)
   Lhat.fold <- sapply(sets, function(set) {
     mod <- do.call(alg, c(list(X=set$X.train, Y=set$Y.train), alg.opts)) # learn the projection with the algorithm specified
-    if (is.nan(alg.return)) {
+    if (is.nan(alg.embedding)) {
       A <- mod
     } else {
-      A <- mod[[alg.return]]
+      A <- mod[[alg.embedding]]
     }
     X.test.proj <- lol.embed(set$X.test, A)  # project the data with the projection just learned
     trained_classifier <- do.call(classifier, c(list(mod$Xr, set$Y.train), classifier.opts))

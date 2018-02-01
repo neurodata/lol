@@ -129,6 +129,7 @@ lol.sims.mean_diff <- function(n, d, rotate=FALSE, priors=NULL, K=2, md=1, subse
 #' A function for simulating data in which the covariance is a non-symmetric toeplitz matrix.
 #'
 #' @importFrom abind abind
+#' @importFrom stats toeplitz
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
 #' @param rotate whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.
@@ -192,6 +193,7 @@ lol.sims.toep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0.5
 #' A function for simulating data generalizing the Toeplitz setting, where each class has a different covariance matrix. This results in a Quadratic Discriminant.
 #'
 #' @importFrom abind abind
+#' @importFrom stats toeplitz
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
 #' @param rotate whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.
@@ -448,7 +450,9 @@ lol.sims.sim_gmm <- function(mus, Sigmas, n, priors) {
 #' Sample Random Rotation
 #'
 #' A helper function for estimating a random rotation matrix.
+#' @importFrom stats rnorm
 #' @param d dimensions
+#' @return the rotation matrix
 #' @author Eric Bridgeford
 lol.sims.rotation <- function(d) {
   Q <- qr.Q(qr(array(rnorm(d*d), dim=c(d, d))))

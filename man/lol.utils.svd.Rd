@@ -6,6 +6,18 @@
 \usage{
 lol.utils.svd(X, nu = 0, nv = 0, t = 0.05)
 }
+\arguments{
+\item{X}{the data to compute the svd of.}
+
+\item{nu}{the number of left singular vectors to retain.}
+
+\item{nv}{the number of right singular vectors to retain.}
+
+\item{t}{the threshold of percent of singular vals/vecs to use irlba.}
+}
+\value{
+the svd of X.
+}
 \description{
 A utility to use irlba when necessary
 }

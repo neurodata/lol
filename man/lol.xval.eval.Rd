@@ -4,7 +4,7 @@
 \alias{lol.xval.eval}
 \title{Embedding Cross Validation}
 \usage{
-lol.xval.eval(X, Y, alg, alg.opts = list(), alg.return = "A",
+lol.xval.eval(X, Y, alg, alg.opts = list(), alg.embedding = "A",
   classifier = lda, classifier.opts = list(), classifier.return = "class",
   k = "loo", ...)
 }
@@ -16,6 +16,12 @@ lol.xval.eval(X, Y, alg, alg.opts = list(), alg.return = "A",
 \item{alg}{the algorithm to use for embedding. Should be a function that accepts inputs \code{X} and \code{Y}, returning a list containing a matrix that embeds from {d} to {r < d} dimensions. Defaults to \code{lol.project.lol}.}
 
 \item{alg.opts}{any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.}
+
+\item{alg.embedding}{the attribute returned by \code{alg} containing the embedding matrix. Defaults to assuming that \code{alg} returns an embgedding matrix as \code{"A"}.
+\itemize{
+\item{!is.nan(alg.embedding)}{Assumes that \code{alg} will return a list containing an attribute, \code{alg.embedding}, a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
+\item{is.nan(alg.embedding)}{Assumes that \code{alg} returns a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
+}}
 
 \item{classifier}{the classifier to use for assessing performance. The classifier should accept \code{X}, a \code{[n, d]} array as the first input, and \code{Y}, a \code{[n]} array of labels, as the first 2 arguments. The class should implement a predict function, \code{predict.classifier}, that is compatible with the \code{stats::predict} \code{S3} method. Defaults to \code{MASS::lda}.}
 
@@ -34,12 +40,6 @@ lol.xval.eval(X, Y, alg, alg.opts = list(), alg.return = "A",
 }}
 
 \item{...}{trailing args.}
-
-\item{alg.embedding}{the attribute returned by \code{alg} containing the embedding matrix. Defaults to assuming that \code{alg} returns an embgedding matrix as \code{"A"}.
-\itemize{
-\item{!is.nan(alg.embedding)}{Assumes that \code{alg} will return a list containing an attribute, \code{alg.embedding}, a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
-\item{is.nan(alg.embedding)}{Assumes that \code{alg} returns a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
-}}
 }
 \value{
 Returns a list containing:
@@ -57,9 +57,11 @@ library(lol)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 r=5  # embed into r=5 dimensions
-# run cross-validation with the nearestCentroid method and leave-one-out cross-validation, which returns only
+# run cross-validation with the nearestCentroid method and
+# 'eave-one-out cross-validation, which returns only
 # prediction labels so we specify classifier.return as NaN
-xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r), classifier=lol.classify.nearestCentroid,
+xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r),
+                          classifier=lol.classify.nearestCentroid,
                           classifier.return=NaN, k='loo')
 
 # train model and analyze with 5-fold validation using lda classifier

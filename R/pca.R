@@ -27,6 +27,11 @@ lol.project.pca <- function(X, r, ...) {
 
 #' A utility to use irlba when necessary
 #' @importFrom irlba irlba
+#' @param X the data to compute the svd of.
+#' @param nu the number of left singular vectors to retain.
+#' @param nv the number of right singular vectors to retain.
+#' @param t the threshold of percent of singular vals/vecs to use irlba.
+#' @return the svd of X.
 #' @author Eric Bridgeford
 lol.utils.svd <- function(X, nu=0, nv=0, t=.05) {
   n <- nrow(X)
