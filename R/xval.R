@@ -30,6 +30,7 @@
 #' @return Returns a list containing:
 #' \item{Lhat}{the mean cross-validated error.}
 #' \item{model}{The model returned by \code{alg} computed on all of the data.}
+#' \item{classifier}{The classifier trained on all of the embedded data.}
 #' \item{Lhats}{the cross-validated error for each of the \code{k}-folds.}
 #' @author Eric Bridgeford
 #' @examples
@@ -43,7 +44,7 @@
 #' xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r), classifier=lol.classify.nearestCentroid,
 #'                           classifier.return=NaN, k='loo')
 #'
-#' # train model and analyze with 5-fold validation using rf classifier
+#' # train model and analyze with 5-fold validation using lda classifier
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' r=5  # embed into r=5 dimensions
@@ -73,8 +74,9 @@ lol.xval.eval <- function(X, Y, alg, alg.opts=list(), alg.return="A", classifier
   })
 
   model <- do.call(alg, c(list(X=X, Y=Y), alg.opts))
+  class <- do.call(classifier, c(list(model$Xr, Y), classifier.opts))
 
-  return(list(Lhat=mean(Lhat.fold), model=model, Lhats=Lhat.fold))
+  return(list(Lhat=mean(Lhat.fold), model=model, classifier=class, Lhats=Lhat.fold))
 }
 
 #' Cross-Validation Data Splitter

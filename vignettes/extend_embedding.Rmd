@@ -1,0 +1,113 @@
+---
+title: "Writing Your Own Embedding Algorithms"
+author: "Eric Bridgeford"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Writing New Embedding Algorithms
+
+The `lol` package makes it trivial for users to write their own embedding algorithms and leverage our functions.
+
+For example, the below algorithm for `lol.project.lol`:
+
+```
+#' Linear Optimal Low-Rank Projection (LOL)
+#'
+#' A function for implementing the Linear Optimal Low-Rank Projection (LOL) Algorithm.
+#'
+#' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
+#' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
+#' @param r the rank of the projection. Note that \code{r >= K}, and \code{r < d}.
+#' @param ... trailing args.
+#' @return A list of class \code{embedding} containing the following:
+#' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+#' \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
+#' \item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
+#' \item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+#' \item{Xr}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
+#' \item{cr}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
+#' @author Eric Bridgeford
+#' @examples
+#' library(lol)
+#' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+#' X <- data$X; Y <- data$Y
+#' model <- lol.project.lol(X=X, Y=Y, r=5)  # use lol to project into 5 dimensions
+#' @export
+lol.project.lol <- function(X, Y, r, ...) {
+  # class data
+  info <- lol.utils.info(X, Y)
+  priors <- info$priors; centroids <- info$centroids
+  K <- info$K; ylabs <- info$ylabs
+  n <- info$n; d <- info$d
+  deltas <- lol.utils.deltas(centroids, priors)
+  centroids <- t(centroids)
+
+  nv <- r - (K)
+  if (nv > 0) {
+    A <- cbind(deltas, lol.project.cpca(X, Y, nv)$A)
+  } else {
+    A <- deltas[, 1:r, drop=FALSE]
+  }
+
+  # orthogonalize and normalize
+  A <- qr.Q(qr(A))
+  return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
+}
+```
+
+As we can see in the above segment, the function `lol.project.lol` returns a list of items. To use many of the `lol` functionality, researchers can trivially write an `embedding` method following the below spec:
+
+```
+Inputs:
+keyworded arguments for:
+- X: a [n, d] data matrix with n samples in d dimensions.
+- Y: a [n] vector of class labels for each sample.
+Outputs:
+a list containing the following:
+- <your-embedding-matrix>: a [d, r] embedding matrix from d dimensions to r << d dimensions.
+```
+
+Note that the inputs MUST be named `X, Y`.
+
+In the above example, I call my embedding matrix `A`, but you can call it whatever you want.
+
+# Embedding with your algorithm
+
+After you have written your algorithm `<your-algorithm-name>`, you may be interested in embedding with it. With your algorithm in your `namespace`, you can embed points as follows, noting that `<optional-args>` will be additional arguments you pass to your function:
+
+```
+# given: X, Y contain the data matrix and class labels, respectively
+result <- <your-algorithm-name>(X, Y, <optional-args>)
+# embed new points in your testing set, Xt
+Xr <- lol.embed(Xt, result$A)
+```
+
+# Performing Cross-Validation with your Algorithm
+
+With your new algorithm, you may want to perform some sort of cross-validation. Following the above spec, this is incredibly easy. Your argument may, for instance, require its own individual hyperparameters. For example, in my example above, I have a hyperparameter for `r`, the rank of the embedding. I can define the following list of the optional arguments:
+
+```
+alg = lol.project.lol
+r = <desired-rank>  # the desired rank I want to embed into
+alg.opts = list(r=r)
+embed = "A"  # the name of the embedding matrix produced
+alg.return = embed
+```
+
+I can then pass my algorithm into the `lol.xval.eval` algorithm:
+
+```
+xval.out <- lol.xval.eval(X, Y, alg=alg, alg.opts=alg.opts, alg.return=alg.return, k=<k>)
+```
+
+where `<k>` specifies the desired cross-validation method to use. For more details, see the `xval` vignette.
+
+See the tutorial vignette `extend_classification` for how to specify the `classifier`, `classifier.opts`, and `classifier.return`. Alternatively, do not include these keyworded arguments to `lol.xval.xval` to use the default `lda` classifier.
+
+Now, you should be able to use your user-defined embedding method with the `lol` package.
