@@ -7,7 +7,7 @@
 lol.sims.rotation(d)
 }
 \arguments{
-\item{d}{dimensions}
+\item{d}{dimensions to generate a rotation matrix for.}
 }
 \value{
 the rotation matrix

@@ -7,9 +7,9 @@
 lol.sims.random_rotate(mus, Sigmas, Q = NULL)
 }
 \arguments{
-\item{mus}{means}
+\item{mus}{means per class.}
 
-\item{Sigmas}{covariances}
+\item{Sigmas}{covariances per class.}
 
 \item{Q}{rotation to use, if any}
 }

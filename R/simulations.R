@@ -451,7 +451,7 @@ lol.sims.sim_gmm <- function(mus, Sigmas, n, priors) {
 #'
 #' A helper function for estimating a random rotation matrix.
 #' @importFrom stats rnorm
-#' @param d dimensions
+#' @param d dimensions to generate a rotation matrix for.
 #' @return the rotation matrix
 #' @author Eric Bridgeford
 lol.sims.rotation <- function(d) {
@@ -465,8 +465,8 @@ lol.sims.rotation <- function(d) {
 #' Random Rotation
 #'
 #' A helper function for applying a random rotation to gaussian parameter set.
-#' @param mus means
-#' @param Sigmas covariances
+#' @param mus means per class.
+#' @param Sigmas covariances per class.
 #' @param Q rotation to use, if any
 #' @author Eric Bridgeford
 lol.sims.random_rotate <- function(mus, Sigmas, Q=NULL) {
