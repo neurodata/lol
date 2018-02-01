@@ -9,6 +9,8 @@ cl = makeCluster(no_cores)
 # Setup Sims
 #==========================#
 require(lol)
+require(MASS)
+
 n=100
 niter <- 200  # number of iterations per simulation
 rlen <- 30
@@ -40,20 +42,20 @@ results <- parLapply(cl, simulations, function(sim) {
   sim_dat <- do.call(sim$sim_func, sim$args)
   X <- sim_dat$X; Y <- sim_dat$Y
   results <- data.frame(sim=c(), iter=c(), alg=c(), r=c(), lhat=c())
+  if (sim$sim == "QDA") {
+    algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol, lol.project.qoq)
+    alg_name <- c("PCA", "cPCA", "CCA", "LOL", "QOQ")
+  } else {
+    algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol)
+    alg_name <- c("PCA", "cPCA", "CCA", "LOL")
+  }
   for (i in 1:length(algs)) {
-    if (sim$sim == "QDA") {
-      algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol, lol.project.qoq)
-      alg_name <- c("PCA", "cPCA", "CCA", "LOL", "QOQ")
-    } else {
-      algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol)
-      alg_name <- c("PCA", "cPCA", "CCA", "LOL")
-    }
     rs <- round(seq(from=1, to=sim$rmax, length.out=rlen))
     for (r in rs) {
-      if (alg_name %in% c("QOQ")) {
-        classifier.alg=qda
+      if (alg_name[i] == "QOQ") {
+        classifier.alg=MASS::qda
       } else {
-        classifier.alg=lda
+        classifier.alg=MASS::lda
       }
       tryCatch({
         xv_res <- lol.xval.eval(X, Y, alg=algs[[i]], alg.opts=list(r=r), alg.return="A", classifier=classifier.alg, k='loo')
