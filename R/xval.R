@@ -2,7 +2,6 @@
 #'
 #' A function for performing leave-one-out cross-validation for a given embedding model.
 #'
-#' @importFrom randomForest randomForest
 #' @importFrom MASS lda
 #' @importFrom stats predict
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
