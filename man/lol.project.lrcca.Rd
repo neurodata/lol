@@ -4,7 +4,7 @@
 \alias{lol.project.lrcca}
 \title{Low-rank Canonical Correlation Analysis (LR-CCA)}
 \usage{
-lol.project.lrcca(X, Y, r, method = "full", ...)
+lol.project.lrcca(X, Y, r, ...)
 }
 \arguments{
 \item{X}{[n, d] the data with \code{n} samples in \code{d} dimensions.}
@@ -13,16 +13,10 @@ lol.project.lrcca(X, Y, r, method = "full", ...)
 
 \item{r}{the rank of the projection.}
 
-\item{method}{The method to use for LR-CCA. Defaults to \code{'full'}.
-\itemize{
-\item{'full'}{Requires \code{O(d^2)} storage, but is faster.}
-\item{'partial'}{Requires \code{O(n^2)} storage, but is slower and does not produce a projection matrix.}
-}}
-
 \item{...}{trailing args.}
 }
 \value{
-If \code{method == 'full'} A list of containing the following:
+A list of containing the following:
 \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 \item{d}{\code{[r]} the signular values associated with the projection matrix \code{A}.}
 \item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
@@ -30,12 +24,6 @@ If \code{method == 'full'} A list of containing the following:
 \item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
 \item{Xr}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
 \item{cr}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
-
-If \code{method == 'partial'} A list containing the following:
-\item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
-\item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
-\item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
-\item{Xr}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
 }
 \description{
 A function for implementing the Low-rank Canonical Correlation Analysis (LR-CCA) Algorithm.
