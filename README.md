@@ -1,4 +1,4 @@
-# Linear Optimal Low Rank Projection (LOL)
+# Linear Optimal Low Rank Projection (lolR)
 
 ## Contents
 
@@ -45,7 +45,7 @@ Linux: Ubuntu 16.04
 Mac OSX:  
 Windows:  
 
-Before setting up the `lol` package, users should have `R` version 3.4.0 or higher, and several packages set up from CRAN.
+Before setting up the `lolR` package, users should have `R` version 3.4.0 or higher, and several packages set up from CRAN.
 
 #### Installing R version 3.4.2 on Ubuntu 16.04
 
@@ -63,7 +63,7 @@ which should install in about 20 seconds.
 
 #### Package dependencies
 
-Users should install the following packages prior to installing `lol`, from an `R` terminal:
+Users should install the following packages prior to installing `lolR`, from an `R` terminal:
 
 ```
 install.packages(c('ggplot2', 'abind', 'irlba', 'knitr', 'rmarkdown', 'latex2exp', 'MASS', 'randomForest'))
@@ -73,7 +73,7 @@ which will install in about 30 seconds on a recommended machine.
 
 #### Package Versions
 
-The `lol` package functions with all packages in their latest versions as they appear on `CRAN` on December 13, 2017. Users can check [CRAN snapshot](https://mran.microsoft.com/timemachine/) for details. The versions of software are, specifically:
+The `lolR` package functions with all packages in their latest versions as they appear on `CRAN` on December 13, 2017. Users can check [CRAN snapshot](https://mran.microsoft.com/timemachine/) for details. The versions of software are, specifically:
 ```
 abind_1.4-5
 latex2exp_0.4.0
@@ -93,31 +93,46 @@ From an `R` session, type:
 ```
 require(devtools)
 install_github('neurodata/lol', build_vignettes=TRUE, force=TRUE)  # install lol with the vignettes
-require(lol)
-vignette("lol", package="lol")  # view one of the basic vignettes
+require(lolR)
+vignette("lol", package="lolR")  # view one of the basic vignettes
 ```
 
 The package should take approximately 40 seconds to install with vignettes on a recommended computer. 
 
 # Demo
 
+## Functions
+
 For interactive demos of the functions, please check out the vignettes built into the package. They can be accessed as follows:
 
 ```
-require(lol)
+require(lolR)
 vignette('lol')
 vignette('pca')
 vignette('cpca')
 vignette('lrcca')
 vignette('mdp')
 vignette('xval')
+vignette('qoq')
 vignette('simulations')
 vignette('nearestCentroid')
 ```
 
+## Extending the lolR Package
+
+The lolR package makes many useful resources available (such as embedding and cross-validation) for simple extension. 
+
+To extend the lolR package, check out the vignettes:
+
+```
+require(lolR)
+vignette('extend_embedding')
+vignette('extend_classification')
+```
+
 # Results
 
-## LOL Paper
+## lolR Paper
 
 [Figure 2](https://htmlpreview.github.io/?https://github.com/neurodata/lol/blob/master/docs/lol-paper/figure_2.html)  
 
