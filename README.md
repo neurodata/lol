@@ -10,6 +10,7 @@
 - [Results](#results)
 - [License](./LICENSE)
 - [Issues](https://github.com/ebridge2/lol/issues)
+- [CRAN Package](https://cran.r-project.org/web/packages/lolR/index.html)
 
 # Overview
 
@@ -38,6 +39,22 @@ The runtimes below are generated using a computer with the recommended specs (16
 ## Software Requirements
 
 ### OS Requirements
+​
+19
+# Repo Contents
+20
+​
+21
+- [R](./R): `R` package code.
+22
+- [docs](./docs): package documentation.
+23
+- [man](./man): package manual for help in R session.
+24
+- [tests](./tests): `R` unit tests written using the `testthat` package.
+25
+- [vignettes](./vignettes): `R` vignettes for R session html help pages.
+26
 
 This package is supported for *Linux* operating systems. The package has been tested on the following systems:
 
@@ -61,7 +78,19 @@ sudo apt-get install r-base r-base-dev
 
 which should install in about 20 seconds.
 
-#### Package dependencies
+# Installation Guide
+
+## Stable Release
+
+`lolR` is available in a stable release on CRAN:
+
+```
+install.packages('lolR')
+```
+
+## Development Version
+
+### Package dependencies
 
 Users should install the following packages prior to installing `lolR`, from an `R` terminal:
 
@@ -70,8 +99,6 @@ install.packages(c('ggplot2', 'abind', 'irlba', 'knitr', 'rmarkdown', 'latex2exp
 ```
 
 which will install in about 30 seconds on a recommended machine.
-
-#### Package Versions
 
 The `lolR` package functions with all packages in their latest versions as they appear on `CRAN` on December 13, 2017. Users can check [CRAN snapshot](https://mran.microsoft.com/timemachine/) for details. The versions of software are, specifically:
 ```
@@ -86,7 +113,7 @@ randomForest_4.6-12
 
 If you are having an issue that you believe to be tied to software versioning issues, please drop us an [Issue](https://github.com/neurodata/lol/issues). 
 
-# Installation Guide
+### Package Installation
 
 From an `R` session, type:
 
