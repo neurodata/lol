@@ -39,28 +39,14 @@ The runtimes below are generated using a computer with the recommended specs (16
 ## Software Requirements
 
 ### OS Requirements
-​
-19
-# Repo Contents
-20
-​
-21
-- [R](./R): `R` package code.
-22
-- [docs](./docs): package documentation.
-23
-- [man](./man): package manual for help in R session.
-24
-- [tests](./tests): `R` unit tests written using the `testthat` package.
-25
-- [vignettes](./vignettes): `R` vignettes for R session html help pages.
-26
 
-This package is supported for *Linux* operating systems. The package has been tested on the following systems:
+The package development version is tested on *Linux* operating systems. The developmental version of the package has been tested on the following systems:
 
 Linux: Ubuntu 16.04  
 Mac OSX:  
 Windows:  
+
+The CRAN package should be compatible with Windows, Mac, and Linux operating systems.
 
 Before setting up the `lolR` package, users should have `R` version 3.4.0 or higher, and several packages set up from CRAN.
 
