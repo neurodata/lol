@@ -19,7 +19,7 @@ Supervised learning techniques designed for the situation when the dimensionalit
 # Repo Contents
 
 - [R](./R): `R` package code.
-- [docs](./docs): package documentation.
+- [docs](./docs): package documentation, and usage of the `lolR` package on many real and simulated data examples.
 - [man](./man): package manual for help in R session.
 - [tests](./tests): `R` unit tests written using the `testthat` package.
 - [vignettes](./vignettes): `R` vignettes for R session html help pages.
