@@ -1,4 +1,4 @@
-Package: lol
+Package: lolR
 Type: Package
 Title: Linear Optimal Low-Rank Projection
 Version: 1.0
@@ -20,8 +20,7 @@ Imports:
   ggplot2,
   abind,
   MASS,
-  irlba,
-  latex2exp
+  irlba
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
@@ -29,4 +28,5 @@ RoxygenNote: 6.0.1
 Suggests: knitr,
   rmarkdown,
   parallel,
-  randomForest
+  randomForest,
+  latex2exp

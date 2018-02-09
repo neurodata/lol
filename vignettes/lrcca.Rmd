@@ -21,7 +21,7 @@ r=3
 
 Data for this notebook will be `n=400` examples of `d=30` dimensions.
 
-# LR-CCA: non-efficient
+# LR-CCA
 
 ## Stacked Cigar Simulation
 
@@ -36,8 +36,8 @@ data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2$")) +
+  xlab("x1") +
+  ylab("x2") +
   ggtitle("Simulated Data")
 ```
 
@@ -50,8 +50,8 @@ data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2")) +
+  xlab("x1") +
+  ylab("x2") +
   ggtitle("Projected Data using LR-CCA")
 ```
 
@@ -66,9 +66,9 @@ data <- data.frame(x1=result$x[,1], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, fill=y)) +
   geom_density(adjust=1.5, alpha=0.6) +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("Density")) +
-  ggtitle(TeX(sprintf("$LR-CCA \\rightarrow LDA$, $\\hat{L} = %.2f$", lhat)))
+  xlab("x1") +
+  ylab("Density") +
+  ggtitle(sprintf("LR-CCA - LDA, L = %.2f", lhat))
 ```
 
 ## Trunk Simulation
@@ -84,8 +84,8 @@ data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2$")) +
+  xlab("x1") +
+  ylab("x2") +
   ggtitle("Simulated Data")
 ```
 
@@ -98,8 +98,8 @@ data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2")) +
+  xlab("x1") +
+  ylab("x2") +
   ggtitle("Projected Data using LR-CCA")
 ```
 
@@ -114,9 +114,9 @@ data <- data.frame(x1=result$x[,1], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, fill=y)) +
   geom_density(adjust=1.5, alpha=0.6) +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("Density")) +
-  ggtitle(TeX(sprintf("$LR-CCA \\rightarrow LDA$, $\\hat{L} = %.2f$", lhat)))
+  xlab("x1") +
+  ylab("Density") +
+  ggtitle(sprintf("LRCCA-LDA, L = %.2f", lhat))
 ```
 
 ## Rotated Trunk Simulation
@@ -132,8 +132,8 @@ data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2$")) +
+  xlab("x1") +
+  ylab("x2") +
   ggtitle("Simulated Data")
 ```
 
@@ -146,8 +146,8 @@ data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2")) +
+  xlab("x1") +
+  ylab("x2") +
   ggtitle("Projected Data using LR-CCA")
 ```
 
@@ -162,155 +162,7 @@ data <- data.frame(x1=result$x[,1], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, fill=y)) +
   geom_density(adjust=1.5, alpha=0.6) +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("Density")) +
-  ggtitle(TeX(sprintf("$LR-CCA \\rightarrow LDA$, $\\hat{L} = %.2f$", lhat)))
+  xlab("x1") +
+  ylab("Density") +
+  ggtitle(sprintf("LRCCA-LDA, L = %.2f", lhat))
 ```
-
-# LR-CCA: space efficient
-
-## Stacked Cigar Simulation
-
-We first visualize the first `2` dimensions:
-
-```{r, fig.width=5}
-testdat <- lol.sims.cigar(n, d)
-X <- testdat$X
-Y <- testdat$Y
-
-data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
-data$y <- factor(data$y)
-ggplot(data, aes(x=x1, y=x2, color=y)) +
-  geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2$")) +
-  ggtitle("Simulated Data")
-```
-
-Projecting with LR-CCA to `3` dimensions and visualizing the first `2`:
-
-```{r, fig.width=5}
-result <- lol.project.lrcca(X, Y, r, method='partial')
-
-data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
-data$y <- factor(data$y)
-ggplot(data, aes(x=x1, y=x2, color=y)) +
-  geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2")) +
-  ggtitle("Projected Data using LR-CCA")
-```
-
-Projecting with LDA to `K-1=1` dimensions:
-
-```{r, fig.width=5}
-liney <- MASS::lda(result$Xr, Y)
-result <- predict(liney, result$Xr)
-lhat <- 1 - sum(result$class == Y)/length(Y)
-
-data <- data.frame(x1=result$x[,1], y=Y)
-data$y <- factor(data$y)
-ggplot(data, aes(x=x1, fill=y)) +
-  geom_density(adjust=1.5, alpha=0.6) +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("Density")) +
-  ggtitle(TeX(sprintf("$LR-CCA \\rightarrow LDA$, $\\hat{L} = %.2f$", lhat)))
-```
-
-## Trunk Simulation
-
-We visualize the first `2` dimensions:
-
-```{r, fig.width=5}
-testdat <- lol.sims.rtrunk(n, d)
-X <- testdat$X
-Y <- testdat$Y
-
-data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
-data$y <- factor(data$y)
-ggplot(data, aes(x=x1, y=x2, color=y)) +
-  geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2$")) +
-  ggtitle("Simulated Data")
-```
-
-Projecting with LR-CCA to `3` dimensions and visualizing the first `2`:
-
-```{r, fig.width=5}
-result <- lol.project.lrcca(X, Y, r, method='partial')
-
-data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
-data$y <- factor(data$y)
-ggplot(data, aes(x=x1, y=x2, color=y)) +
-  geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2")) +
-  ggtitle("Projected Data using LR-CCA")
-```
-
-Projecting with LDA to `K-1=1` dimensions:
-
-```{r, fig.width=5}
-liney <- MASS::lda(result$Xr, Y)
-result <- predict(liney, result$Xr)
-lhat <- 1 - sum(result$class == Y)/length(Y)
-
-data <- data.frame(x1=result$x[,1], y=Y)
-data$y <- factor(data$y)
-ggplot(data, aes(x=x1, fill=y)) +
-  geom_density(adjust=1.5, alpha=0.6) +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("Density")) +
-  ggtitle(TeX(sprintf("$LR-CCA \\rightarrow LDA$, $\\hat{L} = %.2f$", lhat)))
-```
-
-## Rotated Trunk Simulation
-
-We visualize the first `2` dimensions:
-
-```{r, fig.width=5}
-testdat <- lol.sims.rtrunk(n, d, rotate=TRUE)
-X <- testdat$X
-Y <- testdat$Y
-
-data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
-data$y <- factor(data$y)
-ggplot(data, aes(x=x1, y=x2, color=y)) +
-  geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2$")) +
-  ggtitle("Simulated Data")
-```
-
-Projecting with LRCCA to `3` dimensions and visualizing the first `2`:
-
-```{r, fig.width=5}
-result <- lol.project.lrcca(X, Y, r, method='partial')
-
-data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
-data$y <- factor(data$y)
-ggplot(data, aes(x=x1, y=x2, color=y)) +
-  geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2")) +
-  ggtitle("Projected Data using LR-CCA")
-```
-
-Projecting with LDA to `K-1=1` dimensions:
-
-```{r, fig.width=5}
-liney <- MASS::lda(result$Xr, Y)
-result <- predict(liney, result$Xr)
-lhat <- 1 - sum(result$class == Y)/length(Y)
-
-data <- data.frame(x1=result$x[,1], y=Y)
-data$y <- factor(data$y)
-ggplot(data, aes(x=x1, fill=y)) +
-  geom_density(adjust=1.5, alpha=0.6) +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("Density")) +
-  ggtitle(TeX(sprintf("$LR-CCA \\rightarrow LDA$, $\\hat{L} = %.2f$", lhat)))
-```
-
-

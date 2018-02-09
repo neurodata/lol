@@ -10,6 +10,8 @@ cl = makeCluster(no_cores)
 # Setup Sims
 #==========================#
 require(lol)
+require(MASS)
+
 n=100
 niter <- 200  # number of iterations per simulation
 rlen <- 30
@@ -51,7 +53,7 @@ results <- parLapply(cl, simulations, function(sim) {
   for (i in 1:length(algs)) {
     rs <- round(seq(from=1, to=sim$rmax, length.out=rlen))
     for (r in rs) {
-      if (alg_name[i] %in% c("QOQ")) {
+      if (alg_name[i] == "QOQ") {
         classifier.alg=MASS::qda
       } else {
         classifier.alg=MASS::lda

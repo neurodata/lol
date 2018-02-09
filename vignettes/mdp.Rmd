@@ -36,8 +36,8 @@ data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2$")) +
+  xlab("x1") +
+  ylab("x2") +
   ggtitle("Simulated Data")
 ```
 
@@ -50,8 +50,8 @@ data <- data.frame(x1=result$Xr[,1], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=y, color=y)) +
   geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("Class")) +
+  xlab("x1") +
+  ylab("Class") +
   ggtitle("Projected Data using MDP")
 ```
 
@@ -68,8 +68,8 @@ data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2$")) +
+  xlab("x1") +
+  ylab("x2") +
   ggtitle("Simulated Data")
 ```
 
@@ -82,8 +82,8 @@ data <- data.frame(x1=result$Xr[,1], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=y, color=y)) +
   geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("Class")) +
+  xlab("x1") +
+  ylab("Class") +
   ggtitle("Projected Data using MDP")
 ```
 
@@ -100,8 +100,8 @@ data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("$x_2$")) +
+  xlab("x1") +
+  ylab("x2") +
   ggtitle("Simulated Data")
 ```
 
@@ -114,7 +114,7 @@ data <- data.frame(x1=result$Xr[,1], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=y, color=y)) +
   geom_point() +
-  xlab(TeX("$x_1$")) +
-  ylab(TeX("Class")) +
+  xlab("x1") +
+  ylab("Class") +
   ggtitle("Projected Data using MDP")
 ```
