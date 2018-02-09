@@ -144,8 +144,8 @@ results <- parLapply(cl, experiments, function(exp) {
                             classifier=classifier.alg, k=exp$k)
     lhat <- xv_res$Lhat
   }, error=function(e) lhat <- NaN)
-  results <- data.frame(data=exp$exp, se=sd(xv_res$Lhats)/sqrt(length(Y)), alg=exp$name, r=exp$r, lhat=lhat)
-  return(results)
+  exr <- data.frame(data=exp$exp, se=sd(xv_res$Lhats)/sqrt(length(Y)), alg=exp$name, r=exp$r, lhat=lhat)
+  return(exr)
 })
 
 # Aggregate and save
