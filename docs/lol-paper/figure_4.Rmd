@@ -1,59 +1,174 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "LOL Figure 4 with LDA Classifier"
+author: "Eric Bridgeford"
+date: "January 5, 2017"
+output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
-```{r}
+# Figure 3 - LOL Paper
+
+```{r, message=FALSE}
 require(lol)
 require(ggplot2)
 require(latex2exp)
 require(MASS)
 require(gridExtra)
-local_path <- '~/Documents/research/R-fmri/lol'  # local path to the package
+require(data.table)
+require(reshape2)
+require(R.matlab)
+require(grid)
+require(plyr)
 
-funcs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca,
-              lol.project.lol)
-alg_names <- c("PCA", "PCA'", "LR-CCA", "LOL")
-```
+# compute the cutoff for the particular trial to get an approximate elbow
+# by computing the smallest r with an associated lhat within 5%
+# of the global minimum lhat
+compute_cutoff <- function(rs, lhats, t=0.05) {
+  sr.ix <- sort(rs, decreasing=FALSE, index.return=TRUE)$ix
+  # compute minimum value
+  min.lhat <- min(lhats)
+  # compute minimum value + 5%
+  lhat.thresh <- (1 + t)*min.lhat
+  # find which indices are all below this
+  lhat.below <- which(lhats <= lhat.thresh)
+  rs.below <- rs[lhat.below]; lhats.below <- lhats[lhat.below]
+  tmin.ix <- min(rs.below, index.return=TRUE)
+  return(list(r=rs.below[tmin.ix], lhat=lhats.below[tmin.ix]))
+}
 
-# MNIST Experiments
 
-```{r}
+plot_sim_lhats <- function(data, cols, pt.dat, title="", by=10, from=10, ylab=TeX("$\\hat{L}$"),
+                           xlab="Embedded Dimensions", fsize=12) {
+  lims <- c(floor(10*min(data$lhat))/10, ceiling(10*max(data$lhat))/10)
+  breaks= seq(from=lims[1], to=lims[2], by=0.1)
+  xlims <- c(min(data$r), max(data$r))
+  xbreaks <- seq(from=from, to=xlims[2], by=by)
+  plot_sims <- ggplot(data, aes(x=r, y=lhat, group=alg, color=alg)) +
+    geom_line(data=base::subset(data, alg == "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=.75) +
+    geom_point(data=base::subset(pt.dat, alg == "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=2) +
+    geom_line(data=base::subset(data, alg != "CCA" & alg != "QOQ"), aes(x=r, y=lhat, group=alg, color=alg), size=.75) +
+    geom_point(data=base::subset(pt.dat, alg != "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=2) +
+    geom_line(data=base::subset(data, alg == "QOQ"), aes(x=r, y=lhat, group=alg, color=alg), linetype="dashed", size=.75) +
+    xlab(xlab) +
+    ylab(ylab) +
+    ggtitle(title) +
+    theme_bw() +
+    scale_y_continuous(limits=lims, breaks=breaks) +
+    scale_x_continuous(limits=xlims, breaks=xbreaks) +
+    scale_color_manual(values=cols, limits=names(cols),
+                       guide=guide_legend(ncol=1)) +#, title.position="top", title.hjust = .5)) +
+    labs(color="Algorithm", linetype="Test")
+  return(plot_sims)
+}
 
-```
-
-# Colon Experiments
-
-The colon data can be found by downloading the following links:
-
-```
-wget https://raw.githubusercontent.com/neurodata-papers/LOL/master/Data/Raw/colon/X.txt
-wget https://raw.githubusercontent.com/neurodata-papers/LOL/master/Data/Raw/colon/Y.txt
-```
-
-and has 2000 features with 62 samples, with each line structured as:
-
-```
-feature1_samp1 feature1_samp2 feature1_samp3 ...
-feature2_samp1 feature2_samp2 feature2_samp3 ...
-```
-
-```{r}
-path_colx <- file.path(local_path, 'docs/lol-paper/data/colon/X.txt')
-path_coly <- file.path(local_path, 'docs/lol-paper/data/colon/Y.txt')
-Xcol <- t(read.table(path_colx, sep="", header=FALSE, na.strings="", stringsAsFactors = FALSE))  # load in the data
-Ycol <- as.vector(read.table(path_coly, sep="", header=FALSE, na.strings="", stringsAsFactors = FALSE))[,1]  # load in the labels as a 62-element vector
-Ycol <- as.numeric(Ycol > 0)  # binarize for 2-class
-
-res_plots <- list()
-results <- data.frame(alg=c(), r=c(), lhat=c())
-for (i in 1:length(funcs)) {
-  for (r in 1:20) {
-    func_res <- lol.xval.eval(Xcol, Ycol, r, alg=funcs[[i]])
-    results <- rbind(results, data.frame(alg=alg_names[i], r=r, lhat=func_res$Lhats))
-  }
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
 }
 ```
 
-# MRI Experiments
+The below code will produce the required data, which runs LOL, cPCA, PCA, and LR-CCA at the desired simulation settings. Note that this function will multi-thread natively, and took approximately 7 hours to run on a 96 core machine with $\frac{7}{8}$ of the cores active.
 
+```{r, eval=FALSE}
+source('./figure_4_driver.R')
+```
+
+Borrowing results from an earlier matlab implementation:
+
+```{r, eval=FALSE}
+col <- readMat('./data/colon/Colon.mat')
+mn <- readMat('./data/mnist/MNIST.mat')
+
+maxr <- c(20, 30)
+minr <- 1
+mats <- list(col, mn)
+exp_name <- c("Colon", "MNIST")
+
+interest <- list(c("ROAD", "LASSO"), c("LASSO"))
+key <- c("ROAD", "lasso")
+names(key) <- c("ROAD", "LASSO")
+
+resultsm <- data.frame(data=c(), iter=c(), alg=c(), r=c(), lhat=c())
+
+for (k in 1:length(mats)) { 
+  dat <- mats[[k]]
+  desired_r <- 1:maxr[k]
+  for (i in 1:length(dat$ks)) {  # i encodes simulation iteration
+    for (j in length(interest[[k]])) {
+      algname <- key[interest[[k]][j]]
+      algid <- which(dimnames(dat$ks[[i]][[1]])[[1]] == algname)
+      rs <- dat$ks[[i]][[1]][algid,,1][[algname]]
+      algid <- which(dimnames(dat$Lhat)[[1]] == algname)
+      lhats <- dat$Lhat[algid,,][[i]]
+      lhat_adjust <- spline(rs, lhats, xout=desired_r, method='fmm', ties=mean)
+      resultsm <- rbind(resultsm, data.frame(data=exp_name[k], iter=i, alg=interest[[k]][j],
+                                             r=lhat_adjust$x, lhat=lhat_adjust$y))
+    }
+  }
+}
+
+n <- c(62, 1000)
+names(n) <- c("Colon", "MNIST")
+resultsm <- data.table(resultsm)
+resultsm.means <- aggregate(lhat ~ alg + r + data, data=resultsm, FUN = function(x) c(lhat=mean(x), se=sd(x)/n[data]))
+resultsm.means <- do.call(data.frame, resultsm.means)
+names(resultsm.means) <- c("alg", "r", "data", "lhat", "se")
+```
+
+```{r}
+exp_names = c("Colon", "MNIST")
+titles <- c("Colon, n=62, d=2000", "MNIST, n=1000, d=784")
+exp_min <- c(10, 10)
+by <- c(10, 10)
+```
+
+```{r}
+# read the results in
+results <- readRDS('./data/fig4/lol_fig4_lda.rds')
+results.means <- rbind(results, resultsm.means)
+#results <- results$overall
+
+acols <- c("#008000", "#4daf4a", "#e41a1c", "#ff7f00", "#377eb8", "#f781bf", "#00ffff")
+names(acols) <- c("LOL", "QOQ", "CCA", "ROAD", "LASSO", "PCA", "LDA")
+```
+
+We merge and combine the plots:
+
+```{r, fig.show='hide'}
+nsim <- length(exp_names)
+exp_plots <- list()
+counter <- 1
+results.means$alg <- revalue(results.means$alg, c("cPCA"="LDA"))
+
+for (i in 1:length(exp_names)) {
+  exp <- exp_names[i]
+  data_sub <- results.means[results.means$data == exp,]
+  pt.dat <- data.frame(x=c(), y=c())
+  for (alg in unique(data_sub$alg)) {
+    pt <- compute_cutoff(data_sub[data_sub$alg == alg,]$r, data_sub[data_sub$alg == alg,]$lhat)
+    pt.dat <- rbind(pt.dat, data.frame(r=pt$r, lhat=pt$lhat, alg=alg))
+  }
+  exp_plots[[counter]] <- plot_sim_lhats(data_sub, acols, pt.dat, title=exp, from=exp_min[i], by=by[i])
+  counter <- counter + 1
+}
+
+exp_leg <- g_legend(exp_plots[[1]])
+# remove the legends from the plots
+exp_plots <- sapply(1:length(exp_plots), function(j) {
+    resp <- exp_plots[[j]] + theme(legend.position=NaN)
+    # remove the ylabel of only the non-left most columns
+    if (j != 1) {
+      resp <- resp + xlab("") + ylab("")
+    }
+    return(resp)
+  }, simplify=FALSE)
+
+```
+
+```{r}
+exp_plot <- grid.arrange(grobs=exp_plots, ncol=length(exp_plots))
+grid_sim <- grid.arrange(exp_plot, exp_leg, ncol=2, widths=c(.9, .1))
+```

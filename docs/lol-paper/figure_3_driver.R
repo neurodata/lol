@@ -45,10 +45,10 @@ results <- parLapply(cl, simulations, function(sim) {
   results <- data.frame(sim=c(), iter=c(), alg=c(), r=c(), lhat=c())
   if (sim$sim == "QDA") {
     algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol, lol.project.qoq)
-    alg_name <- c("PCA", "cPCA", "CCA", "LOL", "QOQ")
+    alg_name <- c("PCA", "LDA", "CCA", "LOL", "QOQ")
   } else {
     algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol)
-    alg_name <- c("PCA", "cPCA", "CCA", "LOL")
+    alg_name <- c("PCA", "LDA", "CCA", "LOL")
   }
   for (i in 1:length(algs)) {
     rs <- round(seq(from=1, to=sim$rmax, length.out=rlen))

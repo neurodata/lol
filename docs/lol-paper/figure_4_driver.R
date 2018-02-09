@@ -11,7 +11,7 @@ cl = makeCluster(no_cores)
 # Setup Algorithms
 #==========================#
 algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol, lol.project.qoq)
-names(algs) <- c("PCA", "cPCA", "CCA", "LOL", "QOQ")
+names(algs) <- c("PCA", "LDA", "CCA", "LOL", "QOQ")
 experiments <- list()
 counter <- 1
 
@@ -150,7 +150,6 @@ results <- parLapply(cl, experiments, function(exp) {
 
 # Aggregate and save
 #=================================#
-require(data.table)
 resultso <- do.call(rbind, results)
 saveRDS(resultso, 'lol_fig4_lda.rds')
 stopCluster(cl)
