@@ -19,7 +19,7 @@ counter <- 1
 
 # Setup Real Data
 #==========================#
-pmlb.path <- '/home/eric/Documents/research/R-fmri/penn-ml-benchmarks/'
+pmlb.path <- '../../../penn-ml-benchmarks/'
 dset.file <- file.path(pmlb.path, 'datasets', 'classification', 'classification_datasets_pmlb.tsv')
 dset.names <- read.table(dset.file, sep="", header=TRUE)$name
 rlen <- 30
