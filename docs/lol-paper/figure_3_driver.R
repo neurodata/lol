@@ -50,6 +50,7 @@ results <- parLapply(cl, simulations, function(sim) {
     algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol)
     alg_name <- c("PCA", "LDA", "CCA", "LOL")
   }
+
   for (i in 1:length(algs)) {
     rs <- round(seq(from=1, to=sim$rmax, length.out=rlen))
     for (r in rs) {

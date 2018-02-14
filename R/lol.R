@@ -5,6 +5,15 @@
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param r the rank of the projection. Note that \code{r >= K}, and \code{r < d}.
+#' @param xfm whether to transform the variables before taking the SVD.
+#' \itemize{
+#' \item{FALSE}{apply no transform to the variables.}
+#' \item{'unit'}{unit transform the variables, defaulting to centering and scaling to mean 0, variance 1. See \link[base]{scale} for details and optional args.}
+#' \item{'log'}{log-transform the variables, for use-cases such as having high variance in larger values. Defaults to natural logarithm. See \link[base]{log} for details and optional args.}
+#' \item{'rank'}{rank-transform the variables. Defalts to breaking ties with the average rank of the tied values. See \link[base]{rank} for details and optional args.}
+#' \item{c(opt1, opt2, etc.)}{apply the transform specified in opt1, followed by opt2, etc.}
+#' }
+#' @param xfm.opts optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.
 #' @param ... trailing args.
 #' @return A list of class \code{embedding} containing the following:
 #' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
@@ -20,7 +29,7 @@
 #' X <- data$X; Y <- data$Y
 #' model <- lol.project.lol(X=X, Y=Y, r=5)  # use lol to project into 5 dimensions
 #' @export
-lol.project.lol <- function(X, Y, r, ...) {
+lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   # class data
   info <- lol.utils.info(X, Y)
   priors <- info$priors; centroids <- info$centroids
@@ -31,7 +40,7 @@ lol.project.lol <- function(X, Y, r, ...) {
 
   nv <- r - (K)
   if (nv > 0) {
-    A <- cbind(deltas, lol.project.cpca(X, Y, nv)$A)
+    A <- cbind(deltas, lol.project.cpca(X, Y, nv=nv, xfm=xfm, xfm.opts=xfm.opts)$A)
   } else {
     A <- deltas[, 1:r, drop=FALSE]
   }
@@ -49,6 +58,15 @@ lol.project.lol <- function(X, Y, r, ...) {
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param r the rank of the projection. Note that \code{r >= K}, and \code{r < d}.
+#' @param xfm whether to transform the variables before taking the SVD.
+#' \itemize{
+#' \item{FALSE}{apply no transform to the variables.}
+#' \item{'unit'}{unit transform the variables, defaulting to centering and scaling to mean 0, variance 1. See \link[base]{scale} for details and optional args.}
+#' \item{'log'}{log-transform the variables, for use-cases such as having high variance in larger values. Defaults to natural logarithm. See \link[base]{log} for details and optional args.}
+#' \item{'rank'}{rank-transform the variables. Defalts to breaking ties with the average rank of the tied values. See \link[base]{rank} for details and optional args.}
+#' \item{c(opt1, opt2, etc.)}{apply the transform specified in opt1, followed by opt2, etc.}
+#' }
+#' @param xfm.opts optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.
 #' @param ... trailing args.
 #' @return A list of class \code{embedding} containing the following:
 #' \item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
@@ -64,7 +82,7 @@ lol.project.lol <- function(X, Y, r, ...) {
 #' X <- data$X; Y <- data$Y
   #' model <- lol.project.qoq(X=X, Y=Y, r=5)  # use qoq to project into 5 dimensions
 #' @export
-lol.project.qoq <- function(X, Y, r, ...) {
+lol.project.qoq <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   # class data
   info <- lol.utils.info(X, Y)
   priors <- info$priors; centroids <- info$centroids
@@ -79,7 +97,7 @@ lol.project.qoq <- function(X, Y, r, ...) {
   if (nv > 0) {
     for (ylab in ylabs) {
       Xclass = X[Y == ylab,]
-      obj <- lol.project.pca(Xclass, nv)
+      obj <- lol.project.pca(Xclass, nv=nv, xfm=xfm, xfm.opts=xfm.opts)
       Aclass <- cbind(Aclass, obj$A)
       vclass <- c(vclass, obj$d[1:nv])
     }

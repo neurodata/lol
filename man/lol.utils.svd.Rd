@@ -4,10 +4,22 @@
 \alias{lol.utils.svd}
 \title{A utility to use irlba when necessary}
 \usage{
-lol.utils.svd(X, nu = 0, nv = 0, t = 0.05)
+lol.utils.svd(X, xfm = FALSE, xfm.opts = list(), nu = 0, nv = 0,
+  t = 0.05)
 }
 \arguments{
 \item{X}{the data to compute the svd of.}
+
+\item{xfm}{whether to transform the variables before taking the SVD.
+\itemize{
+\item{FALSE}{apply no transform to the variables.}
+\item{'unit'}{unit transform the variables, defaulting to centering and scaling to mean 0, variance 1. See \link[base]{scale} for details and optional args.}
+\item{'log'}{log-transform the variables, for use-cases such as having high variance in larger values. Defaults to natural logarithm. See \link[base]{log} for details and optional args.}
+\item{'rank'}{rank-transform the variables. Defalts to breaking ties with the average rank of the tied values. See \link[base]{rank} for details and optional args.}
+\item{c(opt1, opt2, etc.)}{apply the transform specified in opt1, followed by opt2, etc.}
+}}
+
+\item{xfm.opts}{optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.}
 
 \item{nu}{the number of left singular vectors to retain.}
 
