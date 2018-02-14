@@ -1,5 +1,8 @@
 # Linear Optimal Low Rank Projection (lolR)
 
+
+[![CRAN Status Badge](http://www.r-pkg.org/badges/version/lolR)](http://cran.r-project.org/web/packages/lolR)
+
 ## Contents
 
 - [Overview](#overview)
