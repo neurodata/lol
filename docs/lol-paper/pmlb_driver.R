@@ -41,8 +41,8 @@ for (i in 1:length(dset.names)) {
     k <- 'loo'
   }
   n <- dim(result$X)[1]; d <- dim(result$X)[2]
-  maxr <- 0.2*d
-  rs <- unique(log.seq(from=1, to=maxr, length.out=15))
+  maxr <- min(d, 100)
+  rs <- unique(log.seq(from=1, to=maxr, length=15))
   for (r in rs) {
     for (j in 1:length(algs)) {
       alg <- algs[j]
@@ -72,8 +72,8 @@ results <- parLapply(cl, experiments, function(exp) {
     xv_res <- lol.xval.eval(X, Y, alg=exp$alg[[exp$name]], alg.opts=list(r=exp$r), alg.embedding="A",
                             classifier=classifier.alg, k=exp$k)
     lhat <- xv_res$Lhat
+    exr <- data.frame(data=exp$exp, se=sd(xv_res$Lhats)/sqrt(length(Y)), alg=exp$name, r=exp$r, K=length(unique(Y)), n = dim(X)[1], lhat=lhat)
   }, error=function(e) lhat <- NaN)
-  exr <- data.frame(data=exp$exp, se=sd(xv_res$Lhats)/sqrt(length(Y)), alg=exp$name, r=exp$r, K=length(unique(Y)), n = dim(X)[1], lhat=lhat)
   return(exr)
 })
 
