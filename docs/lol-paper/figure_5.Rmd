@@ -274,7 +274,7 @@ results.means <- rbind(results, resultsm.means)
 results.means$alg <- revalue(results.means$alg, c("cPCA"="LDA"))
 #results <- results$overall
 
-acols <- c("#008000", "#4daf4a", "#e41a1c", "#ff7f00", "#377eb8", "#f781bf", "#00ffff")
+acols <- c("#008000", "#4daf4a", "#bcbddc", "#9e9ac8", "#807dba", "#6a51a3", "#4a1486")
 names(acols) <- c("LOL", "QOQ", "CCA", "ROAD", "LASSO", "PCA", "LDA")
 ```
 
