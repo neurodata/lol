@@ -29,7 +29,7 @@
 lol.project.pca <- function(X, r, xfm=FALSE, xfm.opts=list(), ...) {
   # mean center by the column mean
   Xc  <- sweep(X, 2, colMeans(X), '-')
-  svdX <- lol.utils.svd(Xc, xfm=xfm, scale.opts=xfm.opts, nv=r, nu=0)
+  svdX <- lol.utils.svd(Xc, xfm=xfm, xfm.opts=xfm.opts, nv=r, nu=0)
 
   return(list(A=svdX$v, d=svdX$d, Xr=lol.embed(X, svdX$v)))
 }
@@ -54,9 +54,9 @@ lol.project.pca <- function(X, r, xfm=FALSE, xfm.opts=list(), ...) {
 lol.utils.svd <- function(X, xfm=FALSE, xfm.opts=list(), nu=0, nv=0, t=.05) {
   n <- nrow(X)
   # scale if desired before taking SVD
-  for (i in 1:length(scale)) {
+  for (i in 1:length(xfm)) {
     sc <- xfm[i]
-    if (!(i %in% names(scale.opts))) {
+    if (!(i %in% names(xfm.opts))) {
       xfm.opts[[i]] <- list()
     }
     if (sc == 'unit') {
