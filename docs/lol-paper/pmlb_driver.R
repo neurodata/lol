@@ -4,6 +4,7 @@ require(MASS)
 library(parallel)
 require(lolR)
 require(slbR)
+require(R.utils)
 
 no_cores = detectCores() - 1
 
@@ -75,8 +76,9 @@ results <- parLapply(cl, experiments, function(exp) {
       }, error=function(e) lhat <- NaN)
     }
     saveRDS(results, file=paste(opath, exp$exp, '.rds', sep=""))}
-    , timeout=3600)
+    , timeout=3600, onTimeout="warning")
 })
+resultso <- do.call(rbind, results)
 saveRDS(resultso, 'lol_fig4pmlb_lda.rds')
 stopCluster(cl)
 
@@ -86,4 +88,3 @@ results <- lapply(dset.names, function(dset) {
   result <- readRDS(paste(opath, dset, '.rds', sep=""))
 })
 
-resultso <- do.call(rbind, results)
