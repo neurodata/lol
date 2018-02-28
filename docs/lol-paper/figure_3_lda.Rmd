@@ -37,12 +37,14 @@ compute_cutoff <- function(rs, lhats, t=0.05) {
   return(list(r=rs.below[tmin.ix], lhat=lhats.below[tmin.ix]))
 }
 
+w=.8
+h=.2
 sim_cov_plot <- function(Sigmas, mus, priors, title="", yl="Dimension", xl="Dimension", ndim=10,
-                         nbreaks=4, legend.name=TeX("Cov")) {
+                         nbreaks=4, legend.name=TeX("")) {
   Sigma <- lol:::lol.mvr(Sigmas, mus, priors)
   Sigma <- Sigma[1:ndim, 1:ndim]  # subset
   Sigma <- (Sigma - min(Sigma))/(max(Sigma) - min(Sigma))
-  labs <- seq(from=1, to=ndim, length=4)
+  labs <- c(1, 10)
   sdat <- melt(Sigma)
   plot_cov <- ggplot(sdat, aes(x=Var1, y=Var2, fill=value)) +
     geom_tile() +
@@ -53,12 +55,13 @@ sim_cov_plot <- function(Sigmas, mus, priors, title="", yl="Dimension", xl="Dime
     scale_x_continuous(breaks=labs) +
     scale_y_reverse(breaks=labs) +
     theme(legend.position="bottom") +#, axis.title=element_text(size=14)) +
-    scale_fill_gradientn(name=legend.name, colours=rev(c("#fcfbfd", "#9e9ac8", "#3f007d")),
+    theme(plot.margin = unit(c(h,w,h,h), "cm")) +
+    scale_fill_gradientn(name=legend.name, colours=c("#fcfbfd", "#9e9ac8", "#3f007d"),
                          limits=c(0, 1), breaks=c(0.0, 0.5, 1.0))#,
                          #guide=guide_colorbar(title.position="top", title.hjust = .5, barheight=.75))
 }
 
-mcols <- c("#e41a1c", "#377eb8", "#4daf4a")
+mcols <- c("#bdbdbd", "#737373", "#252525")
 names(mcols) <- c(1,2,3)
 sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndim=10, nbreaks=4) {
   dat <- data.frame(mus[1:ndim,])
@@ -67,14 +70,14 @@ sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndi
   ylabs <- sapply(1:K, function(k) as.character(k))
   colnames(dat) <- c("Dimension", ylabs)
   dat <- melt(dat, id="Dimension")
-  xlabs <- seq(from=1, to=ndim, length=4)
+  xlabs <- c(1, 10)
   colnames(dat) <- c("Dimension", "Class", "Magnitude")
   dat$Magnitude = dat$Magnitude/max(abs(dat$Magnitude))
   lims <- c(-1, 1)
   breaks= c(-1, 0, 1)
   dat$Class <- factor(dat$Class, levels=c(1, 2, 3))
   plot_mean <- ggplot(dat, aes(x=Dimension, y=Magnitude, color=Class)) +
-    geom_line(size=1) +
+    geom_line(size=1.2) +
     theme_bw() +
     ggtitle(title) +
     xlab(xlab) +
@@ -82,32 +85,42 @@ sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndi
     scale_y_continuous(limits=lims, breaks=breaks) +
     scale_x_continuous(breaks=xlabs) +
     theme(legend.position="bottom") +
+    theme(plot.margin = unit(c(h,w,h,h), "cm")) +
     scale_color_manual(values=mcols)#, guide=guide_legend(title.position="top", title.hjust = .5))
 }
 
 
-plot_sim_lhats <- function(data, cols, pt.dat, title="", by=10, from=10, ylab=TeX("$\\hat{L}$"),
+plot_sim_lhats <- function(data, cols, pt.dat, linetype, title="", by=10, from=10, ylab=TeX("$\\hat{L}$"),
                            xlab="Embedded Dimensions", fsize=12) {
   lims <- c(floor(10*min(data$lhat))/10, ceiling(10*max(data$lhat))/10)
-  breaks= seq(from=lims[1], to=lims[2], by=0.1)
+  if (unique(data$sim)[1] == "Toeplitz") {
+    length.out=4
+  } else {
+    length.out=3
+  }
+  breaks = unique(round(seq(from=lims[1], to=lims[2], length.out = length.out), digits=1))
   xlims <- c(min(data$r), max(data$r))
   xbreaks <- seq(from=from, to=xlims[2], by=by)
-  plot_sims <- ggplot(data, aes(x=r, y=lhat, group=alg, color=alg)) +
-    geom_line(data=base::subset(data, alg == "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=.75) +
-    geom_point(data=base::subset(pt.dat, alg == "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=2) +
-    geom_line(data=base::subset(data, alg != "CCA" & alg != "QOQ"), aes(x=r, y=lhat, group=alg, color=alg), size=.75) +
-    geom_point(data=base::subset(pt.dat, alg != "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=2) +
-    geom_line(data=base::subset(data, alg == "QOQ"), aes(x=r, y=lhat, group=alg, color=alg), linetype="dashed", size=.75) +
+  plot_sims <- ggplot(data, aes(x=r, y=lhat, linetype=alg, color=alg)) +
+    geom_line(size=.95) +
+    scale_color_manual(values=cols, limits=names(cols),
+                       guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
+    scale_linetype_manual(values=linetype, limits=names(cols),
+                       guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
+    geom_point(data=pt.dat, aes(x=r, y=lhat, linetype=alg, color=alg), size=2) +
+    #geom_line(data=base::subset(data, alg == "CCA"), aes(x=r, y=lhat, group=alg, linetype color=alg), size=.75) +
+    #geom_point(data=base::subset(pt.dat, alg == "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=2) +
+    #geom_line(data=base::subset(data, alg != "CCA" & alg != "QOQ"), aes(x=r, y=lhat, group=alg, color=alg), size=.75) +
+    #geom_point(data=base::subset(pt.dat, alg != "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=2) +
+    #geom_line(data=base::subset(data, alg == "QOQ"), aes(x=r, y=lhat, group=alg, color=alg), linetype="dashed", size=.75) +
     xlab(xlab) +
     ylab(ylab) +
     ggtitle(title) +
     theme_bw() +
     scale_y_continuous(limits=lims, breaks=breaks) +
     scale_x_continuous(limits=xlims, breaks=xbreaks) +
-    scale_color_manual(values=cols, limits=names(cols),
-                       guide=guide_legend(nrow=2, byrow=TRUE)) +
-    theme(legend.position="bottom", axis.title.y=element_text(size=fsize)) +#, title.position="top", title.hjust = .5)) +
-    labs(color="Algorithm", linetype="Test")
+    theme(plot.margin = unit(c(h,w,h,h), "cm")) +
+    theme(legend.position="bottom", axis.title.y=element_text(size=fsize))
   return(plot_sims)
 }
 
@@ -176,9 +189,10 @@ ds <- c(100, 100, 100, 1000, 100)
 # additional arguments for each simulation scenario
 opt_args <- list(list(), list(), list(K=3), list(rotate=TRUE), list())
 sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "QDA")
+sim_titles = c("(A)", "(B)", "(C)", "(D)", "(E)")
 ndim <- c(10, 10, 10, 10, 10)
-sim_min <- c(10, 10, 10, 10, 10)
-by <- c(10, 20, 10, 10, 10)
+sim_min <- c(10, 30, 10, 10, 10)
+by <- c(10, 30, 10, 10, 10)
 
 cov_plots <- list()
 mean_plots <- list()
@@ -201,14 +215,16 @@ results <- rbind(results$overall, resultsm)
 #results <- results$overall
 nan.mean <- function(x) mean(x, na.rm=TRUE)
 results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = nan.mean)
-algs <-  c("LOL", "QOQ", "CCA", "ROAD", "LASSO", "PCA", "LDA")
-acols <- c("#008000", "#4daf4a", "#e41a1c", "#ff7f00", "#377eb8", "#f781bf", "#00ffff")
+algs <-  c("LOL", "QOQ", "ROAD", "LASSO", "CCA", "PCA", "LDA")
+acols <- c("#00FF00", "#00FF00", "#969696", "#969696", "#525252", "#525252", "#525252")
 names(acols) <- algs
-linestyle <- c("solid", "dashed", "solid", "solid", "solid", "solid", "solid")
+linestyle <- c("solid", "dashed", "solid", "dashed", "solid", "dashed", "dotted")
 names(linestyle) <- algs
 sim_plots <- list()
 results.means$alg <- revalue(results.means$alg, c("cPCA"="LDA"))
 
+results.means$type <- revalue(results.means$alg, linestyle)
+results.means$color <- revalue(results.means$alg, acols)
 counter <- 1
 for (i in 1:length(sim_names)) {
   sim <- sim_names[i]
@@ -218,7 +234,7 @@ for (i in 1:length(sim_names)) {
     pt <- compute_cutoff(data_sub[data_sub$alg == alg,]$r, data_sub[data_sub$alg == alg,]$lhat)
     pt.dat <- rbind(pt.dat, data.frame(r=pt$r, lhat=pt$lhat, alg=alg))
   }
-  sim_plots[[counter]] <- plot_sim_lhats(data_sub, acols, pt.dat, ylab=sim, from=sim_min[i], by=by[i])
+  sim_plots[[counter]] <- plot_sim_lhats(data_sub, acols, pt.dat, linestyle, ylab=paste(sim_titles[i], sim), from=sim_min[i], by=by[i])
   counter <- counter + 1
 }
 ```
@@ -260,7 +276,7 @@ cov_plots <- sapply(1:length(cov_plots), function(j) {
 
 tfonts = 14
 grid_sim <- grid.arrange(grid.arrange(grobs=sim_plots, nrow=nsim), sim_leg, nrow=2, heights=c(.95, .07),
-                         top=textGrob("Misclassification Rate\n", gp=gpar(fontsize=tfonts, face="bold")))
+                         top=textGrob("Misclassification Rate\n(D=100, n=100)", gp=gpar(fontsize=tfonts, face="bold")))
 grid_mean <- grid.arrange(grid.arrange(grobs=mean_plots, nrow=nsim), mean_leg, nrow=2, heights=c(.95, .07),
                          top=textGrob("Means\n(First 10 Dimensions)", gp=gpar(fontsize=tfonts, face="bold")))
 grid_cov <- grid.arrange(grid.arrange(grobs=cov_plots, nrow=nsim), cov_leg, nrow=2, heights=c(.95, .07),
@@ -270,5 +286,5 @@ grid_cov <- grid.arrange(grid.arrange(grobs=cov_plots, nrow=nsim), cov_leg, nrow
 We combine and plot:
 
 ```{r, fig.height=11, fig.width=10}
-grid.arrange(grid_sim, grid_mean, grid_cov, ncol=3, widths=c(0.35, 0.35, 0.23))
+grid.arrange(grid_sim, grid_mean, grid_cov, ncol=3, widths=c(0.35, 0.25, 0.2))
 ```
