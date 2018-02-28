@@ -52,28 +52,30 @@ opath <- '/home/ebridge/research/R-fmri/lol/docs/lol-paper/data/fig5/'
 clusterExport(cl, "data"); clusterExport(cl, "rlen")
 clusterExport(cl, "experiments"); clusterExport(cl, "opath")
 results <- parLapply(cl, experiments, function(exp) {
-  require(lolR)
-  if (exp$name %in% c("QOQ")) {
-    classifier.alg=MASS::qda
-  } else {
-    classifier.alg=MASS::lda
-  }
-  X <- data[[exp$exp]]$X; Y <- data[[exp$exp]]$Y
-  n <- dim(X)[1]; d <- dim(X)[2]
-  maxr <- min(d, 100)
-  rs <- unique(log.seq(from=1, to=maxr, length=rlen))
-  results <- data.frame(exp=c(), alg=c(), K=c(), r=c(), n=c(), lhat=c())
-  for (r in rs) {
-    tryCatch({
-      xv_res <- lol.xval.eval(X, Y, alg=exp$alg[[exp$name]], alg.opts=list(r=r), alg.embedding="A",
-                              classifier=classifier.alg, k=exp$k)
-      lhat <- xv_res$Lhat
-      exr <- data.frame(data=exp$exp, se=sd(xv_res$Lhats)/sqrt(length(Y)), alg=exp$name, r=r,
-                        K=length(unique(Y)), n=n, lhat=lhat)
-      results <- rbind(results, exr)
-    }, error=function(e) lhat <- NaN)
-  }
-  saveRDS(results, file=paste(opath, exp$exp, '.rds', sep=""))
+  withTimeout({
+    require(lolR)
+    if (exp$name %in% c("QOQ")) {
+      classifier.alg=MASS::qda
+    } else {
+      classifier.alg=MASS::lda
+    }
+    X <- data[[exp$exp]]$X; Y <- data[[exp$exp]]$Y
+    n <- dim(X)[1]; d <- dim(X)[2]
+    maxr <- min(d, 100)
+    rs <- unique(log.seq(from=1, to=maxr, length=rlen))
+    results <- data.frame(exp=c(), alg=c(), K=c(), r=c(), n=c(), lhat=c())
+    for (r in rs) {
+      tryCatch({
+        xv_res <- lol.xval.eval(X, Y, alg=exp$alg[[exp$name]], alg.opts=list(r=r), alg.embedding="A",
+                                classifier=classifier.alg, k=exp$k)
+        lhat <- xv_res$Lhat
+        exr <- data.frame(data=exp$exp, se=sd(xv_res$Lhats)/sqrt(length(Y)), alg=exp$name, r=r,
+                          K=length(unique(Y)), n=n, lhat=lhat)
+        results <- rbind(results, exr)
+      }, error=function(e) lhat <- NaN)
+    }
+    saveRDS(results, file=paste(opath, exp$exp, '.rds', sep=""))}
+    , timeout=3600)
 })
 saveRDS(resultso, 'lol_fig4pmlb_lda.rds')
 stopCluster(cl)
