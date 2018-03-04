@@ -1,5 +1,6 @@
 # Parallelize Stuff
 #=========================#
+require(lolR)
 require(MASS)
 library(parallel)
 source('./plsda.R')
