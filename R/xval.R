@@ -10,27 +10,27 @@
 #' @param alg.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.
 #' @param alg.embedding the attribute returned by \code{alg} containing the embedding matrix. Defaults to assuming that \code{alg} returns an embgedding matrix as \code{"A"}.
 #' \itemize{
-#' \item{!is.nan(alg.embedding)}{Assumes that \code{alg} will return a list containing an attribute, \code{alg.embedding}, a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
-#' \item{is.nan(alg.embedding)}{Assumes that \code{alg} returns a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
+#' \item \code{!is.nan(alg.embedding)} Assumes that \code{alg} will return a list containing an attribute, \code{alg.embedding}, a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.
+#' \item \code{is.nan(alg.embedding)} Assumes that \code{alg} returns a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.
 #' }
 #' @param classifier the classifier to use for assessing performance. The classifier should accept \code{X}, a \code{[n, d]} array as the first input, and \code{Y}, a \code{[n]} array of labels, as the first 2 arguments. The class should implement a predict function, \code{predict.classifier}, that is compatible with the \code{stats::predict} \code{S3} method. Defaults to \code{MASS::lda}.
 #' @param classifier.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list.
 #' @param classifier.return if the return type is a list, \code{class} encodes the attribute containing the prediction labels from \code{stats::predict}. Defaults to the return type of \code{MASS::lda}, \code{class}.
 #' \itemize{
-#' \item{!is.nan(classifier.return)}{Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.}
-#' \item{is.nan(classifier.return)}{Assumes that \code{predict.classifer}} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.
+#' \item \code{!is.nan(classifier.return)} Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.
+#' \item \code{is.nan(classifier.return)} Assumes that \code{predict.classifer}} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.
 #' }
 #' @param k the cross-validated method to perform. Defaults to \code{'loo'}. See \code{\link{lol.xval.split}}
 #' \itemize{
-#' \item{\code{'loo'}}{Leave-one-out cross validation}
-#' \item{\code{isinteger(k)}}{ perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
+#' \item \code{'loo'} Leave-one-out cross validation
+#' \item \code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.
 #' }
 #' @param ... trailing args.
 #' @return Returns a list containing:
-#' \item{Lhat}{the mean cross-validated error.}
-#' \item{model}{The model returned by \code{alg} computed on all of the data.}
-#' \item{classifier}{The classifier trained on all of the embedded data.}
-#' \item{Lhats}{the cross-validated error for each of the \code{k}-folds.}
+#' \item \code{Lhat} the mean cross-validated error.
+#' \item \code{model} The model returned by \code{alg} computed on all of the data.
+#' \item \code{classifier} The classifier trained on all of the embedded data.
+#' \item \code{Lhats} the cross-validated error for each of the \code{k}-folds.
 #' @author Eric Bridgeford
 #' @examples
 #' # train model and analyze with loo validation using lda classifier
@@ -89,8 +89,8 @@ lol.xval.eval <- function(X, Y, alg, alg.opts=list(), alg.embedding="A", classif
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param k the cross-validated method to perform. Defaults to \code{'loo'}.
 #' \itemize{
-#' \item{\code{'loo'}}{ Leave-one-out cross validation}
-#' \item{\code{isinteger(k)}}{ perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
+#' \item \code{'loo'}  Leave-one-out cross validation
+#' \item \code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.
 #' }
 #' @param ... optional args.
 #' @return sets the cross-validation sets as a list, each element with an \code{X.train}, \code{X.test}, \code{Y.train}, and \code{Y.test}.
