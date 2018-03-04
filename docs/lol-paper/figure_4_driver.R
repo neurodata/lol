@@ -3,6 +3,7 @@
 require(MASS)
 library(parallel)
 require(lolR)
+source('./plsda.R')
 
 no_cores = detectCores() - 1
 
@@ -10,8 +11,8 @@ cl = makeCluster(no_cores)
 
 # Setup Algorithms
 #==========================#
-algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol, lol.project.qoq)
-names(algs) <- c("PCA", "LDA", "CCA", "LOL", "QOQ")
+algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.lol, lol.project.qoq)
+names(algs) <- c("PCA", "LDA", "CCA", "PLS", "LOL", "QOQ")
 experiments <- list()
 counter <- 1
 

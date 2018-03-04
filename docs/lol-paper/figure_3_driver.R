@@ -2,6 +2,7 @@
 #=========================#
 require(MASS)
 library(parallel)
+source('./plsda.R')
 
 no_cores = detectCores() - 5
 
@@ -44,11 +45,11 @@ results <- parLapply(cl, simulations, function(sim) {
   X <- sim_dat$X; Y <- sim_dat$Y
   results <- data.frame(sim=c(), iter=c(), alg=c(), r=c(), lhat=c())
   if (sim$sim == "QDA") {
-    algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol, lol.project.qoq)
-    alg_name <- c("PCA", "LDA", "CCA", "LOL", "QOQ")
+    algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.lol, lol.project.qoq)
+    alg_name <- c("PCA", "LDA", "CCA", "PLS", "LOL", "QOQ")
   } else {
-    algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.lol)
-    alg_name <- c("PCA", "LDA", "CCA", "LOL")
+    algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.lol)
+    alg_name <- c("PCA", "LDA", "CCA", "PLS", "LOL")
   }
 
   for (i in 1:length(algs)) {
