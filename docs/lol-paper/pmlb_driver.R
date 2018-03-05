@@ -41,7 +41,7 @@ for (i in 1:length(dset.names)) {
 
 # Setup Algorithms
 #=========================#
-opath <- './fig5/'
+opath <- './data/fig5/'
 dir.create(opath)
 clusterExport(cl, "data"); clusterExport(cl, "rlen")
 clusterExport(cl, "experiments"); clusterExport(cl, "opath")

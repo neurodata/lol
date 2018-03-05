@@ -29,7 +29,7 @@ A list of class \code{simulation} with the following:
 A function to simulate from the 2-class xor problem.
 }
 \examples{
-library(lol)
+library(lolR)
 data <- lol.sims.xor2(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 }

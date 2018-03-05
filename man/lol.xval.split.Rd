@@ -13,8 +13,8 @@ lol.xval.split(X, Y, k = "loo", ...)
 
 \item{k}{the cross-validated method to perform. Defaults to \code{'loo'}.
 \itemize{
-\item{\code{'loo'}}{ Leave-one-out cross validation}
-\item{\code{isinteger(k)}}{ perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
+\item \code{'loo'}  Leave-one-out cross validation
+\item \code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.
 }}
 
 \item{...}{optional args.}

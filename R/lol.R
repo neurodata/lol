@@ -16,13 +16,13 @@
 #' @param xfm.opts optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.
 #' @param ... trailing args.
 #' @return A list of class \code{embedding} containing the following:
-#' \item \code{A} \code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.
-#' \item \code{d} the eigen values associated with the eigendecomposition.
-#' \item \code{ylabs} \code{[K]} vector containing the \code{K} unique, ordered class labels.
-#' \item \code{centroids} \code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.
-#' \item \code{priors} \code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.
-#' \item \code{Xr} \code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.
-#' \item \code{cr} \code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.
+#' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+#' \item{\code{d}}{the eigen values associated with the eigendecomposition.}
+#' \item{\code{ylabs}}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
+#' \item{\code{centroids}}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
+#' \item{\code{priors}}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+#' \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
+#' \item{\code{cr}}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)
@@ -42,7 +42,7 @@ lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   nv <- r - (K)
   cpca <- list(d=NULL)
   if (nv > 0) {
-    cpca <- lol.project.cpca(X, Y, nv=nv, xfm=xfm, xfm.opts=xfm.opts)
+    cpca <- lol.project.cpca(X, Y, r=nv, xfm=xfm, xfm.opts=xfm.opts)
     A <- cbind(deltas, cpca$A)
   } else {
     A <- deltas[, 1:r, drop=FALSE]
@@ -72,13 +72,13 @@ lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
 #' @param xfm.opts optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.
 #' @param ... trailing args.
 #' @return A list of class \code{embedding} containing the following:
-#' \item \code{A} \code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.
-#' \item \code{d} the eigen values associated with the eigendecomposition.
-#' \item \code{ylabs} \code{[K]} vector containing the \code{K} unique, ordered class labels.
-#' \item \code{centroids} \code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.
-#' \item \code{priors} \code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.
-#' \item \code{Xr} \code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.
-#' \item \code{cr} \code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.
+#' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+#' \item{\code{d}}{the eigen values associated with the eigendecomposition.}
+#' \item{\code{ylabs}}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
+#' \item{\code{centroids}}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
+#' \item{\code{priors}}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+#' \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
+#' \item{\code{cr}}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)
@@ -102,7 +102,7 @@ lol.project.qoq <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   if (nv > 0) {
     for (ylab in ylabs) {
       Xclass = X[Y == ylab,]
-      obj <- lol.project.pca(Xclass, nv=nv, xfm=xfm, xfm.opts=xfm.opts)
+      obj <- lol.project.pca(Xclass, r=nv, xfm=xfm, xfm.opts=xfm.opts)
       Aclass <- cbind(Aclass, obj$A)
       vclass <- c(vclass, obj$d[1:nv])
     }

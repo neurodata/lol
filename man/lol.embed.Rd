@@ -20,7 +20,7 @@ an array \code{[n, r]} the original \code{n} points embedded into \code{r} dimen
 A function that embeds points in high dimensions to a lower dimensionality.
 }
 \examples{
-library(lol)
+library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 model <- lol.project.lol(X=X, Y=Y, r=5)  # use lol to project into 5 dimensions

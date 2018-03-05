@@ -18,7 +18,7 @@
 #' @param classifier.return if the return type is a list, \code{class} encodes the attribute containing the prediction labels from \code{stats::predict}. Defaults to the return type of \code{MASS::lda}, \code{class}.
 #' \itemize{
 #' \item \code{!is.nan(classifier.return)} Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.
-#' \item \code{is.nan(classifier.return)} Assumes that \code{predict.classifer}} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.
+#' \item \code{is.nan(classifier.return)} Assumes that \code{predict.classifer} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.
 #' }
 #' @param k the cross-validated method to perform. Defaults to \code{'loo'}. See \code{\link{lol.xval.split}}
 #' \itemize{
@@ -27,10 +27,10 @@
 #' }
 #' @param ... trailing args.
 #' @return Returns a list containing:
-#' \item \code{Lhat} the mean cross-validated error.
-#' \item \code{model} The model returned by \code{alg} computed on all of the data.
-#' \item \code{classifier} The classifier trained on all of the embedded data.
-#' \item \code{Lhats} the cross-validated error for each of the \code{k}-folds.
+#' \item{\code{Lhat}}{the mean cross-validated error.}
+#' \item{\code{model}}{The model returned by \code{alg} computed on all of the data.}
+#' \item{\code{classifier}}{The classifier trained on all of the embedded data.}
+#' \item{\code{Lhats}}{the cross-validated error for each of the \code{k}-folds.}
 #' @author Eric Bridgeford
 #' @examples
 #' # train model and analyze with loo validation using lda classifier

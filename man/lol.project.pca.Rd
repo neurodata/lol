@@ -26,15 +26,15 @@ lol.project.pca(X, r, xfm = FALSE, xfm.opts = list(), ...)
 }
 \value{
 A list of class \code{embedding} containing the following:
-\item{A}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
-\item{d}{\code{[r]} the signular values associated with the projection matrix \code{A}.}
-\item{Xr}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
+\item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+\item{\code{d}}{the eigen values associated with the eigendecomposition.}
+\item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
 }
 \description{
 A function that performs PCA on data.
 }
 \examples{
-library(lol)
+library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 model <- lol.project.pca(X=X, r=2)  # use pca to project into 2 dimensions

@@ -36,7 +36,7 @@ A list of class \code{simulation} with the following:
 A function for simulating data generalizing the Toeplitz setting, where each class has a different covariance matrix. This results in a Quadratic Discriminant.
 }
 \examples{
-library(lol)
+library(lolR)
 data <- lol.sims.qdtoep(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 }
