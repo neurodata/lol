@@ -65,7 +65,7 @@ lol.xval.eval <- function(X, Y, alg, alg.opts=list(), alg.embedding="A", classif
       A <- mod[[alg.embedding]]
     }
     X.test.proj <- lol.embed(set$X.test, A)  # project the data with the projection just learned
-    trained_classifier <- do.call(classifier, c(list(mod$Xr, set$Y.train), classifier.opts))
+    trained_classifier <- do.call(classifier, c(list(lol.embed(set$X.train, A), set$Y.train), classifier.opts))
     if (is.nan(classifier.return)) {
       Yhat <- predict(trained_classifier, X.test.proj)
     } else {
