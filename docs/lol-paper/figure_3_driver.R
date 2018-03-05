@@ -42,6 +42,7 @@ for (i in 1:length(sims)) {
 clusterExport(cl, "simulations"); clusterExport(cl, "rlen")
 results <- parLapply(cl, simulations, function(sim) {
   require(lolR)
+  source('./plsda.R')
   sim_dat <- do.call(sim$sim_func, sim$args)
   X <- sim_dat$X; Y <- sim_dat$Y
   results <- data.frame(sim=c(), iter=c(), alg=c(), r=c(), lhat=c())
@@ -80,5 +81,5 @@ results <- data.table(resultso)
 # aggregate over the iterations, retaining the other factors
 results.means <- aggregate(lhat ~ sim + alg + r + lhat + se, data = results, FUN = mean)
 results_agg <- list(overall=resultso, means=results.means)
-saveRDS(results_agg, 'lol_fig3_lda.rds')
+saveRDS(results_agg, './data/fig3/lol_fig3_lda.rds')
 stopCluster(cl)
