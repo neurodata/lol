@@ -75,7 +75,12 @@ lol.xval.eval <- function(X, Y, alg, alg.opts=list(), alg.embedding="A", classif
   })
 
   model <- do.call(alg, c(list(X=X, Y=Y), alg.opts))
-  class <- do.call(classifier, c(list(model$Xr, Y), classifier.opts))
+  if (is.nan(alg.embedding)) {
+    A <- mod
+  } else {
+    A <- mod[[alg.embedding]]
+  }
+  class <- do.call(classifier, c(list(lol.embed(X, A), Y), classifier.opts))
 
   return(list(Lhat=mean(Lhat.fold), model=model, classifier=class, Lhats=Lhat.fold))
 }
