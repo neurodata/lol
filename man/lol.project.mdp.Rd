@@ -15,18 +15,18 @@ lol.project.mdp(X, Y, ...)
 }
 \value{
 A list of class \code{embedding} containing the following:
-\item{A}{\code{[d, K-1]} the projection matrix from \code{d} to \code{K-1} dimensions.}
-\item{ylabs}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
-\item{centroids}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
-\item{priors}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
-\item{Xr}{\code{[n, K-1]} the \code{n} data points in reduced dimensionality \code{K-1}.}
-\item{cr}{\code{[K, K-1]} the \code{K} centroids in reduced dimensionality \code{K-1}.}
+\item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+\item{\code{ylabs}}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
+\item{\code{centroids}}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
+\item{\code{priors}}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
+\item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
+\item{\code{cr}}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
 }
 \description{
 A function for implementing the Maximal Data Piling (MDP) Algorithm.
 }
 \examples{
-library(lol)
+library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 model <- lol.project.mdp(X=X, Y=Y)  # use mdp to project into maximal data piling

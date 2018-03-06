@@ -18,7 +18,7 @@
 #' @param classifier.return if the return type is a list, \code{class} encodes the attribute containing the prediction labels from \code{stats::predict}. Defaults to the return type of \code{MASS::lda}, \code{class}.
 #' \itemize{
 #' \item \code{!is.nan(classifier.return)} Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.
-#' \item \code{is.nan(classifier.return)} Assumes that \code{predict.classifer}} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.
+#' \item \code{is.nan(classifier.return)} Assumes that \code{predict.classifer} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.
 #' }
 #' @param k the cross-validated method to perform. Defaults to \code{'loo'}. See \code{\link{lol.xval.split}}
 #' \itemize{
@@ -27,14 +27,14 @@
 #' }
 #' @param ... trailing args.
 #' @return Returns a list containing:
-#' \item \code{Lhat} the mean cross-validated error.
-#' \item \code{model} The model returned by \code{alg} computed on all of the data.
-#' \item \code{classifier} The classifier trained on all of the embedded data.
-#' \item \code{Lhats} the cross-validated error for each of the \code{k}-folds.
+#' \item{\code{Lhat}}{the mean cross-validated error.}
+#' \item{\code{model}}{The model returned by \code{alg} computed on all of the data.}
+#' \item{\code{classifier}}{The classifier trained on all of the embedded data.}
+#' \item{\code{Lhats}}{the cross-validated error for each of the \code{k}-folds.}
 #' @author Eric Bridgeford
 #' @examples
 #' # train model and analyze with loo validation using lda classifier
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' r=5  # embed into r=5 dimensions
@@ -65,7 +65,7 @@ lol.xval.eval <- function(X, Y, alg, alg.opts=list(), alg.embedding="A", classif
       A <- mod[[alg.embedding]]
     }
     X.test.proj <- lol.embed(set$X.test, A)  # project the data with the projection just learned
-    trained_classifier <- do.call(classifier, c(list(mod$Xr, set$Y.train), classifier.opts))
+    trained_classifier <- do.call(classifier, c(list(lol.embed(set$X.train, A), set$Y.train), classifier.opts))
     if (is.nan(classifier.return)) {
       Yhat <- predict(trained_classifier, X.test.proj)
     } else {
@@ -75,7 +75,12 @@ lol.xval.eval <- function(X, Y, alg, alg.opts=list(), alg.embedding="A", classif
   })
 
   model <- do.call(alg, c(list(X=X, Y=Y), alg.opts))
-  class <- do.call(classifier, c(list(model$Xr, Y), classifier.opts))
+  if (is.nan(alg.embedding)) {
+    A <- model
+  } else {
+    A <- model[[alg.embedding]]
+  }
+  class <- do.call(classifier, c(list(lol.embed(X, A), Y), classifier.opts))
 
   return(list(Lhat=mean(Lhat.fold), model=model, classifier=class, Lhats=Lhat.fold))
 }

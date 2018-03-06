@@ -21,7 +21,7 @@
 #' \item{params}{Any extraneous parameters the simulation was created with.}
 #' @author Eric Bridgeford
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.fat_tails(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
@@ -88,7 +88,7 @@ lol.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, t=0.8, 
 #' \item{params}{Any extraneous parameters the simulation was created with.}
 #' @author Eric Bridgeford
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.mean_diff(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
@@ -147,7 +147,7 @@ lol.sims.mean_diff <- function(n, d, rotate=FALSE, priors=NULL, K=2, md=1, subse
 #' \item{params}{Any extraneous parameters the simulation was created with.}
 #' @author Eric Bridgeford
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.toep(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
@@ -211,7 +211,7 @@ lol.sims.toep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0.5
 #' \item{params}{Any extraneous parameters the simulation was created with.}
 #' @author Eric Bridgeford
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.qdtoep(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
@@ -278,7 +278,7 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
 #' \item{params}{Any extraneous parameters the simulation was created with.}
 #' @author Eric Bridgeford
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
@@ -334,7 +334,7 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2) {
 #' \item{params}{Any extraneous parameters the simulation was created with.}
 #' @author Eric Bridgeford
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.cigar(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
@@ -385,7 +385,7 @@ lol.sims.cigar <- function(n, d, rotate=FALSE, priors=NULL, a=0.15, b=4) {
 #' \item{params}{Any extraneous parameters the simulation was created with.}
 #' @author Eric Bridgeford
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.xor2(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export

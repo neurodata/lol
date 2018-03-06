@@ -7,7 +7,7 @@
 #' @param ... optional args.
 #' @return an array \code{[n, r]} the original \code{n} points embedded into \code{r} dimensions.
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' model <- lol.project.lol(X=X, Y=Y, r=5)  # use lol to project into 5 dimensions

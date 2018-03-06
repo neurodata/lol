@@ -19,8 +19,8 @@ lol.xval.eval(X, Y, alg, alg.opts = list(), alg.embedding = "A",
 
 \item{alg.embedding}{the attribute returned by \code{alg} containing the embedding matrix. Defaults to assuming that \code{alg} returns an embgedding matrix as \code{"A"}.
 \itemize{
-\item{!is.nan(alg.embedding)}{Assumes that \code{alg} will return a list containing an attribute, \code{alg.embedding}, a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
-\item{is.nan(alg.embedding)}{Assumes that \code{alg} returns a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.}
+\item \code{!is.nan(alg.embedding)} Assumes that \code{alg} will return a list containing an attribute, \code{alg.embedding}, a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.
+\item \code{is.nan(alg.embedding)} Assumes that \code{alg} returns a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.
 }}
 
 \item{classifier}{the classifier to use for assessing performance. The classifier should accept \code{X}, a \code{[n, d]} array as the first input, and \code{Y}, a \code{[n]} array of labels, as the first 2 arguments. The class should implement a predict function, \code{predict.classifier}, that is compatible with the \code{stats::predict} \code{S3} method. Defaults to \code{MASS::lda}.}
@@ -29,31 +29,31 @@ lol.xval.eval(X, Y, alg, alg.opts = list(), alg.embedding = "A",
 
 \item{classifier.return}{if the return type is a list, \code{class} encodes the attribute containing the prediction labels from \code{stats::predict}. Defaults to the return type of \code{MASS::lda}, \code{class}.
 \itemize{
-\item{!is.nan(classifier.return)}{Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.}
-\item{is.nan(classifier.return)}{Assumes that \code{predict.classifer}} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.
+\item \code{!is.nan(classifier.return)} Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.
+\item \code{is.nan(classifier.return)} Assumes that \code{predict.classifer} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.
 }}
 
 \item{k}{the cross-validated method to perform. Defaults to \code{'loo'}. See \code{\link{lol.xval.split}}
 \itemize{
-\item{\code{'loo'}}{Leave-one-out cross validation}
-\item{\code{isinteger(k)}}{ perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
+\item \code{'loo'} Leave-one-out cross validation
+\item \code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.
 }}
 
 \item{...}{trailing args.}
 }
 \value{
 Returns a list containing:
-\item{Lhat}{the mean cross-validated error.}
-\item{model}{The model returned by \code{alg} computed on all of the data.}
-\item{classifier}{The classifier trained on all of the embedded data.}
-\item{Lhats}{the cross-validated error for each of the \code{k}-folds.}
+\item{\code{Lhat}}{the mean cross-validated error.}
+\item{\code{model}}{The model returned by \code{alg} computed on all of the data.}
+\item{\code{classifier}}{The classifier trained on all of the embedded data.}
+\item{\code{Lhats}}{the cross-validated error for each of the \code{k}-folds.}
 }
 \description{
 A function for performing leave-one-out cross-validation for a given embedding model.
 }
 \examples{
 # train model and analyze with loo validation using lda classifier
-library(lol)
+library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 r=5  # embed into r=5 dimensions

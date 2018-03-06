@@ -40,7 +40,7 @@ A list of class \code{simulation} with the following:
 A function for simulating data in which a difference in the means is present only in a subset of dimensions, and equal covariance.
 }
 \examples{
-library(lol)
+library(lolR)
 data <- lol.sims.mean_diff(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 }

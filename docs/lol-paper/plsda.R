@@ -1,4 +1,5 @@
 require(caret)
+require(pls)
 require(R.utils)
 
 lol.project.pls <- function(X, Y, r, ...) {

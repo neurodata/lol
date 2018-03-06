@@ -5,7 +5,7 @@ require(MASS)
 library(parallel)
 source('./plsda.R')
 
-no_cores = detectCores() - 5
+no_cores = detectCores() - 1
 
 cl = makeCluster(no_cores)
 
@@ -16,7 +16,7 @@ require(MASS)
 
 n=100
 niter <- 200  # number of iterations per simulation
-rlen <- 30
+rlen <- 20
 # the simulations to call themselves
 sims <- list(lol.sims.rtrunk, lol.sims.toep, lol.sims.rtrunk, lol.sims.fat_tails, lol.sims.qdtoep)
 maxr <- c(30, 90, 30, 30, 30)
@@ -42,6 +42,7 @@ for (i in 1:length(sims)) {
 clusterExport(cl, "simulations"); clusterExport(cl, "rlen")
 results <- parLapply(cl, simulations, function(sim) {
   require(lolR)
+  source('./plsda.R')
   sim_dat <- do.call(sim$sim_func, sim$args)
   X <- sim_dat$X; Y <- sim_dat$Y
   results <- data.frame(sim=c(), iter=c(), alg=c(), r=c(), lhat=c())
@@ -52,21 +53,28 @@ results <- parLapply(cl, simulations, function(sim) {
     algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.lol)
     alg_name <- c("PCA", "LDA", "CCA", "PLS", "LOL")
   }
+  log.seq <- function(from=0, to=30, length=15) {
+    round(exp(seq(from=log(from), to=log(to), length.out=length)))
+  }
 
+  rs <- unique(round(log.seq(from=1, to=sim$rmax, length=rlen)))
   for (i in 1:length(algs)) {
-    rs <- round(seq(from=1, to=sim$rmax, length.out=rlen))
     for (r in rs) {
+      classifier.alg = MASS::lda
+      classifier.return = 'class'
       if (alg_name[i] == "QOQ") {
         classifier.alg=MASS::qda
-      } else {
-        classifier.alg=MASS::lda
+      } else if (alg_name[i] == "CCA") {
+        classifier.alg = lol.classify.nearestCentroid
+        classifier.return = NaN
       }
       tryCatch({
-        xv_res <- lol.xval.eval(X, Y, alg=algs[[i]], alg.opts=list(r=r), alg.return="A", classifier=classifier.alg, k='loo')
+        xv_res <- lol.xval.eval(X, Y, alg=algs[[i]], alg.opts=list(r=r), alg.return="A", classifier=classifier.alg,
+                                classifier.return=classifier.return, k='loo')
         lhat <- xv_res$Lhat
+        results <- rbind(results, data.frame(sim=sim$sim, iter=sim$iter, se=var(xv_res$Lhats)/sqrt(length(Y)),
+                                             alg=alg_name[i], r=r, lhat=lhat))
       }, error=function(e) lhat <- NaN)
-      results <- rbind(results, data.frame(sim=sim$sim, iter=sim$iter, se=var(xv_res$Lhats)/sqrt(length(Y)),
-                                           alg=alg_name[i], r=r, lhat=lhat))
     }
   }
   return(results)
@@ -80,5 +88,5 @@ results <- data.table(resultso)
 # aggregate over the iterations, retaining the other factors
 results.means <- aggregate(lhat ~ sim + alg + r + lhat + se, data = results, FUN = mean)
 results_agg <- list(overall=resultso, means=results.means)
-saveRDS(results_agg, 'lol_fig3_lda.rds')
+saveRDS(results_agg, './data/fig3/lol_fig3_lda.rds')
 stopCluster(cl)
