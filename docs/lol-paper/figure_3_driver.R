@@ -58,6 +58,7 @@ results <- parLapply(cl, simulations, function(sim) {
   }
 
   rs <- unique(round(log.seq(from=1, to=sim$rmax, length=rlen)))
+  results <- data.frame(sim=c(), iter=c(), se=c(), alg=c(), r=c(), lhat=c())
   for (i in 1:length(algs)) {
     for (r in rs) {
       classifier.alg = MASS::lda

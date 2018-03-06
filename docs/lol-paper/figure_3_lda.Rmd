@@ -10,7 +10,7 @@ editor_options:
 # Figure 3 - LOL Paper
 
 ```{r, message=FALSE}
-require(lol)
+require(lolR)
 require(ggplot2)
 require(latex2exp)
 require(MASS)
@@ -211,14 +211,14 @@ Next, we aggregate over the respective iterations, and subset plots for each fun
 ```{r}
 # read the results in
 results <- readRDS('./data/fig3/lol_fig3_lda.rds')
-results <- rbind(results$overall, resultsm)
+results <- rbind(results$overall[, colnames(results$overall) != 'se'], resultsm)
 #results <- results$overall
 nan.mean <- function(x) mean(x, na.rm=TRUE)
 results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = nan.mean)
-algs <-  c("LOL", "QOQ", "ROAD", "LASSO", "CCA", "PCA", "LDA")
-acols <- c("#00FF00", "#00FF00", "#969696", "#969696", "#525252", "#525252", "#525252")
+algs <-  c("LOL", "QOQ", "ROAD", "LASSO", "PLS", "CCA", "PCA", "LDA")
+acols <- c("#00FF00", "#00FF00", "#969696", "#969696", "#969696", "#525252", "#525252", "#525252")
 names(acols) <- algs
-linestyle <- c("solid", "dashed", "solid", "dashed", "solid", "dashed", "dotted")
+linestyle <- c("solid", "dashed", "solid", "dashed", "dotted", "solid", "dashed", "dotted")
 names(linestyle) <- algs
 sim_plots <- list()
 results.means$alg <- revalue(results.means$alg, c("cPCA"="LDA"))
