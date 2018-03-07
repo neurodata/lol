@@ -60,15 +60,15 @@ results <- parLapply(cl, simulations, function(sim) {
   rs <- unique(round(log.seq(from=1, to=sim$rmax, length=rlen)))
   results <- data.frame(sim=c(), iter=c(), se=c(), alg=c(), r=c(), lhat=c())
   for (i in 1:length(algs)) {
+    classifier.alg = MASS::lda
+    classifier.return = 'class'
+    if (alg_name[i] == "QOQ") {
+      classifier.alg=MASS::qda
+    } else if (alg_name[i] == "CCA") {
+      classifier.alg = lol.classify.nearestCentroid
+      classifier.return = NaN
+    }
     for (r in rs) {
-      classifier.alg = MASS::lda
-      classifier.return = 'class'
-      if (alg_name[i] == "QOQ") {
-        classifier.alg=MASS::qda
-      } else if (alg_name[i] == "CCA") {
-        classifier.alg = lol.classify.nearestCentroid
-        classifier.return = NaN
-      }
       tryCatch({
         xv_res <- lol.xval.eval(X, Y, alg=algs[[i]], alg.opts=list(r=r), alg.return="A", classifier=classifier.alg,
                                 classifier.return=classifier.return, k='loo')

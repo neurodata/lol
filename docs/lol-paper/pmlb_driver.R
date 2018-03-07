@@ -63,23 +63,22 @@ results <- parLapply(cl, experiments, function(exp) {
   tryCatch({
     setTimeLimit(1800)
     for (i in 1:length(algs)) {
-      alg.embedding <- "A"
-      if (algs[i] %in% c("QOQ")) {
+      classifier.alg = MASS::lda
+      classifier.return = 'class'
+      if (alg_name[i] == "QOQ") {
         classifier.alg=MASS::qda
-      } else {
-        classifier.alg=MASS::lda
+      } else if (alg_name[i] == "CCA") {
+        classifier.alg = lol.classify.nearestCentroid
+        classifier.return = NaN
       }
       for (r in rs) {
-        alg.opts <- list(r=r)
-        alg.embedding <- "A"
         tryCatch({
-          xv_res <- lol.xval.eval(X, Y, alg=algs[[i]], alg.opts=alg.opts, alg.embedding=alg.embedding,
-                                  classifier=classifier.alg, k=exp$k)
+          xv_res <- lol.xval.eval(X, Y, alg=algs[[i]], alg.opts=list(r=r), alg.return="A", classifier=classifier.alg,
+                                  classifier.return=classifier.return, k=exp$k)
           lhat <- xv_res$Lhat
-          exr <- data.frame(data=exp$exp, se=sd(xv_res$Lhats)/sqrt(length(Y)), alg=alg_name[i], r=r,
-                            K=length(unique(Y)), n=n, lhat=lhat)
-          results <- rbind(results, exr)
-        }, error=function(e) {lhat <- NaN})
+          results <- rbind(results, data.frame(sim=exp$exp, se=var(xv_res$Lhats)/sqrt(length(Y)),
+                                               alg=alg_name[i], r=r, lhat=lhat))
+        }, error=function(e) lhat <- NaN)
       }
     }
     saveRDS(results, file=paste(opath, exp$exp, '.rds', sep=""))
