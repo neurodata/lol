@@ -15,7 +15,7 @@
 #' }
 #' @param xfm.opts optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.
 #' @param ... trailing args.
-#' @return A list of class \code{embedding} containing the following:
+#' @return A list containing the following:
 #' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{\code{d}}{the eigen values associated with the eigendecomposition.}
 #' \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
@@ -28,6 +28,11 @@
 #' @export
 lol.project.pca <- function(X, r, xfm=FALSE, xfm.opts=list(), ...) {
   # mean center by the column mean
+  d <- dim(X)[2]
+  if (r > d) {
+    stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
+  }
+  # subtract means
   Xc  <- sweep(X, 2, colMeans(X), '-')
   svdX <- lol.utils.svd(Xc, xfm=xfm, xfm.opts=xfm.opts, nv=r, nu=0)
 
@@ -93,7 +98,7 @@ lol.utils.svd <- function(X, xfm=FALSE, xfm.opts=list(), nu=0, nv=0, t=.05) {
 #' }
 #' @param xfm.opts optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.
 #' @param ... trailing args.
-#' @return A list of class \code{embedding} containing the following:
+#' @return A list containing the following:
 #' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{\code{d}}{the eigen values associated with the eigendecomposition.}
 #' \item{\code{ylabs}}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
@@ -114,9 +119,13 @@ lol.project.cpca <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   priors <- classdat$priors; centroids <- t(classdat$centroids)
   K <- classdat$K; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d
+  if (r > d) {
+    stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
+  }
 
   # subtract column means per-class
   Yidx <- sapply(Y, function(y) which(ylabs == y))
+  # form class-conditional data matrix
   Xt <- X - centroids[Yidx,]
   # compute the standard projection but with the pre-centered data.
   svdX <- lol.utils.svd(Xt, xfm=xfm, xfm.opts=xfm.opts, nv=r, nu=0)

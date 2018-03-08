@@ -15,7 +15,7 @@
 #' }
 #' @param xfm.opts optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.
 #' @param ... trailing args.
-#' @return A list of class \code{embedding} containing the following:
+#' @return A list containing the following:
 #' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{\code{d}}{the eigen values associated with the eigendecomposition.}
 #' \item{\code{ylabs}}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
@@ -36,6 +36,9 @@ lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   priors <- info$priors; centroids <- info$centroids
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
+  if (r > d) {
+    stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
+  }
   deltas <- lol.utils.deltas(centroids, priors)
   centroids <- t(centroids)
 
@@ -71,7 +74,7 @@ lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
 #' }
 #' @param xfm.opts optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.
 #' @param ... trailing args.
-#' @return A list of class \code{embedding} containing the following:
+#' @return A list containing the following:
 #' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{\code{d}}{the eigen values associated with the eigendecomposition.}
 #' \item{\code{ylabs}}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
@@ -92,6 +95,9 @@ lol.project.qoq <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   priors <- info$priors; centroids <- info$centroids
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
+  if (r > d) {
+    stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
+  }
   deltas <- lol.utils.deltas(centroids, priors)
   centroids <- t(centroids)
 

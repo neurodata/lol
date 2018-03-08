@@ -25,7 +25,7 @@ lol.project.pca(X, r, xfm = FALSE, xfm.opts = list(), ...)
 \item{...}{trailing args.}
 }
 \value{
-A list of class \code{embedding} containing the following:
+A list containing the following:
 \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 \item{\code{d}}{the eigen values associated with the eigendecomposition.}
 \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}

@@ -4,6 +4,9 @@ require(lolR)
 require(MASS)
 library(parallel)
 source('./plsda.R')
+classifier.name <- "rf"
+classifier.alg <- randomForest::randomForest
+classifier.return = NaN
 
 no_cores = detectCores() - 1
 
@@ -40,6 +43,7 @@ for (i in 1:length(sims)) {
 #=========================#
 
 clusterExport(cl, "simulations"); clusterExport(cl, "rlen")
+clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
 results <- parLapply(cl, simulations, function(sim) {
   require(lolR)
   source('./plsda.R')
@@ -47,11 +51,11 @@ results <- parLapply(cl, simulations, function(sim) {
   X <- sim_dat$X; Y <- sim_dat$Y
   results <- data.frame(sim=c(), iter=c(), alg=c(), r=c(), lhat=c())
   if (sim$sim == "QDA") {
-    algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.lol, lol.project.qoq)
-    alg_name <- c("PCA", "LDA", "CCA", "PLS", "LOL", "QOQ")
+    algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.rp, lol.project.lol, lol.project.qoq)
+    alg_name <- c("PCA", "LDA", "CCA", "PLS", "RP", "LOL", "QOQ")
   } else {
-    algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.lol)
-    alg_name <- c("PCA", "LDA", "CCA", "PLS", "LOL")
+    algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.rp, lol.project.lol)
+    alg_name <- c("PCA", "LDA", "CCA", "RP", "PLS", "LOL")
   }
   log.seq <- function(from=0, to=30, length=15) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
@@ -60,18 +64,21 @@ results <- parLapply(cl, simulations, function(sim) {
   rs <- unique(round(log.seq(from=1, to=sim$rmax, length=rlen)))
   results <- data.frame(sim=c(), iter=c(), se=c(), alg=c(), r=c(), lhat=c())
   for (i in 1:length(algs)) {
-    classifier.alg = MASS::lda
-    classifier.return = 'class'
-    if (alg_name[i] == "QOQ") {
-      classifier.alg=MASS::qda
-    } else if (alg_name[i] == "CCA") {
-      classifier.alg = lol.classify.nearestCentroid
-      classifier.return = NaN
+    classifier.ret <- classifier.return
+    if (classifier.name == "lda") {
+      classifier.ret = "class"
+      if (alg_name[i] == "QOQ") {
+        classifier.alg=MASS::qda
+        classifier.ret = "class"
+      } else if (alg_name[i] == "CCA") {
+        classifier.alg = lol.classify.nearestCentroid
+        classifier.ret = NaN
+      }
     }
     for (r in rs) {
       tryCatch({
         xv_res <- lol.xval.eval(X, Y, alg=algs[[i]], alg.opts=list(r=r), alg.return="A", classifier=classifier.alg,
-                                classifier.return=classifier.return, k='loo')
+                                classifier.return=classifier.ret, k='loo')
         lhat <- xv_res$Lhat
         results <- rbind(results, data.frame(sim=sim$sim, iter=sim$iter, se=var(xv_res$Lhats)/sqrt(length(Y)),
                                              alg=alg_name[i], r=r, lhat=lhat))
@@ -89,5 +96,5 @@ results <- data.table(resultso)
 # aggregate over the iterations, retaining the other factors
 results.means <- aggregate(lhat ~ sim + alg + r + lhat + se, data = results, FUN = mean)
 results_agg <- list(overall=resultso, means=results.means)
-saveRDS(results_agg, './data/fig3/lol_fig3_lda.rds')
+saveRDS(resultso, file.path(opath, paste('lol_fig3_', classifier.name, '.rds', sep="")))
 stopCluster(cl)

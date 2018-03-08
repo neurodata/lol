@@ -14,7 +14,7 @@ lol.project.mdp(X, Y, ...)
 \item{...}{optional args.}
 }
 \value{
-A list of class \code{embedding} containing the following:
+A list containing the following:
 \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 \item{\code{ylabs}}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
 \item{\code{centroids}}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}

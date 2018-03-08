@@ -4,8 +4,12 @@ require(MASS)
 library(parallel)
 require(lolR)
 require(slbR)
+require(randomForest)
 source('./plsda.R')
 no_cores = detectCores() - 1
+classifier.name <- "rf"
+classifier.alg <- randomForest::randomForest
+classifier.return = NaN
 
 cl = makeCluster(no_cores)
 
@@ -45,6 +49,7 @@ opath <- './data/fig5/'
 dir.create(opath)
 clusterExport(cl, "data"); clusterExport(cl, "rlen")
 clusterExport(cl, "experiments"); clusterExport(cl, "opath")
+clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
 results <- parLapply(cl, experiments, function(exp) {
   require(lolR)
   source('./plsda.R')
@@ -52,8 +57,8 @@ results <- parLapply(cl, experiments, function(exp) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }
 
-  algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.lol, lol.project.qoq)
-  alg_name <- c("PCA", "LDA", "CCA", "PLS", "LOL", "QOQ")
+  algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.rp, lol.project.lol, lol.project.qoq)
+  alg_name <- c("PCA", "LDA", "CCA", "PLS", "RP", "LOL", "QOQ")
 
   X <- data[[exp$exp]]$X; Y <- as.factor(data[[exp$exp]]$Y)
   n <- dim(X)[1]; d <- dim(X)[2]
@@ -63,20 +68,23 @@ results <- parLapply(cl, experiments, function(exp) {
   tryCatch({
     setTimeLimit(1800)
     for (i in 1:length(algs)) {
-      classifier.alg = MASS::lda
-      classifier.return = 'class'
-      if (alg_name[i] == "QOQ") {
-        classifier.alg=MASS::qda
-      } else if (alg_name[i] == "CCA") {
-        classifier.alg = lol.classify.nearestCentroid
-        classifier.return = NaN
+      classifier.ret <- classifier.return
+      if (classifier.name == "lda") {
+        classifier.ret = "class"
+        if (alg_name[i] == "QOQ") {
+          classifier.alg=MASS::qda
+          classifier.ret = "class"
+        } else if (alg_name[i] == "CCA") {
+          classifier.alg = lol.classify.nearestCentroid
+          classifier.ret = NaN
+        }
       }
       for (r in rs) {
         tryCatch({
           xv_res <- lol.xval.eval(X, Y, alg=algs[[i]], alg.opts=list(r=r), alg.return="A", classifier=classifier.alg,
-                                  classifier.return=classifier.return, k=exp$k)
+                                  classifier.return=classifier.ret, k=exp$k)
           lhat <- xv_res$Lhat
-          results <- rbind(results, data.frame(sim=exp$exp, se=var(xv_res$Lhats)/sqrt(length(Y)),
+          results <- rbind(results, data.frame(exp=exp$exp, se=var(xv_res$Lhats)/sqrt(length(Y)),
                                                alg=alg_name[i], r=r, lhat=lhat))
         }, error=function(e) lhat <- NaN)
       }
@@ -86,12 +94,29 @@ results <- parLapply(cl, experiments, function(exp) {
   return(results)
 })
 resultso <- do.call(rbind, results)
-saveRDS(resultso, 'lol_fig4pmlb_lda.rds')
+saveRDS(resultso, file.path(opath, paste('lol_fig5_', classifier.name, '.rds', sep="")))
 stopCluster(cl)
 
 # Aggregate and save
 #=================================#
+require(MASS)
+library(parallel)
+require(lolR)
+require(slbR)
+source('./plsda.R')
+
+algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.rp, lol.project.lol, lol.project.qoq)
+names(algs) <- c("PCA", "LDA", "CCA", "PLS", "RP", "LOL", "QOQ")
+experiments <- list()
+counter <- 1
+
+dset.names <- names(pmlb.list(task="classification")$dsets.info)
+opath <- './data/fig5/'
 results <- lapply(dset.names, function(dset) {
-  result <- readRDS(paste(opath, dset, '.rds', sep=""))
+  tryCatch(
+    result <- readRDS(paste(opath, dset, '.rds', sep="")), error=function(e) {return(NaN)}
+  )
 })
+resultso <- do.call(rbind, results)
+saveRDS(resultso, file.path(opath, paste('lol_fig5_', classifier.name, '.rds', sep="")))
 

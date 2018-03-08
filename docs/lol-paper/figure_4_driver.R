@@ -152,5 +152,5 @@ results <- parLapply(cl, experiments, function(exp) {
 # Aggregate and save
 #=================================#
 resultso <- do.call(rbind, results)
-saveRDS(resultso, 'lol_fig4_lda.rds')
+saveRDS(resultso, file.path(opath, 'lol_fig4_lda.rds'))
 stopCluster(cl)

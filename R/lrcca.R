@@ -7,7 +7,7 @@
 #' @param Y [n] the labels of the samples with \code{K} unique labels.
 #' @param r the rank of the projection.
 #' @param ... trailing args.
-#' @return A list of class \code{embedding} containing the following:
+#' @return A list containing the following:
 #' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{\code{d}}{the eigen values associated with the eigendecomposition.}
 #' \item{\code{ylabs}}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
@@ -27,6 +27,9 @@ lol.project.lrcca <- function(X, Y, r, ...) {
   priors <- info$priors; centroids <- t(info$centroids)
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
+  if (r > d) {
+    stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
+  }
   # hot-encoding of Y categorical variables
   Yh <- array(0, dim=c(n, K))
   # Yind is a indicator of membership in each respective class

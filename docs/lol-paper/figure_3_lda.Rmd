@@ -243,7 +243,8 @@ We merge and combine the plots:
 
 ```{r, fig.show='hide'}
 nsim <- length(sim_names)
-sim_leg <- g_legend(sim_plots[[1]])
+sim_leg <- g_legend(sim_plots[[1]] + guides(colour = guide_legend(override.aes = list(shape = NA)))
+)
 cov_leg <- g_legend(cov_plots[[1]])
 mean_leg <- g_legend(mean_plots[[3]])
 

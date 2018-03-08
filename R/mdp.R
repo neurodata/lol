@@ -5,7 +5,7 @@
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param ... optional args.
-#' @return A list of class \code{embedding} containing the following:
+#' @return A list containing the following:
 #' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{\code{ylabs}}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
 #' \item{\code{centroids}}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
@@ -24,6 +24,9 @@ lol.project.mdp <- function(X, Y, ...) {
   priors <- info$priors; centroids <- info$centroids
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
+  if (r > d) {
+    stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
+  }
   deltas <- lol.utils.deltas(centroids, priors)
   centroids <- t(centroids)
 
