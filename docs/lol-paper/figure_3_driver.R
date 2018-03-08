@@ -44,19 +44,20 @@ for (i in 1:length(sims)) {
 
 clusterExport(cl, "simulations"); clusterExport(cl, "rlen")
 clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
+clusterExport(cl, "classifier.name")
 results <- parLapply(cl, simulations, function(sim) {
   require(lolR)
   source('./plsda.R')
   sim_dat <- do.call(sim$sim_func, sim$args)
   X <- sim_dat$X; Y <- sim_dat$Y
   results <- data.frame(sim=c(), iter=c(), alg=c(), r=c(), lhat=c())
-  if (sim$sim == "QDA") {
-    algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.rp, lol.project.lol, lol.project.qoq)
-    alg_name <- c("PCA", "LDA", "CCA", "PLS", "RP", "LOL", "QOQ")
-  } else {
+  algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.rp, lol.project.lol, lol.project.qoq)
+  alg_name <- c("PCA", "LDA", "CCA", "PLS", "RP", "LOL", "QOQ")
+  if (classifier.name == "lda" & sim$sim != "QDA") {
     algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.rp, lol.project.lol)
-    alg_name <- c("PCA", "LDA", "CCA", "RP", "PLS", "LOL")
+    alg_name <- c("PCA", "LDA", "CCA", "RP", "PLS", "RP", "LOL")
   }
+
   log.seq <- function(from=0, to=30, length=15) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }

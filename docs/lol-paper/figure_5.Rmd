@@ -20,6 +20,7 @@ require(reshape2)
 require(R.matlab)
 require(grid)
 require(plyr)
+classifier.alg <- "lda"
 
 # compute the cutoff for the particular trial to get an approximate elbow
 # by computing the smallest r with an associated lhat within 5%
@@ -138,17 +139,17 @@ counter <- 1
 
 ```{r}
 # read the results in
-results <- readRDS('./data/fig3/lol_fig3_lda.rds')
+results.means <- readRDS(paste('./data/fig3/lol_fig3_', classifier.alg, '.rds', sep=""))
 results <- rbind(results$overall[, colnames(results$overall) != 'se'], resultsm)
 #results <- results$overall
 nan.mean <- function(x) mean(x, na.rm=TRUE)
 results$overall <- results[complete.cases(results),]
 results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = nan.mean)
 results.means <- results.means[complete.cases(results.means),]
-algs <-  c("LOL", "QOQ", "ROAD", "LASSO", "PLS", "CCA", "PCA", "LDA")
-acols <- c("#00FF00", "#00FF00", "#969696", "#969696", "#969696", "#525252", "#525252", "#525252")
-names(acols) <- algs
-shapes <- c(16, 17, 16, 17, 18, 16, 17, 18)
+algs <-  c("LOL", "QOQ", "ROAD", "LASSO", "PLS", "CCA", "PCA", "LDA", "RP")
+acols <- c("#00FF00", "#00FF00", "#AAAAAA", "#AAAAAA", "#AAAAAA", "#666666", "#666666", "#666666", "#000000")
+names(algs) <- acols
+shapes <- c(21, 24, 21, 24, 23, 21, 24, 23, 21)
 names(shapes) <- algs
 sim_plots <- list()
 results.means$alg <- revalue(results.means$alg, c("cPCA"="LDA"))
@@ -176,10 +177,10 @@ for (i in 1:length(dat.names)) {
 ```{r}
 box <- data.frame(x=c(.1, 1, 1, .1), y=c(.1, .1, 1, 1))
 panela <- ggplot(plot.results, aes(x=r, y=lhat)) +
-  geom_polygon(data=box, aes(x=x, y=y), fill='gray', color='gray') +
-  geom_point(aes(x=r, y=lhat, shape=alg, color=alg), size=3) +
-  scale_color_manual(name="Algorithm", values=acols) +
-  scale_shape_manual(name="Algorithm", values=shapes) +
+  geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
+  geom_point(aes(x=r, y=lhat, shape=alg, fill=alg), alpha=0.8, color='black', size=3) +
+  scale_fill_manual(values=acols, guide=guide_legend(ncol=2, byrow=TRUE), name="Algorithm") +
+  scale_shape_manual(values=shapes, guide=guide_legend(ncol=2, byrow=TRUE), name="Algorithm") +
   ylab("Normalized Misclassification Rate") +
   xlab("Normalized Embedding Dimension") +
   labs(shape="Simulation", color="Algorithm") +
@@ -190,6 +191,18 @@ panela <- ggplot(plot.results, aes(x=r, y=lhat)) +
 leg_panela <- g_legend(panela)
 panela <- panela +
   theme(legend.position=NaN)
+overall_leg <- ggplot(plot.results, aes(x=r, y=lhat, fill=alg)) +
+  geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.2) +
+  geom_point(aes(x=r, y=lhat, shape=alg, fill=alg), alpha=0.8, color='black', size=3) +
+  scale_fill_manual(values=acols, guide=guide_legend(ncol=2, byrow=TRUE), name="Algorithm") +
+  scale_shape_manual(values=shapes, guide=guide_legend(ncol=2, byrow=TRUE), name="Algorithm") +
+  ylab("Normalized Misclassification Rate") +
+  xlab("Normalized Embedding Dimension") +
+  labs(color="Algorithm", shape="Experiment") +
+  ggtitle("Comparison of Embedding Techniques to LOL") +
+  scale_y_continuous(trans=log10_trans(), limits=c(.1, 10)) +
+  scale_x_continuous(trans=log10_trans(), limits=c(.1, 10)) +
+  theme_bw()
 ```
 
 ## Panel B
@@ -263,13 +276,13 @@ source('./pmlb_driver.R')
 
 ```{r}
 # read the results in
-results.means <- readRDS('./data/fig5/lol_fig5_lda.rds')
+results.means <- readRDS(paste('./data/fig5/lol_fig5_', classifier.alg, '.rds', sep=""))
 results.means <- results.means[complete.cases(results.means),]
 
-algs <-  c("LOL", "QOQ", "ROAD", "LASSO", "PLS", "CCA", "PCA", "LDA")
-acols <- c("#00FF00", "#00FF00", "#969696", "#969696", "#969696", "#525252", "#525252", "#525252")
+algs <-  c("LOL", "QOQ", "ROAD", "LASSO", "PLS", "CCA", "PCA", "LDA", "RP")
+acols <- c("#00FF00", "#00FF00", "#AAAAAA", "#AAAAAA", "#AAAAAA", "#666666", "#666666", "#666666", "#000000")
 names(algs) <- acols
-shapes <- c(16, 17, 16, 17, 18, 16, 17, 18)
+shapes <- c(21, 24, 21, 24, 23, 21, 24, 23, 21)
 names(shapes) <- algs
 exp_names <- names(pmlb.list(task="classification")$dsets.info)
 ```
@@ -299,10 +312,10 @@ for (i in 1:length(exp_names)) {
 plot.results$exp <- factor(plot.results$exp)
 box <- data.frame(x=c(.1, 1, 1, .1), y=c(.1, .1, 1, 1))
 panelb <- ggplot(plot.results, aes(x=r, y=lhat)) +
-  geom_polygon(data=box, aes(x=x, y=y), fill='gray', color='gray') +
-  geom_point(aes(x=r, y=lhat, shape=alg, color=alg), size=3) +
-  scale_color_manual(name="Algorithm", values=acols) +
-  scale_shape_manual(name="Algorithm", values=shapes) +
+  geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
+  geom_point(aes(x=r, y=lhat, shape=alg, fill=alg), alpha=0.5, color='black', size=2) +
+  scale_fill_manual(values=acols, guide=guide_legend(ncol=2, byrow=TRUE), name="Algorithm") +
+  scale_shape_manual(values=shapes, guide=guide_legend(ncol=2, byrow=TRUE), name="Algorithm") +
   ylab("Normalized Misclassification Rate") +
   xlab("Normalized Embedding Dimension") +
   labs(shape="Simulation", color="Algorithm") +
@@ -316,20 +329,9 @@ panelb <- panelb +
 ```
 
 ```{r, fig.width=10, fig.height=3}
-overall_leg <- ggplot(plot.results, aes(x=r, y=lhat, color=alg)) +
-  geom_polygon(data=box, aes(x=x, y=y), fill='gray', color='gray') +
-  geom_point(size=3) +
-  scale_color_manual(values=acols) +
-  ylab("Normalized Misclassification Rate") +
-  xlab("Normalized Embedding Dimension") +
-  labs(color="Algorithm", shape="Experiment") +
-  ggtitle("Comparison of Embedding Techniques to LOL") +
-  scale_y_continuous(trans=log10_trans(), limits=c(.1, 10)) +
-  scale_x_continuous(trans=log10_trans(), limits=c(.1, 10)) +
-  theme_bw()
 leg_overall <- g_legend(overall_leg)
 grid.newpage()
 grid.arrange(arrangeGrob(panela),
              arrangeGrob(panelb + xlab("") + ylab("")),
-             leg_panelb, widths=c(.8, .8, .2), ncol=3)
+             leg_overall, widths=c(.8, .8, .5), ncol=3)
 ```

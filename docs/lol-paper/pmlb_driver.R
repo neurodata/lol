@@ -50,6 +50,7 @@ dir.create(opath)
 clusterExport(cl, "data"); clusterExport(cl, "rlen")
 clusterExport(cl, "experiments"); clusterExport(cl, "opath")
 clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
+clusterExport(cl, "classifier.name")
 results <- parLapply(cl, experiments, function(exp) {
   require(lolR)
   source('./plsda.R')
