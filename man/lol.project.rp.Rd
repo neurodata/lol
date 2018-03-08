@@ -4,7 +4,7 @@
 \alias{lol.project.rp}
 \title{Random Projections (RP)}
 \usage{
-lol.project.rp(X, r, scaling = TRUE)
+lol.project.rp(X, r, scale = TRUE)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
