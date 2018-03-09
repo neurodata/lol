@@ -58,12 +58,12 @@ results <- parLapply(cl, experiments, function(exp) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }
 
-  algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.rp, lol.project.lol, lol.project.qoq)
-  alg_name <- c("PCA", "LDA", "CCA", "PLS", "RP", "LOL", "QOQ")
+  algs <- list(lol.project.pls, lol.project.lol)
+  alg_name <- c("PLS", "LOL")
 
   X <- data[[exp$exp]]$X; Y <- as.factor(data[[exp$exp]]$Y)
   n <- dim(X)[1]; d <- dim(X)[2]
-  sets <- lol.xval.eval(X, Y, k=exp$k)
+  sets <- lol.xval.split(X, Y, k=exp$k)
   maxr <- min(d, 100)
   rs <- unique(log.seq(from=1, to=maxr, length=rlen))
   results <- data.frame(exp=c(), alg=c(), r=c(), n=c(), lhat=c(), fold=c())
