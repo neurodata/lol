@@ -1,0 +1,50 @@
+---
+title: "minh_work"
+author: "Eric Bridgeford"
+date: "January 23, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+## MDP-example 1
+
+X0 <- matrix(rnorm(400, mean = 1),nrow = 10)
+X1 <- matrix(rnorm(400, mean = -1),nrow = 10)  # X of another class
+
+bar.X0 <- colMeans(X0)
+bar.X1 <- colMeans(X1)
+X0c <- X0 - outer(rep(1,10),colMeans(X0))
+X1c <- X1 - outer(rep(1,10),colMeans(X1))
+C <- cbind(t(X0c),t(X1c))
+tX <- cbind(t(X0),t(X1))
+X <- rbind(X0,X1)
+Xc <- rbind(X0c,X1c)
+
+Q <- diag(40) - C %*% ginv(C)
+v.M <- Q %*% (bar.X0 - bar.X1)
+
+mdp <- t(v.M) %*% tX
+
+## CCA-equivalence
+Y <- cbind(c(rep(1,10),rep(0,10)),c(rep(0,10),rep(1,10)))
+Yc <- (Y - outer(rep(1,20),colMeans(Y)))
+SY <- t(Yc) %*% Yc
+SXY <- t(Xc) %*% Yc
+SYX <- t(SXY)
+SX <- t(Xc) %*% Xc
+Xbar <- colMeans(X)
+SR <- (bar.X0 - Xbar) %*% t(bar.X0 - Xbar)*0.5 + (bar.X1 - Xbar) %*% t(bar.X1 - Xbar)*0.5
+
+flda <- svd(ginv(SX-SR) %*% SR)
+
+eigenY <- svd(ginv(SY) %*% SYX %*% ginv(SX) %*% SXY)
+cca <- svd(ginv(SX) %*% SXY %*% ginv(SY) %*% SYX)
+```
+
+```{r}
+print(mdp)
+print(flda$u[,1])
+print(cca$u[,1])
+```
+
+

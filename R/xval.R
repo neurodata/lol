@@ -5,9 +5,13 @@
 #' @importFrom MASS lda
 #' @importFrom stats predict
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
-#' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
-#' @param alg the algorithm to use for embedding. Should be a function that accepts inputs \code{X} and \code{Y}, returning a list containing a matrix that embeds from {d} to {r < d} dimensions. Defaults to \code{lol.project.lol}.
-#' @param alg.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.
+#' @param Y \code{[n]} the labels of the samples with \code{K} unique labels. Defaults to \code{NaN}.#' @param alg.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.
+#' @param alg the algorithm to use for embedding. Should be a function that accepts inputs \code{X} and \code{Y} if \code{alg} is supervised, or just \code{X} if \code{alg} is unsupervised.This algorithm should return a list containing a matrix that embeds from {d} to {r < d} dimensions.
+#' @param sets a user-defined cross-validation set. Defaults to \code{NULL}.
+#' \itemize{
+#' \item{\code{is.null(sets)} randomly partition the inputs \code{X} and \code{Y} into training and testing sets.}
+#' \item{\code{!is.null(sets)} use a user-defined partitioning of the inputs \code{X} and \code{Y} into training and testing sets. Should be in the format of the outputs from \code{\link{lol.xval.split}}. That is, a \code{list} with each element containing \code{X.train}, an \code{[n-k][d]} subset of data to test on, \code{Y.train}, an \code{[n-k]} subset of class labels for \code{X.train}; \code{X.test}, an \code{[n-k][d]} subset of data to test the model on, \code{Y.train}, an \code{[k]} subset of class labels for \code{X.test}.}
+#' }
 #' @param alg.embedding the attribute returned by \code{alg} containing the embedding matrix. Defaults to assuming that \code{alg} returns an embgedding matrix as \code{"A"}.
 #' \itemize{
 #' \item \code{!is.nan(alg.embedding)} Assumes that \code{alg} will return a list containing an attribute, \code{alg.embedding}, a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.
@@ -17,13 +21,13 @@
 #' @param classifier.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list.
 #' @param classifier.return if the return type is a list, \code{class} encodes the attribute containing the prediction labels from \code{stats::predict}. Defaults to the return type of \code{MASS::lda}, \code{class}.
 #' \itemize{
-#' \item \code{!is.nan(classifier.return)} Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.
-#' \item \code{is.nan(classifier.return)} Assumes that \code{predict.classifer} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.
+#' \item{\code{!is.nan(classifier.return)} Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.}
+#' \item{\code{is.nan(classifier.return)} Assumes that \code{predict.classifer} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.}
 #' }
 #' @param k the cross-validated method to perform. Defaults to \code{'loo'}. See \code{\link{lol.xval.split}}
 #' \itemize{
-#' \item \code{'loo'} Leave-one-out cross validation
-#' \item \code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.
+#' \item{\code{'loo'} Leave-one-out cross validation}
+#' \item{\code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
 #' }
 #' @param ... trailing args.
 #' @return Returns a list containing:
@@ -50,13 +54,47 @@
 #' X <- data$X; Y <- data$Y
 #' r=5  # embed into r=5 dimensions
 #' xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r), k=5)
+#'
+#' # pass in existing cross-validation sets
+#' sets <- lol.xval.split(X, Y, k=2)
+#' xval.fit <- lol.xval.eval(X, Y, lol.project.lol, sets=sets, alg.opts=list(r=r))
 #' @export
-lol.xval.eval <- function(X, Y, alg, alg.opts=list(), alg.embedding="A", classifier=lda, classifier.opts=list(),
+lol.xval.eval <- function(X, Y, alg, sets=NULL, alg.opts=list(), alg.embedding="A", classifier=lda, classifier.opts=list(),
                           classifier.return="class", k='loo', ...) {
   d <- dim(X)[2]
   Y <- factor(Y)
   n <- length(Y)
-  sets <- lol.xval.split(X, Y, k=k)
+  x.n <- dim(X)[1]
+  if (n != x.n) {
+    stop(sprintf("Your X has %d examples, but you only provide %d labels.", x.n, n))
+  }
+  # check that if the user specifies the cross-validation set, if so, that it is correctly set up
+  # otherwise, do it for them
+  if (is.null(sets)) {
+    sets <- lol.xval.split(X, Y, k=k)
+  } else {
+    lapply(sets, function(set) {
+      xtr.nk <- dim(set$X.train)[1]
+      xte.k <- dim(set$X.test)[1]
+      xtr.d <- dim(set$X.train)[2]
+      xte.d <- dim(set$X.test)[2]
+      ytr.nk <- length(set$Y.train)
+      yte.k <- length(set$Y.test)
+      if ((ytr.nk + yte.k != n)) {
+        stop("You have a cross-validation set with ytrain.n + ytest.n != n.")
+      }
+      if ((xtr.nk + xte.k != n)) {
+        stop("You have a cross-validation set with xtrain.n + xtest.n != n.")
+      }
+      if ((xtr.d != d)) {
+        stop("You have a cross-validation set where xtrain.d != d.")
+      }
+      if ((xte.d != d)) {
+        stop("You have a cross-validation set where xtest.d != d.")
+      }
+    })
+  }
+
   Lhat.fold <- sapply(sets, function(set) {
     mod <- do.call(alg, c(list(X=set$X.train, Y=set$Y.train), alg.opts)) # learn the projection with the algorithm specified
     if (is.nan(alg.embedding)) {
@@ -98,7 +136,11 @@ lol.xval.eval <- function(X, Y, alg, alg.opts=list(), alg.embedding="A", classif
 #' \item \code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.
 #' }
 #' @param ... optional args.
-#' @return sets the cross-validation sets as a list, each element with an \code{X.train}, \code{X.test}, \code{Y.train}, and \code{Y.test}.
+#' @return sets the cross-validation sets as a list. Each element of the list contains the following items:
+#' \item{\code{X.train}}{the training data as a \code{[n - k, d]} array.}
+#' \item{\code{Y.train}}{the training labels as a \code{[n - k]} vector.}
+#' \item{\code{X.test}}{the testing data as a \code{[k, d]} array.}
+#' \item{\code{Y.test}}{the testing labels as a \code{[k]} vector.}
 #' @author Eric Bridgeford
 #' @examples
 #' # prepare data for 10-fold validation

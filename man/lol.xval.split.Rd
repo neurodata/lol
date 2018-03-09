@@ -20,7 +20,11 @@ lol.xval.split(X, Y, k = "loo", ...)
 \item{...}{optional args.}
 }
 \value{
-sets the cross-validation sets as a list, each element with an \code{X.train}, \code{X.test}, \code{Y.train}, and \code{Y.test}.
+sets the cross-validation sets as a list. Each element of the list contains the following items:
+\item{\code{X.train}}{the training data as a \code{[n - k, d]} array.}
+\item{\code{Y.train}}{the training labels as a \code{[n - k]} vector.}
+\item{\code{X.test}}{the testing data as a \code{[k, d]} array.}
+\item{\code{Y.test}}{the testing labels as a \code{[k]} vector.}
 }
 \description{
 \code{sg.bern.xval_split_data} A function to split a dataset into

@@ -4,18 +4,22 @@
 \alias{lol.xval.eval}
 \title{Embedding Cross Validation}
 \usage{
-lol.xval.eval(X, Y, alg, alg.opts = list(), alg.embedding = "A",
-  classifier = lda, classifier.opts = list(), classifier.return = "class",
-  k = "loo", ...)
+lol.xval.eval(X, Y, alg, sets = NULL, alg.opts = list(),
+  alg.embedding = "A", classifier = lda, classifier.opts = list(),
+  classifier.return = "class", k = "loo", ...)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
 
-\item{Y}{\code{[n]} the labels of the samples with \code{K} unique labels.}
+\item{Y}{\code{[n]} the labels of the samples with \code{K} unique labels. Defaults to \code{NaN}.#' @param alg.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.}
 
-\item{alg}{the algorithm to use for embedding. Should be a function that accepts inputs \code{X} and \code{Y}, returning a list containing a matrix that embeds from {d} to {r < d} dimensions. Defaults to \code{lol.project.lol}.}
+\item{alg}{the algorithm to use for embedding. Should be a function that accepts inputs \code{X} and \code{Y} if \code{alg} is supervised, or just \code{X} if \code{alg} is unsupervised.This algorithm should return a list containing a matrix that embeds from {d} to {r < d} dimensions.}
 
-\item{alg.opts}{any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.}
+\item{sets}{a user-defined cross-validation set. Defaults to \code{NULL}.
+\itemize{
+\item{\code{is.null(sets)} randomly partition the inputs \code{X} and \code{Y} into training and testing sets.}
+\item{\code{!is.null(sets)} use a user-defined partitioning of the inputs \code{X} and \code{Y} into training and testing sets. Should be in the format of the outputs from \code{\link{lol.xval.split}}. That is, a \code{list} with each element containing \code{X.train}, an \code{[n-k][d]} subset of data to test on, \code{Y.train}, an \code{[n-k]} subset of class labels for \code{X.train}; \code{X.test}, an \code{[n-k][d]} subset of data to test the model on, \code{Y.train}, an \code{[k]} subset of class labels for \code{X.test}.}
+}}
 
 \item{alg.embedding}{the attribute returned by \code{alg} containing the embedding matrix. Defaults to assuming that \code{alg} returns an embgedding matrix as \code{"A"}.
 \itemize{
@@ -29,14 +33,14 @@ lol.xval.eval(X, Y, alg, alg.opts = list(), alg.embedding = "A",
 
 \item{classifier.return}{if the return type is a list, \code{class} encodes the attribute containing the prediction labels from \code{stats::predict}. Defaults to the return type of \code{MASS::lda}, \code{class}.
 \itemize{
-\item \code{!is.nan(classifier.return)} Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.
-\item \code{is.nan(classifier.return)} Assumes that \code{predict.classifer} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.
+\item{\code{!is.nan(classifier.return)} Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.}
+\item{\code{is.nan(classifier.return)} Assumes that \code{predict.classifer} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.}
 }}
 
 \item{k}{the cross-validated method to perform. Defaults to \code{'loo'}. See \code{\link{lol.xval.split}}
 \itemize{
-\item \code{'loo'} Leave-one-out cross validation
-\item \code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.
+\item{\code{'loo'} Leave-one-out cross validation}
+\item{\code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
 }}
 
 \item{...}{trailing args.}
@@ -69,6 +73,10 @@ data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 r=5  # embed into r=5 dimensions
 xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r), k=5)
+
+# pass in existing cross-validation sets
+sets <- lol.xval.split(X, Y, k=2)
+xval.fit <- lol.xval.eval(X, Y, lol.project.lol, sets=sets, alg.opts=list(r=r))
 }
 \author{
 Eric Bridgeford
