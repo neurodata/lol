@@ -68,7 +68,7 @@ results <- parLapply(cl, experiments, function(exp) {
   rs <- unique(log.seq(from=1, to=maxr, length=rlen))
   results <- data.frame(exp=c(), alg=c(), r=c(), n=c(), lhat=c(), fold=c())
   tryCatch({
-    setTimeLimit(1800)
+    setTimeLimit(3000)
     for (i in 1:length(algs)) {
       classifier.ret <- classifier.return
       if (classifier.name == "lda") {
