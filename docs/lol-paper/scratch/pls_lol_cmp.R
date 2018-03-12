@@ -91,7 +91,7 @@ results <- parLapply(cl, experiments, function(exp) {
         }, error=function(e) lhat <- NaN)
       }
     }
-    saveRDS(results, file=paste(opath, exp$exp, '.rds', sep=""))
+    saveRDS(results, file=paste(opath, exp$exp, '_', classifier.name, '.rds', sep=""))
   }, error=function(e) {results <- NaN})
   return(results)
 })
