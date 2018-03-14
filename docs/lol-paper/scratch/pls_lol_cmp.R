@@ -15,8 +15,8 @@ cl = makeCluster(no_cores)
 
 # Setup Algorithms
 #==========================#
-algs <- list(lol.project.pls, lol.project.lol)
-names(algs) <- c("PLS", "LOL")
+algs <- list(lol.project.pls, lol.project.mpls, lol.project.opals, lol.project.qoq, lol.project.lol)
+names(algs) <- c("PLS", "MPLS", "OPAL", "QOQ", "LOL")
 experiments <- list()
 counter <- 1
 
@@ -96,7 +96,7 @@ results <- parLapply(cl, experiments, function(exp) {
   return(results)
 })
 resultso <- do.call(rbind, results)
-saveRDS(resultso, file.path(opath, paste('pls_v_lol_', classifier.name, '.rds', sep="")))
+saveRDS(resultso, file.path(opath, paste('opal_vs_lol_', classifier.name, '.rds', sep="")))
 stopCluster(cl)
 
 # Aggregate and save
