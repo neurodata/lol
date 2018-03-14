@@ -3,7 +3,7 @@
 require(lolR)
 require(MASS)
 library(parallel)
-source('./plsda.R')
+source('../plsda.R')
 classifier.name <- "rf"
 classifier.alg <- randomForest::randomForest
 classifier.return = NaN

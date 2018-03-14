@@ -5,7 +5,7 @@ library(parallel)
 require(lolR)
 require(slbR)
 require(randomForest)
-source('./plsda.R')
+source('../plsda.R')
 no_cores = detectCores() - 1
 classifier.name <- "rf"
 classifier.alg <- randomForest::randomForest
