@@ -53,7 +53,7 @@ clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
 clusterExport(cl, "classifier.name")
 results <- parLapply(cl, experiments, function(exp) {
   require(lolR)
-  source('./plsda.R')
+  source('../plsda.R')
   log.seq <- function(from=0, to=30, length=15) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }
