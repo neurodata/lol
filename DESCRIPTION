@@ -20,7 +20,8 @@ Imports:
   ggplot2,
   abind,
   MASS,
-  irlba
+  irlba,
+  pls
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr

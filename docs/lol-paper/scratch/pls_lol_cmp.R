@@ -53,7 +53,7 @@ clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
 clusterExport(cl, "classifier.name")
 results <- parLapply(cl, experiments, function(exp) {
   require(lolR)
-  source('./plsda.R')
+  source('../plsda.R')
   log.seq <- function(from=0, to=30, length=15) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }
@@ -105,15 +105,15 @@ require(MASS)
 library(parallel)
 require(lolR)
 require(slbR)
-source('./plsda.R')
+classifier.name <- "rf"
 
 dset.names <- names(pmlb.list(task="classification")$dsets.info)
 opath <- './data/fig5/'
 results <- lapply(dset.names, function(dset) {
   tryCatch(
-    result <- readRDS(paste(opath, dset, '.rds', sep="")), error=function(e) {return(NaN)}
+    result <- readRDS(paste(opath, dset, "_", classifier.name, '.rds', sep="")), error=function(e) {return(NaN)}
   )
 })
 resultso <- do.call(rbind, results)
-saveRDS(resultso, file.path(opath, paste('pls_v_lol_', classifier.name, '.rds', sep="")))
+saveRDS(resultso, file.path(opath, paste('opal_v_lol_', classifier.name, '.rds', sep="")))
 

@@ -39,3 +39,23 @@ lol.utils.deltas <- function(centroids, priors, ...) {
   }
   return(deltas)
 }
+
+#' A function for one-hot encoding categorical respose vectors.
+#' @param Y [n] a vector of the categorical resposes, with \code{K} unique categories.
+#' @return a list containing the following:
+#' \item{Yh}{[n, K] the one-hot encoded Y respose variable.}
+#' \item{ylabs}{[K] a vector of the y names corresponding to each response column.}
+#' @author Eric Bridgeford
+lol.utils.ohe <- function(Y) {
+  ylabs <- unique(Y)
+  K <- length(ylabs)
+  n <- length(Y)
+  # hot-encoding of Y categorical variables
+  Yh <- array(0, dim=c(n, K))
+  # Yind is a indicator of membership in each respective class
+  for (i in 1:K) {
+    Yh[Y == ylabs[i],i] <- 1
+  }
+  colnames(Yh) = ylabs
+  return(Yh)
+}

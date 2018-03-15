@@ -77,13 +77,13 @@ plot_sim_lhats <- function(data, cols, pt.dat, linetype, title="", from=10, ylab
 
 ```{r, message=FALSE}
 
-results <- readRDS(file.path(opath, paste('pls_v_lol_', classifier.name, '.rds', sep="")))
+results <- readRDS(file.path(opath, paste('opal_v_lol_', classifier.name, '.rds', sep="")))
 nan.mean <- function(x) mean(x, na.rm=TRUE)
 results.means <- aggregate(lhat ~ exp + alg + r + n + lhat, data = results, FUN = nan.mean)
-algs <-  c("LOL", "QOQ", "ROAD", "LASSO", "PLS", "CCA", "PCA", "LDA")
-acols <- c("#00FF00", "#00FF00", "#969696", "#969696", "#969696", "#525252", "#525252", "#525252")
+algs <-  c("LOL", "QOQ", "PLS", "MPLS", "OPAL")
+acols <- c("#00FF00", "#00FF00", "#969696", "#969696", "#969696")
 names(acols) <- algs
-linestyle <- c("solid", "dashed", "solid", "dashed", "dotted", "solid", "dashed", "dotted")
+linestyle <- c("solid", "dashed", "solid", "dashed", "dotted")
 names(linestyle) <- algs
 ```
 

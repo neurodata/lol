@@ -30,12 +30,7 @@ lol.project.lrcca <- function(X, Y, r, ...) {
   if (r > d) {
     stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
   }
-  # hot-encoding of Y categorical variables
-  Yh <- array(0, dim=c(n, K))
-  # Yind is a indicator of membership in each respective class
-  for (i in 1:length(ylabs)) {
-    Yh[Y == ylabs[i],i] <- 1
-  }
+  Yh <- lol.utils.ohe(Y)
   Xc <- X - outer(rep(1, n), colMeans(X))
   Yc <- Yh - outer(rep(1, n), colMeans(Yh))
   # covariance matrices

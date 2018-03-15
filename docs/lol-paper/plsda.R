@@ -1,4 +1,3 @@
-require(caret)
 require(pls)
 require(R.utils)
 
@@ -7,7 +6,13 @@ lol.project.pls <- function(X, Y, r, ...) {
   priors <- info$priors; centroids <- info$centroids
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
-  A <- plsda(X, as.factor(Y), r)$projection
+
+  Yh <- lol:::lol.utils.ohe(Y)
+  tmpData <- data.frame(n=paste("row", 1:nrow(Yh), sep=""))
+  tmpData$Y <- Yh
+  tmpData$X <- X
+
+  A <- pls::plsr(Y ~ X, data=tmpData, ncomp=r)$projection
   return(list(A=A, Xa=lol.embed(X, A), ylabs=ylabs))
 }
 
@@ -26,7 +31,7 @@ lol.project.mpls <- function(X, Y, r, ...) {
   nv <- r - (K)
   if (nv > 0) {
     # compute the standard projection but with the pre-centered data.
-    plsA <- plsda(X, as.factor(Y), r)$projection
+    plsA <- lol.project.pls(X, Y, r)$A
     A <- cbind(deltas, plsA)
   } else {
     A <- deltas[, 1:r, drop=FALSE]
@@ -36,7 +41,7 @@ lol.project.mpls <- function(X, Y, r, ...) {
   return(list(A=A, Xa=lol.embed(X, A), ylabs=ylabs))
 }
 
-lol.project.opals <- function(X, Y, r, ...) {
+lol.project.opal <- function(X, Y, r, ...) {
   # class data
   info <- lol.utils.info(X, Y)
   priors <- info$priors; centroids <- info$centroids
@@ -55,7 +60,7 @@ lol.project.opals <- function(X, Y, r, ...) {
     # form class-conditional data matrix
     Xt <- X - centroids[Yidx,]
     # compute the standard projection but with the pre-centered data.
-    plsA <- plsda(Xt, as.factor(Y), r)$projection
+    plsA <- lol.project.pls(Xt, Y, r)$A
     A <- cbind(deltas, plsA)
   } else {
     A <- deltas[, 1:r, drop=FALSE]

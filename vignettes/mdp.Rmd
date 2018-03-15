@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r, echo=FALSE}
-require(lol)
+require(lolR)
 require(ggplot2)
 require(latex2exp)
 require(MASS)

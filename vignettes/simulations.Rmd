@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r}
-require(lol)
+require(lolR)
 require(ggplot2)
 require(latex2exp)
 
