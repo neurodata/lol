@@ -73,26 +73,7 @@ lol.xval.eval <- function(X, Y, alg, sets=NULL, alg.opts=list(), alg.embedding="
   if (is.null(sets)) {
     sets <- lol.xval.split(X, Y, k=k)
   } else {
-    lapply(sets, function(set) {
-      xtr.nk <- dim(set$X.train)[1]
-      xte.k <- dim(set$X.test)[1]
-      xtr.d <- dim(set$X.train)[2]
-      xte.d <- dim(set$X.test)[2]
-      ytr.nk <- length(set$Y.train)
-      yte.k <- length(set$Y.test)
-      if ((ytr.nk + yte.k != n)) {
-        stop("You have a cross-validation set with ytrain.n + ytest.n != n.")
-      }
-      if ((xtr.nk + xte.k != n)) {
-        stop("You have a cross-validation set with xtrain.n + xtest.n != n.")
-      }
-      if ((xtr.d != d)) {
-        stop("You have a cross-validation set where xtrain.d != d.")
-      }
-      if ((xte.d != d)) {
-        stop("You have a cross-validation set where xtest.d != d.")
-      }
-    })
+    lol.xval.check_xv_set(sets)
   }
 
   Lhat.fold <- sapply(sets, function(set) {
@@ -123,6 +104,28 @@ lol.xval.eval <- function(X, Y, alg, sets=NULL, alg.opts=list(), alg.embedding="
   return(list(Lhat=mean(Lhat.fold), model=model, classifier=class, Lhats=Lhat.fold))
 }
 
+lol.xval.check_xv_set <- function(sets) {
+  lapply(sets, function(set) {
+    xtr.nk <- dim(set$X.train)[1]
+    xte.k <- dim(set$X.test)[1]
+    xtr.d <- dim(set$X.train)[2]
+    xte.d <- dim(set$X.test)[2]
+    ytr.nk <- length(set$Y.train)
+    yte.k <- length(set$Y.test)
+    if ((ytr.nk + yte.k != n)) {
+      stop("You have a cross-validation set with ytrain.n + ytest.n != n.")
+    }
+    if ((xtr.nk + xte.k != n)) {
+      stop("You have a cross-validation set with xtrain.n + xtest.n != n.")
+    }
+    if ((xtr.d != d)) {
+      stop("You have a cross-validation set where xtrain.d != d.")
+    }
+    if ((xte.d != d)) {
+      stop("You have a cross-validation set where xtest.d != d.")
+    }
+  })
+}
 #' Cross-Validation Data Splitter
 #'
 #' \code{sg.bern.xval_split_data} A function to split a dataset into
