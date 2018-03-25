@@ -62,7 +62,7 @@ lol.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, t=0.8, 
   sim2 <- lol.sims.sim_gmm(mus, f*S, round(n*(1-t)), priors)
   X <- abind(sim$X, sim2$X, along=1)
   Y <- c(sim$Y, sim2$Y)
-  return(structure(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors, simtype="Fat Tails",
+  return(structure(list(X=X, Y=Y, mus=mus, Sigmas=S, priors=sim$priors, simtype="Fat Tails",
                         params=list(f=f, s0=s0, rho=rho, t=t)), class="simulation"))
 }
 

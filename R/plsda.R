@@ -75,7 +75,7 @@ lol.project.mpls <- function(X, Y, r, ...) {
   nv <- r - (K)
   if (nv > 0) {
     # compute the standard projection but with the pre-centered data.
-    plsA <- lol.project.pls(X, Y, r)$A
+    plsA <- lol.project.pls(X, Y, nv)$A
     A <- cbind(deltas, plsA)
   } else {
     A <- deltas[, 1:r, drop=FALSE]
@@ -127,7 +127,7 @@ lol.project.opal <- function(X, Y, r, ...) {
     # form class-conditional data matrix
     Xt <- X - centroids[Yidx,]
     # compute the standard projection but with the pre-centered data.
-    plsA <- lol.project.pls(Xt, Y, r)$A
+    plsA <- lol.project.pls(Xt, Y, nv)$A
     A <- cbind(deltas, plsA)
   } else {
     A <- deltas[, 1:r, drop=FALSE]

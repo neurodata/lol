@@ -5,18 +5,18 @@ library(parallel)
 require(lolR)
 require(slbR)
 require(randomForest)
-source('../plsda.R')
 no_cores = detectCores() - 1
-classifier.name <- "rf"
-classifier.alg <- randomForest::randomForest
+classifier.name <- "lda"
+classifier.alg <- MASS::lda
 classifier.return = NaN
 
 cl = makeCluster(no_cores)
 
 # Setup Algorithms
 #==========================#
-algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.lol, lol.project.qoq)
-names(algs) <- c("PCA", "LDA", "CCA", "PLS", "LOL", "QOQ")
+algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.rp, lol.project.pls,
+             lol.project.mpls, lol.project.opal, lol.project.lol, lol.project.qoq)
+names(algs) <- c("PCA", "LDA", "CCA", "RP", "PLS", "OPAL", "MPLS", "LOL", "QOQ")
 experiments <- list()
 counter <- 1
 
@@ -38,10 +38,12 @@ for (i in 1:length(dset.names)) {
     } else {
       k <- 'loo'
     }
-    experiments[[counter]] <- list(exp=dset.names[i], k=k)
+    experiments[[counter]] <- list(exp=dset.names[i], xv=k)
     counter <- counter + 1
   }, error = function(e) NaN)
 }
+
+embed.xval <- function(X, Y, alg.opts)
 
 # Setup Algorithms
 #=========================#
@@ -58,14 +60,15 @@ results <- parLapply(cl, experiments, function(exp) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }
 
-  algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.rp, lol.project.lol, lol.project.qoq)
-  alg_name <- c("PCA", "LDA", "CCA", "PLS", "RP", "LOL", "QOQ")
+  algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.rp, lol.project.pls,
+               lol.project.mpls, lol.project.opal, lol.project.lol, lol.project.qoq)
+  names(algs) <- c("PCA", "LDA", "CCA", "RP", "PLS", "OPAL", "MPLS", "LOL", "QOQ")
 
   X <- data[[exp$exp]]$X; Y <- as.factor(data[[exp$exp]]$Y)
   n <- dim(X)[1]; d <- dim(X)[2]
   maxr <- min(d, 100)
   rs <- unique(log.seq(from=1, to=maxr, length=rlen))
-  results <- data.frame(exp=c(), alg=c(), K=c(), r=c(), n=c(), lhat=c())
+  results <- data.frame(exp=c(), alg=c(), xv=c(), n=c(), d=c(), K=c(), r=c(), fold=c(), lhat=c())
   tryCatch({
     setTimeLimit(1800)
     for (i in 1:length(algs)) {
@@ -80,15 +83,11 @@ results <- parLapply(cl, experiments, function(exp) {
           classifier.ret = NaN
         }
       }
-      for (r in rs) {
-        tryCatch({
-          xv_res <- lol.xval.eval(X, Y, alg=algs[[i]], alg.opts=list(r=r), alg.return="A", classifier=classifier.alg,
-                                  classifier.return=classifier.ret, k=exp$k)
-          lhat <- xv_res$Lhat
-          results <- rbind(results, data.frame(exp=exp$exp, se=var(xv_res$Lhats)/sqrt(length(Y)),
-                                               alg=alg_name[i], r=r, lhat=lhat))
-        }, error=function(e) lhat <- NaN)
-      }
+      do.call(algs[[i]], list(c(list(X=set$X.train, Y=set$Y.train), alg.opts)))
+      xv_res <- lol.xval.optimal_r(X, Y, alg=algs, rs, alg.opts=list(), alg.return="A", classifier=clasifier.alg,
+                                   classifier.return=classifier.ret, k=exp$k)
+      results <- rbind(results, data.frame(exp=exp$exp, alg=alg_name[i], xv=exp$k, n=n, d=d, K=length(unique(Y)), r=xv_res$folds.data$r,
+                                           fold=xv_res$folds.data$fold, lhat=xv_res$folds.data$lhat))
     }
     saveRDS(results, file=paste(opath, exp$exp, '.rds', sep=""))
   }, error=function(e) {results <- NaN})
