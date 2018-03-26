@@ -58,6 +58,7 @@ lol.project.pca <- function(X, r, xfm=FALSE, xfm.opts=list(), ...) {
 #' @author Eric Bridgeford
 lol.utils.svd <- function(X, xfm=FALSE, xfm.opts=list(), nu=0, nv=0, t=.05) {
   n <- nrow(X)
+  d <- ncol(X)
   # scale if desired before taking SVD
   for (i in 1:length(xfm)) {
     sc <- xfm[i]
@@ -73,7 +74,7 @@ lol.utils.svd <- function(X, xfm=FALSE, xfm.opts=list(), nu=0, nv=0, t=.05) {
     }
   }
   # take svd
-  if (nu > t*n | nv > t*n) {
+  if (nu > t*d | nv > t*d | nu >= d | nv >= d) {
     svdX <- svd(X, nu=nu, nv=nv)
   } else {
     svdX <- irlba(X, nu=nu, nv=nv)
