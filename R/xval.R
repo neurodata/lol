@@ -74,7 +74,7 @@ lol.xval.eval <- function(X, Y, alg, sets=NULL, alg.opts=list(), alg.embedding="
   if (is.null(sets)) {
     sets <- lol.xval.split(X, Y, k=k)
   } else {
-    lol.xval.check_xv_set(sets)
+    lol.xval.check_xv_set(sets, n, d)
   }
 
   Lhat.fold <- sapply(sets, function(set) {
@@ -172,8 +172,6 @@ nan.mean <- function(x) mean(x, na.rm=TRUE)
 #' @export
 lol.xval.optimal_r <- function(X, Y, alg, rs, sets=NULL, alg.opts=list(), alg.embedding="A", classifier=lda, classifier.opts=list(),
                                classifier.return="class", k='loo', ...) {
-  print(rs)
-  print(sets)
   d <- dim(X)[2]
   Y <- factor(Y)
   n <- length(Y)
@@ -186,7 +184,7 @@ lol.xval.optimal_r <- function(X, Y, alg, rs, sets=NULL, alg.opts=list(), alg.em
   if (is.null(sets)) {
     sets <- lol.xval.split(X, Y, k=k)
   } else {
-    lol.xval.check_xv_set(sets)
+    lol.xval.check_xv_set(sets, n, d)
   }
   # compute  the top r embedding dimensions
   max.r <- max(rs)
@@ -235,7 +233,7 @@ lol.xval.optimal_r <- function(X, Y, alg, rs, sets=NULL, alg.opts=list(), alg.em
               model=model, classifier=class))
 }
 
-lol.xval.check_xv_set <- function(sets) {
+lol.xval.check_xv_set <- function(sets, n, d) {
   lapply(sets, function(set) {
     xtr.nk <- dim(set$X.train)[1]
     xte.k <- dim(set$X.test)[1]

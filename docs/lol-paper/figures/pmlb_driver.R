@@ -57,7 +57,6 @@ clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
 clusterExport(cl, "classifier.name")
 results <- lapply(experiments, function(exp) {
   require(lolR)
-  print(exp)
   log.seq <- function(from=0, to=30, length=15) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }
@@ -71,7 +70,6 @@ results <- lapply(experiments, function(exp) {
   maxr <- min(d, 100)
   rs <- unique(log.seq(from=1, to=maxr, length=rlen))
   sets <- lol.xval.split(X, Y, k=exp$xv)
-  lol.xval.check_xv_set(sets)
   results <- data.frame(exp=c(), alg=c(), xv=c(), n=c(), d=c(), K=c(), fold=c(), r=c(), lhat=c())
 
   for (i in 1:length(algs)) {
@@ -90,7 +88,6 @@ results <- lapply(experiments, function(exp) {
     tryCatch({
       xv_res <- lol.xval.optimal_r(X, Y, algs[[i]], rs, sets=sets, alg.opts=list(), alg.return="A", classifier=classifier.alg,
                                    classifier.return=classifier.ret, k=exp$xv)
-      print(xv_res)
       results <- rbind(results, data.frame(exp=exp$exp, alg=names(algs)[i], xv=exp$xv, n=n, d=d, K=length(unique(Y)), fold=xv_res$folds.data$fold, r=xv_res$folds.data$r,
                                            lhat=xv_res$folds.data$lhat))
       return(results)
