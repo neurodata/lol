@@ -298,7 +298,7 @@ lol.xval.split <- function(X, Y, k='loo', ...) {
     sets <- lapply(k.folds, function(fold) {
       list(X.train=X[-fold,,drop=FALSE], Y.train=Y[-fold,drop=FALSE],
            X.test=X[fold,,drop=FALSE], Y.test=Y[fold,drop=FALSE])
-    }, simplify=FALSE)
+    })
   } else {
     stop("You have not entered a valid parameter for xval.")
   }
