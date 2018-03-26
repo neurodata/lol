@@ -47,7 +47,11 @@ embed.xval <- function(X, Y, alg.opts)
 
 # Setup Algorithms
 #=========================#
-opath <- './data/fig5/'
+opath <- './data/'
+dir.create(opath)
+opath <- './data/real_data/'
+dir.create(opath)
+opath <- paste('./data/real_data/', classifier.name, '/', sep="")
 dir.create(opath)
 clusterExport(cl, "data"); clusterExport(cl, "rlen")
 clusterExport(cl, "experiments"); clusterExport(cl, "opath")
@@ -55,7 +59,6 @@ clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
 clusterExport(cl, "classifier.name")
 results <- parLapply(cl, experiments, function(exp) {
   require(lolR)
-  source('./plsda.R')
   log.seq <- function(from=0, to=30, length=15) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }
@@ -68,6 +71,7 @@ results <- parLapply(cl, experiments, function(exp) {
   n <- dim(X)[1]; d <- dim(X)[2]
   maxr <- min(d, 100)
   rs <- unique(log.seq(from=1, to=maxr, length=rlen))
+  sets <- lol.xval.split(X, Y, k=exp$xv)
   results <- data.frame(exp=c(), alg=c(), xv=c(), n=c(), d=c(), K=c(), r=c(), fold=c(), lhat=c())
   tryCatch({
     setTimeLimit(1800)
@@ -75,19 +79,21 @@ results <- parLapply(cl, experiments, function(exp) {
       classifier.ret <- classifier.return
       if (classifier.name == "lda") {
         classifier.ret = "class"
-        if (alg_name[i] == "QOQ") {
+        classifier.alg = MASS::lda
+        if (names(algs)[i] == "QOQ") {
           classifier.alg=MASS::qda
           classifier.ret = "class"
-        } else if (alg_name[i] == "CCA") {
+        } else if (names(algs)[i] == "CCA") {
           classifier.alg = lol.classify.nearestCentroid
           classifier.ret = NaN
         }
       }
-      do.call(algs[[i]], list(c(list(X=set$X.train, Y=set$Y.train), alg.opts)))
-      xv_res <- lol.xval.optimal_r(X, Y, alg=algs, rs, alg.opts=list(), alg.return="A", classifier=clasifier.alg,
-                                   classifier.return=classifier.ret, k=exp$k)
-      results <- rbind(results, data.frame(exp=exp$exp, alg=alg_name[i], xv=exp$k, n=n, d=d, K=length(unique(Y)), r=xv_res$folds.data$r,
-                                           fold=xv_res$folds.data$fold, lhat=xv_res$folds.data$lhat))
+      tryCatch({
+        xv_res <- lol.xval.optimal_r(X, Y, algs[[i]], rs, sets, alg.opts=list(), alg.return="A", classifier=classifier.alg,
+                                     classifier.return=classifier.ret, k=exp$xv)
+        results <- rbind(results, data.frame(exp=exp$exp, alg=names(algs)[i], xv=exp$xv, n=n, d=d, K=length(unique(Y)), r=xv_res$folds.data$r,
+                                             fold=xv_res$folds.data$fold, lhat=xv_res$folds.data$lhat))
+      }, error=function(e) {NULL})
     }
     saveRDS(results, file=paste(opath, exp$exp, '.rds', sep=""))
   }, error=function(e) {results <- NaN})

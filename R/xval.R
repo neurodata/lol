@@ -199,16 +199,19 @@ lol.xval.optimal_r <- function(X, Y, alg, rs, sets=NULL, alg.opts=list(), alg.em
       A <- mod[[alg.embedding]]
     }
     res.rs <- lapply(rs, function(r) {
-      A.r <- A[, 1:r]
-      X.test.proj <- lol.embed(set$X.test, A.r)  # project the data with the projection just learned
-      trained_classifier <- do.call(classifier, c(list(lol.embed(set$X.train, A.r), set$Y.train), classifier.opts))
-      if (is.nan(classifier.return)) {
-        Yhat <- predict(trained_classifier, X.test.proj)
-      } else {
-        Yhat <- predict(trained_classifier, X.test.proj)[[classifier.return]]
-      }
-      return(data.frame(lhat=1 - sum(Yhat == set$Y.test)/length(Yhat), r=r, fold=i))
+      tryCatch({
+        A.r <- A[, 1:r]
+        X.test.proj <- lol.embed(set$X.test, A.r)  # project the data with the projection just learned
+        trained_classifier <- do.call(classifier, c(list(lol.embed(set$X.train, A.r), set$Y.train), classifier.opts))
+        if (is.nan(classifier.return)) {
+          Yhat <- predict(trained_classifier, X.test.proj)
+        } else {
+          Yhat <- predict(trained_classifier, X.test.proj)[[classifier.return]]
+        }
+        return(data.frame(lhat=1 - sum(Yhat == set$Y.test)/length(Yhat), r=r, fold=i))
+      }, error=function(e){NULL})
     })
+    res.rs <- res.rs[!sapply(res.rs, is.null)]
     return(do.call(rbind, res.rs))
   })
 
@@ -292,7 +295,7 @@ lol.xval.split <- function(X, Y, k='loo', ...) {
     samp.ids <- as.matrix(sample(1:n, n))  # the sample ids randomly permuted
     k.folds <- split(samp.ids, rep(1:k), drop=TRUE)  # split the sample ids into xval folds
 
-    sets <- sapply(k.folds, function(fold) {
+    sets <- lapply(k.folds, function(fold) {
       list(X.train=X[-fold,,drop=FALSE], Y.train=Y[-fold,drop=FALSE],
            X.test=X[fold,,drop=FALSE], Y.test=Y[fold,drop=FALSE])
     }, simplify=FALSE)
