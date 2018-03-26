@@ -209,7 +209,7 @@ lol.xval.optimal_r <- function(X, Y, alg, rs, sets=NULL, alg.opts=list(), alg.em
           Yhat <- predict(trained_classifier, X.test.proj)[[classifier.return]]
         }
         return(data.frame(lhat=1 - sum(Yhat == set$Y.test)/length(Yhat), r=r, fold=i))
-      }, error=function(e){NULL})
+      }, error=function(e){print(e)})
     })
     res.rs <- res.rs[!sapply(res.rs, is.null)]
     return(do.call(rbind, res.rs))
