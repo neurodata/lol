@@ -172,6 +172,8 @@ nan.mean <- function(x) mean(x, na.rm=TRUE)
 #' @export
 lol.xval.optimal_r <- function(X, Y, alg, rs, sets=NULL, alg.opts=list(), alg.embedding="A", classifier=lda, classifier.opts=list(),
                                classifier.return="class", k='loo', ...) {
+  print(rs)
+  print(sets)
   d <- dim(X)[2]
   Y <- factor(Y)
   n <- length(Y)
@@ -209,7 +211,7 @@ lol.xval.optimal_r <- function(X, Y, alg, rs, sets=NULL, alg.opts=list(), alg.em
           Yhat <- predict(trained_classifier, X.test.proj)[[classifier.return]]
         }
         return(data.frame(lhat=1 - sum(Yhat == set$Y.test)/length(Yhat), r=r, fold=i))
-      }, error=function(e){print(e)})
+      }, error=function(e){return(NULL)})
     })
     res.rs <- res.rs[!sapply(res.rs, is.null)]
     return(do.call(rbind, res.rs))
