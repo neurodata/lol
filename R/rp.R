@@ -16,7 +16,7 @@
 #' X <- data$X; Y <- data$Y
 #' model <- lol.project.rp(X=X, r=5)  # use lol to project into 5 dimensions
 #' @export
-lol.project.rp <- function(X, r, scale=TRUE){
+lol.project.rp <- function(X, r, scale=TRUE, ...){
   d <- dim(X)[2]
   if (r > d) {
     stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
