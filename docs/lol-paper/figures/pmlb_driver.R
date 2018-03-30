@@ -15,15 +15,16 @@ cl = makeCluster(no_cores)
 # Setup Algorithms
 #==========================#
 algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.rp, lol.project.pls,
-             lol.project.mpls, lol.project.opal, lol.project.lol, lol.project.qoq, lol.project.plsol)
-names(algs) <- c("PCA", "LDA", "CCA", "RP", "PLS", "OPAL", "MPLS", "LOL", "QOQ", "PLSOL")
+             lol.project.mpls, lol.project.opal, lol.project.lol, lol.project.qoq, lol.project.plsol,
+             lol.project.plsolk)
+names(algs) <- c("PCA", "LDA", "CCA", "RP", "PLS", "OPAL", "MPLS", "LOL", "QOQ", "PLSOL", "PLSOLK")
 experiments <- list()
 counter <- 1
 
 # Setup Real Data
 #==========================#
 rlen <- 15
-ncutoff <- 1000
+ncutoff <- 1
 
 data <- list()
 
