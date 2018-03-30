@@ -93,13 +93,13 @@ results <- readRDS(file.path(opath, paste(classifier.name, "_results.rds", sep="
 nan.mean <- function(x) mean(x, na.rm=TRUE)
 results.means <- aggregate(lhat ~ exp + alg + r + d + n + K, data = results, FUN = nan.mean)
 
-algs <-  c("LOL", "QOQ", "PLS", "MPLS", "OPAL", "CCA", "LDA", "PCA", "RP")
-acols <- c("#00FF00", "#00FF00", "#990000", "#990000", "#990000", "#AAAA55", "#000099", "#000099", "#000099")
-linestyle <- c("solid", "dashed", "solid", "dashed", "dotted", "solid", "solid", "dashed", "dotted")
+algs <-  c("LOL", "QOQ", "QOL", "PLS", "MPLS", "OPAL", "CCA", "LDA", "PCA", "RP")
+acols <- c("#00FF00", "#00FF00", "#228B22", "#990000", "#990000", "#990000", "#AAAA55", "#000099", "#000099", "#000099")
+linestyle <- c("solid", "dashed", "solid", "solid", "dashed", "dotted", "solid", "solid", "dashed", "dotted")
 names(linestyle) <- algs
 names(algs) <- acols
 names(acols) <- algs
-shapes <- c(21, 24, 21, 24, 23, 21, 24, 23, 21)
+shapes <- c(21, 24, 21, 24, 21, 24, 23, 21, 24, 23, 21)
 names(shapes) <- algs
 exp_names <- names(pmlb.list(task="classification")$dsets.info)
 ```
@@ -116,7 +116,7 @@ for (i in 1:length(exp_names)) {
     pt <- compute_cutoff(data_sub[data_sub$alg == alg,]$r, data_sub[data_sub$alg == alg,]$lhat)
     pt.dat <- rbind(pt.dat, data.frame(r=pt$r, lhat=pt$lhat, alg=alg))
   }
-  plots[[i]] <- plot_sim_lhats(data_sub, acols, pt.dat, linestyle, shape, ylab="",
+  plots[[i]] <- plot_sim_lhats(data_sub, acols, pt.dat, linestyle, shapes, ylab="",
                                title=sprintf("Exp %d, K=%d, n=%d, p=%d", i, data_sub[1,]$K, data_sub[1,]$n, data_sub[1,]$d), 
                                from=1, fsize = 7)
 }
@@ -233,7 +233,7 @@ panelb <- ggplot(plot.results, aes(x=dn, y=lhat)) +
 print(panelb)
 ```
 
-# Quadrant Plot wrt LOL
+# Quadrant Plot
 
 ```{r, message=FALSE}
 
@@ -272,11 +272,6 @@ plot_sim_lhats <- function(data, cols, pt.dat, linetype, title="", by=10, from=1
     scale_linetype_manual(values=linetype, limits=names(cols),
                        guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
     geom_point(data=pt.dat, aes(x=r, y=lhat, linetype=alg, color=alg), size=2) +
-    #geom_line(data=base::subset(data, alg == "CCA"), aes(x=r, y=lhat, group=alg, linetype color=alg), size=.75) +
-    #geom_point(data=base::subset(pt.dat, alg == "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=2) +
-    #geom_line(data=base::subset(data, alg != "CCA" & alg != "QOQ"), aes(x=r, y=lhat, group=alg, color=alg), size=.75) +
-    #geom_point(data=base::subset(pt.dat, alg != "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=2) +
-    #geom_line(data=base::subset(data, alg == "QOQ"), aes(x=r, y=lhat, group=alg, color=alg), linetype="dashed", size=.75) +
     xlab(xlab) +
     ylab(ylab) +
     ggtitle(title) +
@@ -296,16 +291,19 @@ g_legend<-function(a.gplot){
 }
 ```
 
-```{r, message=FALSE}
-nan.median <- function(x) median(x, na.rm=TRUE)
-results.medians <- aggregate(lhat ~ exp + alg + r + d + n + K, data = results, FUN = nan.median)
+# WRT LOL
 
-plot.results <- data.frame(r=c(), lhat=c(), exp=c(), alg=c())
+```{r, message=FALSE}
+#nan.median <- function(x) median(x, na.rm=TRUE)
+#results.medians <- aggregate(lhat ~ exp + alg + r + d + n + K, data = results, FUN = nan.median)
+results.optimalr <- data.frame(exp=c(), alg=c(), r=c(), lhat=c(), fold=c())
+plot.normlol.results <- data.frame(r=c(), lhat=c(), exp=c(), alg=c())
 for (i in 1:length(exp_names)) {
+  r.max <- max(results.means[results.means$exp == exp_names[i],]$r)
   for (j in 1:length(algs)) {
     tryCatch({
-    alg <- algs[j]
-    ss <- results.medians[results.medians$exp == exp_names[i] & results.medians$alg == algs[j],]
+    alg <- as.character(algs[j])
+    ss <- results.means[results.means$exp == exp_names[i] & results.means$alg == algs[j],]
     rs <- ss$r; lhats <- ss$lhat
     min.result <- compute_cutoff(rs, lhats)
     r.min <- min.result$r; lhat.min <- min.result$lhat
@@ -313,47 +311,145 @@ for (i in 1:length(exp_names)) {
       norm.r <- r.min
       norm.lhat <- lhat.min
     }
-    if (norm.r == 0) {
-      if (r.min == 0) {
-        r.rat <- 1
-      } else {
-        r.rat <- 10
-      }
-    } else {
-      r.rat <- r.min/norm.r
-    }
-    if (norm.lhat == 0) {
-      if (lhat.min == 0) {
-        lhat.rat <- 1
-      } else {
-        lhat.rat <- 10
-      }
-    } else {
-      lhat.rat <- lhat.min/norm.lhat
-    }
-    plot.results <- rbind(plot.results, data.frame(r=r.rat, lhat=lhat.rat,
-                                                   exp=exp_names[i], alg=alg))
+    #if (norm.r == 0) {
+    #  if (r.min == 0) {
+    #    r.rat <- 1
+    #  } else {
+    #    r.rat <- 10
+    #  }
+    #} else {
+    #  r.rat <- (r.min - norm.r)/r.max
+    #}
+    r.rat <- (r.min - norm.r)/r.max
+    #if (norm.lhat == 0) {
+    #  if (lhat.min == 0) {
+    #    lhat.rat <- 1
+    #  } else {
+    #    lhat.rat <- 10
+    #  }
+    #} else {
+    #  lhat.rat <- lhat.min - norm.lhat
+    #}
+    lhat.rat <- lhat.min - norm.lhat
+    exp.fold <- results[results$exp == exp_names[i] & results$alg == algs[j] & results$r == r.min,]
+    results.optimalr <- rbind(results.optimalr, data.frame(r=r.min, lhat=exp.fold$lhat,
+                                                           fold=exp.fold$fold, alg=alg, exp=exp_names[i]))
+    plot.normlol.results <- rbind(plot.normlol.results, data.frame(r=r.rat, lhat=lhat.rat,
+                                                                   exp=exp_names[i], alg=alg))
     }, error=function(e) {NaN}, warning=function(w) {NaN})
   }
 }
 ```
 
 ```{r, message=FALSE}
-plot.results$exp <- factor(plot.results$exp)
-box <- data.frame(x=c(.1, 1, 1, .1), y=c(.1, .1, 1, 1))
-panelb <- ggplot(plot.results, aes(x=r, y=lhat)) +
-  geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
-  geom_point(aes(x=r, y=lhat, shape=alg, fill=alg), alpha=0.5, color='black', size=2) +
-  scale_fill_manual(values=acols, guide=guide_legend(ncol=2, byrow=TRUE), name="Algorithm") +
-  scale_shape_manual(values=shapes, guide=guide_legend(ncol=2, byrow=TRUE), name="Algorithm") +
-  ylab("Normalized Misclassification Rate") +
-  xlab("Normalized Embedding Dimension") +
-  labs(shape="Simulation", color="Algorithm") +
-  ggtitle("Real Data Performance; norm by LOL") +
-  scale_y_continuous(trans=log10_trans(), limits=c(.1, 10)) +
-  scale_x_continuous(trans=log10_trans(), limits=c(.1, 10)) +
-  theme_bw()
-print(panelb)
+make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", leg.title="",
+                             legend.style=guide_legend(ncol=2, byrow=TRUE)) {
+  data$exp <- factor(data$exp)
+  plot.normlol.results$exp <- factor(plot.normlol.results$exp)
+  box <- data.frame(x=c(min(xlims), mean(xlims), mean(xlims), min(xlims)),
+                    y=c(min(ylims), min(ylims), mean(ylims), mean(ylims)))
+  center <- ggplot(data, aes(x=r, y=lhat)) +
+    geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
+    geom_point(aes(x=r, y=lhat, shape=alg, fill=alg), alpha=0.3, size=1.2) +
+    scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
+    scale_shape_manual(values=shapes, guide=legend.style, name=leg.title) +
+    ylab(yl) +
+    xlab(xl) +
+    labs(shape="Simulation", color="Algorithm") +
+    ggtitle(plot.title) +
+    scale_y_continuous(limits=ylims) +
+    scale_x_continuous(limits=xlims) +
+    theme_bw()
+  center_leg <- ggplot(data, aes(x=r, y=lhat)) +
+    geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
+    geom_point(aes(x=r, y=lhat, shape=alg, fill=alg), size=2) +
+    scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
+    scale_shape_manual(values=shapes, guide=legend.style, name=leg.title) +
+    ylab(yl) +
+    xlab(xl) +
+    labs(shape="Simulation", color="Algorithm") +
+    ggtitle(plot.title) +
+    scale_y_continuous(limits=ylims) +
+    scale_x_continuous(limits=xlims) +
+    theme_bw()
+  leg <- g_legend(center_leg)
+  center <- center + theme(legend.position=NaN)
+  right <- ggplot(data, aes(x=lhat, y=..scaled.., color=alg, linetype=alg)) +
+    geom_density() +
+    scale_color_manual(values=acols, guide=legend.style, name=leg.title) +
+    scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
+    scale_linetype_manual(values=linestyle, guide=legend.style, name=leg.title) +
+    scale_x_continuous(limits=ylims) +
+    ylab("") +
+    xlab("") +
+    ggtitle("") +
+    theme_bw() +
+    theme(legend.position=NaN) +
+    coord_flip()
+  top <- ggplot(data, aes(x=r, y=..scaled.., color=alg, linetype=alg)) +
+    geom_density() +
+    scale_color_manual(values=acols, guide=legend.style, name=leg.title) +
+    scale_linetype_manual(values=linestyle, guide=legend.style, name=leg.title) +
+    scale_x_continuous(limits=xlims) +
+    ylab("") +
+    xlab("") +
+    ggtitle("") +
+    theme_bw() + 
+    theme(legend.position=NaN)
+  return(arrangeGrob(top, leg, center + theme(legend.position=NaN), right, ncol=2, nrow=2, widths=c(4,1.5), heights=c(2,4)))
+}
+
+grid.arrange(make_marginal_2d(subset(plot.normlol.results, !alg %in% c("MPLS", "OPAL", "RP", "LOL")),
+                              c(-1, 1), c(-.5, .5), plot.title="Real Data Results", leg.title="Algorithm",
+                              xl="Normalized Embedding Dimension", yl="Normalized Misclassification Rate"))
+```
+
+# Heatmap
+
+```{r}
+rhat.test <- data.frame(x=c(), y=c(), p=c())
+lhat.test <- data.frame(x=c(), y=c(), p=c())
+for (i in 1:length(algs)) {
+  i.ss <- results.optimalr[results.optimalr$alg == algs[i],]
+  for (j in 1:length(algs)) {
+    tryCatch({
+      if (algs[i] == algs[j]) {
+        rhat.test <- rbind(rhat.test, data.frame(x=algs[i], y=algs[j], p=NaN))
+        lhat.test <- rbind(lhat.test, data.frame(x=algs[i], y=algs[j], p=NaN))
+      } else {
+        j.ss <- results.optimalr[results.optimalr$alg == algs[j],]
+        cmp <- merge(i.ss, j.ss, by=c("exp", "fold"))
+        rhat.test <- rbind(rhat.test, data.frame(x=algs[j], y=algs[i], p=wilcox.test(cmp$r.x, cmp$r.y,
+                                                                                     alternative = "less", paired = TRUE)$p.value))
+        lhat.test <- rbind(lhat.test, data.frame(x=algs[j], y=algs[i], p=wilcox.test(cmp$lhat.x, cmp$lhat.y,
+                                                                                     alternative = "less", paired = TRUE)$p.value))
+      }
+    }, error=function(e){NaN})
+  }
+}
+
+lhat.test$x <- factor(lhat.test$x, levels = algs); lhat.test$y <- factor(lhat.test$y, levels = algs)
+rhat.test$x <- factor(rhat.test$x, levels = algs); rhat.test$y <- factor(rhat.test$y, levels = algs)
+rhat.test$p[rhat.test$p < .001] = .001
+lhat.test$p[lhat.test$p < .001] = .001
+lhat.hmap <- ggplot(lhat.test, aes(x=x, y=y, fill=p)) +
+  geom_tile() +
+  scale_fill_gradientn(name=TeX("$p$-value"), trans="log", breaks=c(0.001, 0.01, 0.1, 1),
+                       colours=rev(c("#f2f0f7", "#cbc9e2", "#9e9ac8", "#6a51a3")),
+                       limits=c(0.001, 1)) +
+  ggtitle(TeX("Test of whether Algorithm i < Algorithm j in $\\hat{r}$ ")) +
+  xlab("Algorithm j") +
+  ylab("Algorithm i")
+  
+
+rhat.hmap <- ggplot(rhat.test, aes(x=x, y=y, fill=p)) +
+  geom_tile() +
+  scale_fill_gradientn(name=TeX("$p$-value"), trans="log", breaks=c(0.001, 0.01, 0.1, 1),
+                       colours=rev(c("#f2f0f7", "#cbc9e2", "#9e9ac8", "#6a51a3")),
+                       limits=c(0.001, 1)) +
+  ggtitle(TeX("Test of whether Algorithm i < Algorithm j in $\\hat{L}$ ")) +
+  xlab("Algorithm j") +
+  ylab("Algorithm i")
 ```
 
 ```{r, message=FALSE}
@@ -367,7 +463,7 @@ print(sprintf("Center (r == 1 & lhat == 1): %.3f", sum(rs == 1 & lhats == 1)/len
 
 # Normalized WRT QOQ
 
-```{r, message=FALSE}
+```{r, message=FALSE, eval=FALSE}
 nan.median <- function(x) median(x, na.rm=TRUE)
 results.medians <- aggregate(lhat ~ exp + alg + r + d + n + lhat, data = results, FUN = nan.median)
 
@@ -409,7 +505,7 @@ for (i in 1:length(exp_names)) {
 }
 ```
 
-```{r, message=FALSE}
+```{r, message=FALSE, eval=FALSE}
 plot.results$exp <- factor(plot.results$exp)
 box <- data.frame(x=c(.1, 1, 1, .1), y=c(.1, .1, 1, 1))
 panelb <- ggplot(plot.results, aes(x=r, y=lhat)) +
@@ -429,7 +525,7 @@ print(panelb)
 
 # Normalized WRT PLS
 
-```{r, message=FALSE}
+```{r, message=FALSE, eval=FALSE}
 
 nan.median <- function(x) median(x, na.rm=TRUE)
 results.medians <- aggregate(lhat ~ exp + alg + r + d + n + lhat, data = results, FUN = nan.median)
@@ -472,7 +568,7 @@ for (i in 1:length(exp_names)) {
 }
 ```
 
-```{r, message=FALSE}
+```{r, message=FALSE, eval=FALSE}
 plot.results$exp <- factor(plot.results$exp)
 box <- data.frame(x=c(.1, 1, 1, .1), y=c(.1, .1, 1, 1))
 panelb <- ggplot(plot.results, aes(x=r, y=lhat)) +
@@ -489,4 +585,6 @@ panelb <- ggplot(plot.results, aes(x=r, y=lhat)) +
   theme_bw()
 print(panelb)
 ```
+
+# Significant Difference
 

@@ -13,9 +13,12 @@ vignette: >
 require(lolR)
 require(ggplot2)
 require(latex2exp)
-
+require(MASS)
 n <- 1000
 d <- 15
+```
+
+```{r}
 plot_sim <- function(X, Y, name) {
   data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
   data$y <- factor(data$y)

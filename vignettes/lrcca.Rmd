@@ -9,7 +9,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, echo=FALSE}
+```{r}
 require(lolR)
 require(ggplot2)
 require(latex2exp)

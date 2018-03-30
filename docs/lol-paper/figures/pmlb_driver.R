@@ -5,7 +5,7 @@ library(parallel)
 require(lolR)
 require(slbR)
 require(randomForest)
-no_cores = detectCores() - 3
+no_cores = detectCores() - 1
 classifier.name <- "lda"
 classifier.alg <- MASS::lda
 classifier.return = NaN
@@ -15,8 +15,8 @@ cl = makeCluster(no_cores)
 # Setup Algorithms
 #==========================#
 algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.rp, lol.project.pls,
-             lol.project.mpls, lol.project.opal, lol.project.lol, lol.project.qoq)
-names(algs) <- c("PCA", "LDA", "CCA", "RP", "PLS", "OPAL", "MPLS", "LOL", "QOQ")
+             lol.project.mpls, lol.project.opal, lol.project.lol, lol.project.qoq, lol.project.plsol)
+names(algs) <- c("PCA", "LDA", "CCA", "RP", "PLS", "OPAL", "MPLS", "LOL", "QOQ", "PLSOL")
 experiments <- list()
 counter <- 1
 
@@ -54,16 +54,12 @@ dir.create(opath)
 clusterExport(cl, "data"); clusterExport(cl, "rlen")
 clusterExport(cl, "experiments"); clusterExport(cl, "opath")
 clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
-clusterExport(cl, "classifier.name")
-results <- lapply(experiments, function(exp) {
+clusterExport(cl, "classifier.name"); clusterExport(cl, "algs")
+results <- parLapply(cl, experiments, function(exp) {
   require(lolR)
   log.seq <- function(from=0, to=30, length=15) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }
-
-  algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.rp, lol.project.pls,
-               lol.project.mpls, lol.project.opal, lol.project.lol, lol.project.qoq)
-  names(algs) <- c("PCA", "LDA", "CCA", "RP", "PLS", "OPAL", "MPLS", "LOL", "QOQ")
 
   X <- data[[exp$exp]]$X; Y <- as.factor(data[[exp$exp]]$Y)
   n <- dim(X)[1]; d <- dim(X)[2]
@@ -90,14 +86,13 @@ results <- lapply(experiments, function(exp) {
                                    classifier.return=classifier.ret, k=exp$xv)
       results <- rbind(results, data.frame(exp=exp$exp, alg=names(algs)[i], xv=exp$xv, n=n, d=d, K=length(unique(Y)), fold=xv_res$folds.data$fold, r=xv_res$folds.data$r,
                                            lhat=xv_res$folds.data$lhat))
-      return(results)
     }, error=function(e) {print(e); return(NULL)})
   }
   saveRDS(results, file=paste(opath, exp$exp, '.rds', sep=""))
   return(results)
 })
 resultso <- do.call(rbind, results)
-saveRDS(resultso, file.path(opath, paste('lol_fig5_', classifier.name, '.rds', sep="")))
+saveRDS(resultso, file.path(opath, paste(classifier.name, '_results.rds', sep="")))
 stopCluster(cl)
 
 # Aggregate and save
