@@ -78,14 +78,14 @@ lol.xval.eval <- function(X, Y, alg, sets=NULL, alg.opts=list(), alg.embedding="
   }
 
   Lhat.fold <- sapply(sets, function(set) {
-    mod <- do.call(alg, c(list(X=set$X.train, Y=set$Y.train), alg.opts)) # learn the projection with the algorithm specified
+    mod <- do.call(alg, c(list(X=set$X.train, Y=as.factor(set$Y.train)), alg.opts)) # learn the projection with the algorithm specified
     if (is.nan(alg.embedding)) {
       A <- mod
     } else {
       A <- mod[[alg.embedding]]
     }
     X.test.proj <- lol.embed(set$X.test, A)  # project the data with the projection just learned
-    trained_classifier <- do.call(classifier, c(list(lol.embed(set$X.train, A), set$Y.train), classifier.opts))
+    trained_classifier <- do.call(classifier, c(list(lol.embed(set$X.train, A), as.factor(set$Y.train)), classifier.opts))
     if (is.nan(classifier.return)) {
       Yhat <- predict(trained_classifier, X.test.proj)
     } else {
@@ -192,7 +192,7 @@ lol.xval.optimal_r <- function(X, Y, alg, rs, sets=NULL, alg.opts=list(), alg.em
   Lhat.data <- lapply(1:length(sets), function(i) {
     set <- sets[[i]]
     # learn the projection with the algorithm specified
-    mod <- do.call(alg, c(list(X=set$X.train, Y=set$Y.train), c(list(r=max.r), alg.opts)))
+    mod <- do.call(alg, c(list(X=set$X.train, Y=as.factor(set$Y.train)), c(list(r=max.r), alg.opts)))
     if (is.nan(alg.embedding)) {
       A <- mod
     } else {
@@ -202,7 +202,7 @@ lol.xval.optimal_r <- function(X, Y, alg, rs, sets=NULL, alg.opts=list(), alg.em
       tryCatch({
         A.r <- A[, 1:r]
         X.test.proj <- lol.embed(set$X.test, A.r)  # project the data with the projection just learned
-        trained_classifier <- do.call(classifier, c(list(lol.embed(set$X.train, A.r), set$Y.train), classifier.opts))
+        trained_classifier <- do.call(classifier, c(list(lol.embed(set$X.train, A.r), as.factor(set$Y.train)), classifier.opts))
         if (is.nan(classifier.return)) {
           Yhat <- predict(trained_classifier, X.test.proj)
         } else {

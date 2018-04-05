@@ -1,3 +1,10 @@
+function terminal() {
+  mkdir /data/
+  aws s3 cp --no-sign-request s3://neurodata-public-rerf/uci/processed.zip /data
+  cd /data/
+  unzip processed.zip
+}
+
 # Parallelize Stuff
 #=========================#
 require(MASS)
@@ -11,7 +18,7 @@ classifier.alg <- MASS::lda
 #classifier.name <- "rf"
 #classifier.alg <- randomForest::randomForest
 classifier.return = NaN
-
+ucipath = '/data'
 
 cl = makeCluster(no_cores)
 
@@ -31,19 +38,19 @@ ncutoff <- 1
 
 data <- list()
 
-dset.names <- names(pmlb.list(task="classification")$dsets.info)
+dset.names <- readLines(file.path(ucipath, 'uci/processed/names.txt'))
 for (i in 1:length(dset.names)) {
-  tryCatch({result <- pmlb.load(datasets = dset.names[i], tasks='classification', clean.nan=TRUE, clean.ohe=FALSE)
-    result <- result$data[[dset.names[i]]]
-    data[[dset.names[i]]] <- list(X=result$X, Y=result$Y, exp=dset.names[i])
+  tryCatch({
+    result <- read.csv(file.path(ucipath, 'uci/processed/data', paste(dset.names[i], '.csv', sep="")), header=FALSE)
+    n <- dim(result)[1]; d <- dim(result)[2]
+    X <- result[, -d]; Y <- result[, d]
+    data[[dset.names[i]]] <- list(X=X, Y=Y, exp=dset.names[i], xv=k)
     n <- length(result$Y)
     if (n > ncutoff) {
       k <- 20
     } else {
       k <- 'loo'
     }
-    experiments[[counter]] <- list(exp=dset.names[i], xv=k)
-    counter <- counter + 1
   }, error = function(e) NaN)
 }
 
@@ -105,29 +112,5 @@ results <- parLapply(cl, data, function(dat) {
   return(results)
 })
 resultso <- do.call(rbind, results)
-saveRDS(resultso, file.path(opath, paste(classifier.name, '_pmlb_results.rds', sep="")))
+saveRDS(resultso, file.path(opath, paste(classifier.name, '_uci_results.rds', sep="")))
 stopCluster(cl)
-
-# Aggregate and save
-#=================================#
-require(MASS)
-library(parallel)
-require(lolR)
-require(slbR)
-source('./plsda.R')
-
-algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.pls, lol.project.rp, lol.project.lol, lol.project.qoq)
-names(algs) <- c("PCA", "LDA", "CCA", "PLS", "RP", "LOL", "QOQ")
-experiments <- list()
-counter <- 1
-
-dset.names <- names(pmlb.list(task="classification")$dsets.info)
-opath <- './data/fig5/'
-results <- lapply(dset.names, function(dset) {
-  tryCatch(
-    result <- readRDS(paste(opath, dset, '.rds', sep="")), error=function(e) {return(NaN)}
-  )
-})
-resultso <- do.call(rbind, results)
-saveRDS(resultso, file.path(opath, paste(classifier.name, '_results.rds', sep="")))
-
