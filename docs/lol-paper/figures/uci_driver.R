@@ -1,7 +1,8 @@
 function terminal() {
-  mkdir /data/
-  aws s3 cp --no-sign-request s3://neurodata-public-rerf/uci/processed.zip /data
-  cd /data/
+  sudo mkdir /data/
+  sudo chmod -R 777 /data/
+  aws s3 cp --no-sign-request s3://neurodata-public-rerf/uci/processed.zip ./data
+  cd ./data/
   unzip processed.zip
 }
 
@@ -12,13 +13,13 @@ library(parallel)
 require(lolR)
 require(slbR)
 require(randomForest)
-no_cores = detectCores() - 1
+no_cores = detectCores() - 5
 classifier.name <- "lda"
 classifier.alg <- MASS::lda
 #classifier.name <- "rf"
 #classifier.alg <- randomForest::randomForest
 classifier.return = NaN
-ucipath = '/data'
+ucipath = './data'
 
 cl = makeCluster(no_cores)
 
@@ -38,19 +39,19 @@ ncutoff <- 1
 
 data <- list()
 
-dset.names <- readLines(file.path(ucipath, 'uci/processed/names.txt'))
+dset.names <- readLines(file.path(ucipath, 'processed/names.txt'))
 for (i in 1:length(dset.names)) {
   tryCatch({
-    result <- read.csv(file.path(ucipath, 'uci/processed/data', paste(dset.names[i], '.csv', sep="")), header=FALSE)
+    result <- read.csv(file.path(ucipath, 'processed/data', paste(dset.names[i], '.csv', sep="")), header=FALSE)
     n <- dim(result)[1]; d <- dim(result)[2]
     X <- result[, -d]; Y <- result[, d]
-    data[[dset.names[i]]] <- list(X=X, Y=Y, exp=dset.names[i], xv=k)
-    n <- length(result$Y)
+    n <- length(Y)
     if (n > ncutoff) {
       k <- 20
     } else {
       k <- 'loo'
     }
+    data[[dset.names[i]]] <- list(X=X, Y=Y, exp=dset.names[i], xv=k)
   }, error = function(e) NaN)
 }
 
@@ -72,7 +73,7 @@ results <- parLapply(cl, data, function(dat) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }
 
-  X <- dat$X; Y <- as.factor(dat$Y)
+  X <- as.matrix(dat$X); Y <- as.factor(dat$Y)
   n <- dim(X)[1]; d <- dim(X)[2]
   maxr <- min(d, 100)
   rs <- unique(log.seq(from=1, to=maxr, length=rlen))
