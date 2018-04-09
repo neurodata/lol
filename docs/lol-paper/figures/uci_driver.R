@@ -115,3 +115,15 @@ results <- parLapply(cl, data, function(dat) {
 resultso <- do.call(rbind, results)
 saveRDS(resultso, file.path(opath, paste(classifier.name, '_uci_results.rds', sep="")))
 stopCluster(cl)
+
+
+classifier.name <- "lda"
+opath <- paste('./data/real_data/', classifier.name, '/', sep="")
+exp_names = list.files(opath)
+results <- lapply(exp_names, function(dset) {
+  tryCatch(
+    result <- readRDS(paste(opath, dset, sep="")), error=function(e) {return(NaN)}
+  )
+})
+resultso <- do.call(rbind, results)
+saveRDS(resultso, file.path(opath, paste(classifier.name, '_uci_results.rds', sep="")))

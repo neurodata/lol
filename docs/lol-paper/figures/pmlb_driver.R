@@ -119,13 +119,14 @@ names(algs) <- c("PCA", "LDA", "CCA", "PLS", "RP", "LOL", "QOQ")
 experiments <- list()
 counter <- 1
 
+classifier.name <- "rf"
 dset.names <- names(pmlb.list(task="classification")$dsets.info)
-opath <- './data/fig5/'
+opath <- paste('./data/real_data/', classifier.name, '/')
 results <- lapply(dset.names, function(dset) {
   tryCatch(
     result <- readRDS(paste(opath, dset, '.rds', sep="")), error=function(e) {return(NaN)}
   )
 })
 resultso <- do.call(rbind, results)
-saveRDS(resultso, file.path(opath, paste(classifier.name, '_results.rds', sep="")))
+saveRDS(resultso, file.path(opath, paste(classifier.name, '_pmlb_results.rds', sep="")))
 
