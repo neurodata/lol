@@ -35,15 +35,13 @@ dset.names <- names(pmlb.list(task="classification")$dsets.info)
 for (i in 1:length(dset.names)) {
   tryCatch({result <- pmlb.load(datasets = dset.names[i], tasks='classification', clean.nan=TRUE, clean.ohe=FALSE)
     result <- result$data[[dset.names[i]]]
-    data[[dset.names[i]]] <- list(X=result$X, Y=result$Y, exp=dset.names[i])
     n <- length(result$Y)
     if (n > ncutoff) {
       k <- 20
     } else {
       k <- 'loo'
     }
-    experiments[[counter]] <- list(exp=dset.names[i], xv=k)
-    counter <- counter + 1
+    data[[dset.names[i]]] <- list(X=result$X, Y=result$Y, exp=dset.names[i], xv=k)
   }, error = function(e) NaN)
 }
 

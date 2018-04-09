@@ -227,7 +227,7 @@ lol.project.plsolk <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   if (r > d) {
     stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
   }
-  A.pls <- lol.project.pls(X, Y, r=min(r, K-1))$A
+  A.pls <- lol.project.pls(X, Y, r=min(r, K))$A
   centroids <- t(centroids)
 
   nv <- r - (K)
