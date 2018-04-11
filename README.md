@@ -2,6 +2,8 @@
 
 
 [![CRAN Status Badge](http://www.r-pkg.org/badges/version/lolR)](http://cran.r-project.org/web/packages/lolR)
+[![arXiv shield](https://img.shields.io/badge/arXiv-1709.01233-red.svg?style=flat)](https://arxiv.org/abs/1709.01233)
+
 
 ## Contents
 
