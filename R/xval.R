@@ -5,7 +5,8 @@
 #' @importFrom MASS lda
 #' @importFrom stats predict
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
-#' @param Y \code{[n]} the labels of the samples with \code{K} unique labels. Defaults to \code{NaN}.#' @param alg.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.
+#' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
+#' @param alg.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.
 #' @param alg the algorithm to use for embedding. Should be a function that accepts inputs \code{X} and \code{Y} if \code{alg} is supervised, or just \code{X} if \code{alg} is unsupervised.This algorithm should return a list containing a matrix that embeds from {d} to {r < d} dimensions.
 #' @param sets a user-defined cross-validation set. Defaults to \code{NULL}.
 #' \itemize{
@@ -220,7 +221,7 @@ lol.xval.optimal_r <- function(X, Y, alg, rs, sets=NULL, alg.opts=list(), alg.em
   results.means <- aggregate(lhat ~ r, data = results, FUN = nan.mean)
 
   optimal.idx <- which(results.means$lhat == min(results.means$lhat))
-  best.r <- results.means$r[optimal.idx]
+  best.r <- min(results.means$r[optimal.idx])  # best is the minimum of the possible choices
   model <- do.call(alg, c(list(X=X, Y=Y), c(list(r=best.r), alg.opts)))
   if (is.nan(alg.embedding)) {
     A <- model

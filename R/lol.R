@@ -160,7 +160,7 @@ lol.project.qoq <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
 #' @export
 lol.project.plsol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   # class data
-  info <- lol.utils.info(X, Y)
+  info <- lolR:::lol.utils.info(X, Y)
   priors <- info$priors; centroids <- info$centroids
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
@@ -227,7 +227,7 @@ lol.project.plsolk <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   if (r > d) {
     stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
   }
-  A.pls <- lol.project.pls(X, Y, r=min(r, K))$A
+  A.pls <- lol.project.pls(X, Y, r=min(r, K-1))$A
   centroids <- t(centroids)
 
   nv <- r - (K)
