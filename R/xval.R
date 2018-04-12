@@ -6,14 +6,17 @@
 #' @importFrom stats predict
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
-#' @param alg.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.
-#' @param alg the algorithm to use for embedding. Should be a function that accepts inputs \code{X} and \code{Y} if \code{alg} is supervised, or just \code{X} if \code{alg} is unsupervised.This algorithm should return a list containing a matrix that embeds from {d} to {r < d} dimensions.
+#' @param r the number of embedding dimensions desired, where \code{r <= d}.
+#' @param alg the algorithm to use for embedding. Should be a function that accepts inputs \code{X}, \code{Y}, and has a parameter for \code{alg.dimname} if \code{alg} is supervised, or just \code{X} and \code{alg.dimname} if \code{alg} is unsupervised.This algorithm should return a list containing a matrix that embeds from {d} to {r <= d} dimensions.
 #' @param sets a user-defined cross-validation set. Defaults to \code{NULL}.
 #' \itemize{
 #' \item{\code{is.null(sets)} randomly partition the inputs \code{X} and \code{Y} into training and testing sets.}
 #' \item{\code{!is.null(sets)} use a user-defined partitioning of the inputs \code{X} and \code{Y} into training and testing sets. Should be in the format of the outputs from \code{\link{lol.xval.split}}. That is, a \code{list} with each element containing \code{X.train}, an \code{[n-k][d]} subset of data to test on, \code{Y.train}, an \code{[n-k]} subset of class labels for \code{X.train}; \code{X.test}, an \code{[n-k][d]} subset of data to test the model on, \code{Y.train}, an \code{[k]} subset of class labels for \code{X.test}.}
 #' }
+#' @param alg.dimname the name of the parameter accepted by \code{alg} for indicating the embedding dimensionality desired. Defaults to \code{r}.
+#' @param alg.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.
 #' @param alg.opts the hyper-parameter options you want to pass into your algorithm, as a keyworded list. Defaults to \code{list()}, or no hyper-parameters.
+#' @param alg.dim the keyworded-argument taken by \code{alg} indicating the number of embedding dimensions required. Defaults to assuming that \code{alg} accepts the number of embedding dimensions as \code{r}.
 #' @param alg.embedding the attribute returned by \code{alg} containing the embedding matrix. Defaults to assuming that \code{alg} returns an embgedding matrix as \code{"A"}.
 #' \itemize{
 #' \item \code{!is.nan(alg.embedding)} Assumes that \code{alg} will return a list containing an attribute, \code{alg.embedding}, a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.
@@ -54,14 +57,14 @@
 #' # train model and analyze with 5-fold validation using lda classifier
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
-#' r=5  # embed into r=5 dimensions
-#' xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r), k=5)
+#' xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, k=5)
 #'
 #' # pass in existing cross-validation sets
 #' sets <- lol.xval.split(X, Y, k=2)
-#' xval.fit <- lol.xval.eval(X, Y, lol.project.lol, sets=sets, alg.opts=list(r=r))
+#' xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol, sets=sets)
 #' @export
-lol.xval.eval <- function(X, Y, alg, sets=NULL, alg.opts=list(), alg.embedding="A", classifier=lda, classifier.opts=list(),
+lol.xval.eval <- function(X, Y, r, alg, sets=NULL, alg.dimname="r", alg.opts=list(),
+                          alg.embedding="A", classifier=lda, classifier.opts=list(),
                           classifier.return="class", k='loo', ...) {
   d <- dim(X)[2]
   Y <- factor(Y)
@@ -78,15 +81,24 @@ lol.xval.eval <- function(X, Y, alg, sets=NULL, alg.opts=list(), alg.embedding="
     lol.xval.check_xv_set(sets, n, d)
   }
 
+  # hyperparameters are  the number of embedding dimensions and other options requested.
+  dim.embed <- list(r)
+  names(dim.embed) <- alg.dimname
+  alg.hparams <- c(dim.embed, alg.opts)
+
+  # compute fold-wise cross-validated error
   Lhat.fold <- sapply(sets, function(set) {
-    mod <- do.call(alg, c(list(X=set$X.train, Y=as.factor(set$Y.train)), alg.opts)) # learn the projection with the algorithm specified
+    mod <- do.call(alg, c(list(X=set$X.train, Y=as.factor(set$Y.train)), alg.hparams)) # learn the projection with the algorithm specified
     if (is.nan(alg.embedding)) {
       A <- mod
     } else {
       A <- mod[[alg.embedding]]
     }
+    # embed the testing points
     X.test.proj <- lol.embed(set$X.test, A)  # project the data with the projection just learned
+    # produce the desired classifier with the training data
     trained_classifier <- do.call(classifier, c(list(lol.embed(set$X.train, A), as.factor(set$Y.train)), classifier.opts))
+    # compute cross-validated error of the held-out data
     if (is.nan(classifier.return)) {
       Yhat <- predict(trained_classifier, X.test.proj)
     } else {
@@ -95,12 +107,14 @@ lol.xval.eval <- function(X, Y, alg, sets=NULL, alg.opts=list(), alg.embedding="
     return(1 - sum(Yhat == set$Y.test)/length(Yhat))
   })
 
-  model <- do.call(alg, c(list(X=X, Y=Y), alg.opts))
+  # compute the embedding with all of the data
+  model <- do.call(alg, c(list(X=X, Y=Y), alg.hparams))
   if (is.nan(alg.embedding)) {
     A <- model
   } else {
     A <- model[[alg.embedding]]
   }
+  # and the classifier trained for good measure
   class <- do.call(classifier, c(list(lol.embed(X, A), Y), classifier.opts))
 
   return(list(lhat=mean(Lhat.fold), model=model, classifier=class, lhats=Lhat.fold))
@@ -108,7 +122,7 @@ lol.xval.eval <- function(X, Y, alg, sets=NULL, alg.opts=list(), alg.embedding="
 
 nan.mean <- function(x) mean(x, na.rm=TRUE)
 
-#' Embedding Cross Validation
+#' Optimal Cross-Validated Number of Embedding Dimensions
 #'
 #' A function for performing leave-one-out cross-validation for a given embedding model.
 #'
@@ -116,18 +130,24 @@ nan.mean <- function(x) mean(x, na.rm=TRUE)
 #' @importFrom stats predict
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels. Defaults to \code{NaN}.#' @param alg.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.
-#' @param rs \code{[r.n]} the embedding dimensions to investigate over.
+#' @param rs \code{[r.n]} the embedding dimensions to investigate over, where \code{max(rs) <= d}.
 #' @param alg the algorithm to use for embedding. Should be a function that accepts inputs \code{X} and \code{Y} and embedding dimension \code{r} if \code{alg} is supervised, or just \code{X} and embedding dimension \code{r} if \code{alg} is unsupervised.This algorithm should return a list containing a matrix that embeds from {d} to {r < d} dimensions.
 #' @param sets a user-defined cross-validation set. Defaults to \code{NULL}.
 #' \itemize{
 #' \item{\code{is.null(sets)} randomly partition the inputs \code{X} and \code{Y} into training and testing sets.}
 #' \item{\code{!is.null(sets)} use a user-defined partitioning of the inputs \code{X} and \code{Y} into training and testing sets. Should be in the format of the outputs from \code{\link{lol.xval.split}}. That is, a \code{list} with each element containing \code{X.train}, an \code{[n-k][d]} subset of data to test on, \code{Y.train}, an \code{[n-k]} subset of class labels for \code{X.train}; \code{X.test}, an \code{[n-k][d]} subset of data to test the model on, \code{Y.train}, an \code{[k]} subset of class labels for \code{X.test}.}
 #' }
+#' @param alg.dimname the name of the parameter accepted by \code{alg} for indicating the embedding dimensionality desired. Defaults to \code{r}.
 #' @param alg.opts the hyper-parameter options to pass to your algorithm as a keyworded list. Defaults to \code{list()}, or no hyper-parameters. This should not include the number of embedding dimensions, \code{r}, which are passed separately in the \code{rs} vector.
 #' @param alg.embedding the attribute returned by \code{alg} containing the embedding matrix. Defaults to assuming that \code{alg} returns an embgedding matrix as \code{"A"}.
 #' \itemize{
 #' \item \code{!is.nan(alg.embedding)} Assumes that \code{alg} will return a list containing an attribute, \code{alg.embedding}, a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.
 #' \item \code{is.nan(alg.embedding)} Assumes that \code{alg} returns a \code{[d, r]} matrix that embeds \code{[n, d]} data from \code{[d]} to \code{[r < d]} dimensions.
+#' }
+#' @param alg.structured a boolean to indicate whether the embedding matrix is structured. Provides performance increase by not having to compute the embedding matrix \code{xv} times if unnecessary. Defaults to \code{TRUE}.
+#' \itemize{
+#' \item \code{TRUE} assumes that if \code{Ar: R^d -> R^r} embeds from \code{d} to \code{r} dimensions and \code{Aq: R^d -> R^q} from \code{d} to \code{q > r} dimensions, that \code{Aq[, 1:r] == Ar},
+#' \item \code{TRUE} assumes that if \code{Ar: R^d -> R^r} embeds from \code{d} to \code{r} dimensions and \code{Aq: R^d -> R^q} from \code{d} to \code{q > r} dimensions, that \code{Aq[, 1:r] != Ar},
 #' }
 #' @param classifier the classifier to use for assessing performance. The classifier should accept \code{X}, a \code{[n, d]} array as the first input, and \code{Y}, a \code{[n]} array of labels, as the first 2 arguments. The class should implement a predict function, \code{predict.classifier}, that is compatible with the \code{stats::predict} \code{S3} method. Defaults to \code{MASS::lda}.
 #' @param classifier.opts any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list.
@@ -158,21 +178,22 @@ nan.mean <- function(x) mean(x, na.rm=TRUE)
 #' # run cross-validation with the nearestCentroid method and
 #' # leave-one-out cross-validation, which returns only
 #' # prediction labels so we specify classifier.return as NaN
-#' xval.fit <- lol.xval.eval(X, Y, rs=c(5, 10, 15), lol.project.lol, alg.opts=list(),
+#' xval.fit <- lol.xval.optimal_dimselect(X, Y, rs=c(5, 10, 15), lol.project.lol,
 #'                           classifier=lol.classify.nearestCentroid,
 #'                           classifier.return=NaN, k='loo')
 #'
 #' # train model and analyze with 5-fold validation using lda classifier
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
-#' xval.fit <- lol.xval.eval(X, Y, rs=c(5, 10, 15), lol.project.lol, alg.opts=list(), k=5)
+#' xval.fit <- lol.xval.optimal_dimselect(X, Y, rs=c(5, 10, 15), lol.project.lol, k=5)
 #'
 #' # pass in existing cross-validation sets
 #' sets <- lol.xval.split(X, Y, k=2)
-#' xval.fit <- lol.xval.optimal_r(X, Y, rs=c(5, 10, 15), lol.project.lol, sets=sets, alg.opts=list())
+#' xval.fit <- lol.xval.optimal_dimselect(X, Y, rs=c(5, 10, 15), lol.project.lol, sets=sets)
 #' @export
-lol.xval.optimal_r <- function(X, Y, alg, rs, sets=NULL, alg.opts=list(), alg.embedding="A", classifier=lda, classifier.opts=list(),
-                               classifier.return="class", k='loo', ...) {
+lol.xval.optimal_dimselect <- function(X, Y, rs, alg, sets=NULL, alg.dimname="r", alg.opts=list(), alg.embedding="A",
+                                       alg.structured=TRUE, classifier=lda, classifier.opts=list(),
+                                       classifier.return="class", k='loo', ...) {
   d <- dim(X)[2]
   Y <- factor(Y)
   n <- length(Y)
@@ -190,20 +211,41 @@ lol.xval.optimal_r <- function(X, Y, alg, rs, sets=NULL, alg.opts=list(), alg.em
   # compute  the top r embedding dimensions
   max.r <- max(rs)
 
+  # hyperparameters are  the number of embedding dimensions and other options requested.
+  dim.embed <- list()
+  dim.embed[[alg.name]] <- max.r
+  alg.hparams <- c(dim.embed, alg.opts)
+
   Lhat.data <- lapply(1:length(sets), function(i) {
     set <- sets[[i]]
-    # learn the projection with the algorithm specified
-    mod <- do.call(alg, c(list(X=set$X.train, Y=as.factor(set$Y.train)), c(list(r=max.r), alg.opts)))
-    if (is.nan(alg.embedding)) {
-      A <- mod
-    } else {
-      A <- mod[[alg.embedding]]
+    # if the algorithm is appropriately structured, we can avoid computing on every iteration and
+    # just compute on the maximum number of embedding dimensions
+    if (alg.structured) {
+      # learn the projection with the algorithm specified
+      mod <- do.call(alg, c(list(X=set$X.train, Y=as.factor(set$Y.train)), alg.hparams))
+      # assign the embedding  dimension
+      if (is.nan(alg.embedding)) {
+        A <- mod
+      } else {
+        A <- mod[[alg.embedding]]
+      }
     }
+    # check fold with every desired possibility of embedding dimensions
     res.rs <- lapply(rs, function(r) {
       tryCatch({
-        A.r <- A[, 1:r]
+        # if appropriately structured just take the top r dimensions of the embedding computed on max.r
+        if (alg.structured) {
+          A.r <- A[, 1:r]
+        } else {
+          # otherwise, compute A.r on the new embedding dimension every time
+          alg.hparams[[alg.dimname]] <- r
+          A.r <- do.call(alg, c(list(X=set$X.train, Y=as.factor(set$Y.train)), alg.hparams))
+        }
+        # embed the test points with the embedding matrix computed on the training data
         X.test.proj <- lol.embed(set$X.test, A.r)  # project the data with the projection just learned
+        # compute the trained classifier
         trained_classifier <- do.call(classifier, c(list(lol.embed(set$X.train, A.r), as.factor(set$Y.train)), classifier.opts))
+        # and compute the held-out error for particular fold
         if (is.nan(classifier.return)) {
           Yhat <- predict(trained_classifier, X.test.proj)
         } else {
@@ -212,22 +254,28 @@ lol.xval.optimal_r <- function(X, Y, alg, rs, sets=NULL, alg.opts=list(), alg.em
         return(data.frame(lhat=1 - sum(Yhat == set$Y.test)/length(Yhat), r=r, fold=i))
       }, error=function(e){return(NULL)})
     })
+    # skip nulls
     res.rs <- res.rs[!sapply(res.rs, is.null)]
     return(do.call(rbind, res.rs))
   })
 
   results <- do.call(rbind, Lhat.data)
 
+  # compute fold-wise average
   results.means <- aggregate(lhat ~ r, data = results, FUN = nan.mean)
 
+  # find the number of embedding dimensions with lowest average error
   optimal.idx <- which(results.means$lhat == min(results.means$lhat))
   best.r <- min(results.means$r[optimal.idx])  # best is the minimum of the possible choices
-  model <- do.call(alg, c(list(X=X, Y=Y), c(list(r=best.r), alg.opts)))
+  # recompute on all data with the best number of embedding dimensions
+  alg.hparams[[alg.dimname]] <- best.r
+  model <- do.call(alg, c(list(X=X, Y=Y), alg.hparams))
   if (is.nan(alg.embedding)) {
     A <- model
   } else {
     A <- model[[alg.embedding]]
   }
+  # and train the classifier for good measure
   class <- do.call(classifier, c(list(lol.embed(X, A), Y), classifier.opts))
 
   return(list(folds.data=results, foldmeans.data=results.means, optimal.lhat=results.means$lhat[optimal.idx], optimal.r=best.r,
@@ -295,7 +343,7 @@ lol.xval.split <- function(X, Y, k='loo', ...) {
   if (round(k) == k) {  # then xval is an integer
     samp.ids <- as.matrix(sample(1:n, n))  # the sample ids randomly permuted
     k.folds <- split(samp.ids, rep(1:k), drop=TRUE)  # split the sample ids into xval folds
-
+    # partition X and Y appropriately into training and testing sets
     sets <- lapply(k.folds, function(fold) {
       list(X.train=X[-fold,,drop=FALSE], Y.train=Y[-fold,drop=FALSE],
            X.test=X[fold,,drop=FALSE], Y.test=Y[fold,drop=FALSE])
