@@ -3,6 +3,9 @@
 
 [![CRAN Status Badge](http://www.r-pkg.org/badges/version/lolR)](http://cran.r-project.org/web/packages/lolR)
 [![arXiv shield](https://img.shields.io/badge/arXiv-1709.01233-red.svg?style=flat)](https://arxiv.org/abs/1709.01233)
+[![Travis-CI Build Status](https://travis-ci.org/neurodata/lol.svg?branch=master)](https://travis-ci.org/neurodata/lol)
+[![Codecov status](https://codecov.io/gh/neurodata/lol/branch/master/graph/badge.svg)(https://codecov.io/gh/neurodata/lol)
+
 
 
 ## Contents
