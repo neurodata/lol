@@ -1,7 +1,7 @@
 Package: lolR
 Type: Package
 Title: Linear Optimal Low-Rank Projection
-Version: 1.0
+Version: 2.0
 Date: 2017-01-09
 Authors@R: c(person("Eric", "Bridgeford", role = c("aut", "cre"),
 	   	    email = "ericwb95@gmail.com"),
