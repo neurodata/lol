@@ -19,7 +19,7 @@ require(plyr)
 require(slbR)
 require(scales)
 classifier.name <- "lda"
-opath <- './data/real_data/'
+opath <- './data/real_data'
 dataset.name <- "uci"
 
 # compute the cutoff for the particular trial to get an approximate elbow
@@ -398,13 +398,6 @@ grid.arrange(make_marginal_2d(subset(plot.normlol.results, !alg %in% c("MPLS", "
 
 
 ```{r}
-print("Summary")
-for (j in 1:length(algs)) {
-  print(sprintf("Mean Lhat for %s: %.3f", algs[j], mean(results.means$lhat[results.means$alg == algs[j]])))
-  print(sprintf("Mean rhat for %s: %.3f", algs[j], mean(results.means$r[results.means$alg == algs[j]])))
-  print(sprintf("n for %s: %d", algs[j], dim(aggregate(lhat ~ alg + exp, results.optimalr[results.optimalr$alg == algs[j],], FUN=mean))[1]))
-}
-
 results.optimal.means <- data.frame(alg=c(), r=c(), lhat=c())
 print("Optimal")
 for (j in 1:length(algs)) {
@@ -444,7 +437,7 @@ for (i in 1:length(algs)) {
         lhat.test <- rbind(lhat.test, data.frame(x=algs[i], y=algs[j], p=NaN))
       } else {
         j.ss <- results.optimalr[results.optimalr$alg == algs[j],]
-        cmp <- merge(i.ss, j.ss, by=c("exp", "fold"))
+        cmp <- merge(i.ss, j.ss, by=c("exp", "fold"), all=TRUE)
         rhat.test <- rbind(rhat.test, data.frame(x=algs[j], y=algs[i], p=wilcox.test(cmp$r.x, cmp$r.y,
                                                                                      alternative = "less", paired=TRUE)$p.value))
         lhat.test <- rbind(lhat.test, data.frame(x=algs[j], y=algs[i], p=wilcox.test(cmp$lhat.x, cmp$lhat.y,

@@ -16,8 +16,8 @@ require(randomForest)
 no_cores = detectCores() - 5
 classifier.name <- "lda"
 classifier.alg <- MASS::lda
-#classifier.name <- "rf"
-#classifier.alg <- randomForest::randomForest
+classifier.name <- "rf"
+classifier.alg <- randomForest::randomForest
 classifier.return = NaN
 ucipath = './data'
 

@@ -5,11 +5,11 @@ library(parallel)
 require(lolR)
 require(slbR)
 require(randomForest)
-no_cores = detectCores() - 1
+no_cores = detectCores() - 2
 classifier.name <- "lda"
 classifier.alg <- MASS::lda
-#classifier.name <- "rf"
-#classifier.alg <- randomForest::randomForest
+classifier.name <- "rf"
+classifier.alg <- randomForest::randomForest
 classifier.return = NaN
 
 
@@ -53,7 +53,7 @@ opath <- './data/real_data/'
 dir.create(opath)
 opath <- paste('./data/real_data/', classifier.name, '/', sep="")
 dir.create(opath)
-clusterExport(cl, "data"); clusterExport(cl, "rlen")
+clusterExport(cl, "rlen")
 clusterExport(cl, "experiments"); clusterExport(cl, "opath")
 clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
 clusterExport(cl, "classifier.name"); clusterExport(cl, "algs")

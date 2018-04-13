@@ -213,7 +213,7 @@ lol.xval.optimal_dimselect <- function(X, Y, rs, alg, sets=NULL, alg.dimname="r"
 
   # hyperparameters are  the number of embedding dimensions and other options requested.
   dim.embed <- list()
-  dim.embed[[alg.name]] <- max.r
+  dim.embed[[alg.dimname]] <- max.r
   alg.hparams <- c(dim.embed, alg.opts)
 
   Lhat.data <- lapply(1:length(sets), function(i) {
