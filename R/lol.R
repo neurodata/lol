@@ -43,17 +43,17 @@ lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   centroids <- t(centroids)
 
   nv <- r - (K)
-  cpca <- list(d=NULL)
+  lrlda <- list(d=NULL)
   if (nv > 0) {
-    cpca <- lol.project.cpca(X, Y, r=nv, xfm=xfm, xfm.opts=xfm.opts)
-    A <- cbind(deltas, cpca$A)
+    lrlda <- lol.project.lrlda(X, Y, r=nv, xfm=xfm, xfm.opts=xfm.opts)
+    A <- cbind(deltas, lrlda$A)
   } else {
     A <- deltas[, 1:r, drop=FALSE]
   }
 
   # orthogonalize and normalize
   A <- qr.Q(qr(A))
-  return(list(A=A, d=cpca$d, centroids=centroids, priors=priors, ylabs=ylabs,
+  return(list(A=A, d=lrlda$d, centroids=centroids, priors=priors, ylabs=ylabs,
               Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
 }
 
@@ -172,18 +172,18 @@ lol.project.plsol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
 
   A.pls <- lol.project.pls(X, Y, r=min(r, K-1))$A
 
-  nv <- r - (K - 1)
-  cpca <- list(d=NULL)
+  nv <- r - min(r, (K - 1))
+  lrlda <- list(d=NULL)
   if (nv > 0) {
-    cpca <- lol.project.cpca(X, Y, r=nv, xfm=xfm, xfm.opts=xfm.opts)
-    A <- cbind(A.pls, cpca$A)
+    lrlda <- lol.project.lrlda(X, Y, r=nv, xfm=xfm, xfm.opts=xfm.opts)
+    A <- cbind(A.pls, lrlda$A)
   } else {
     A <- A.pls[, 1:r, drop=FALSE]
   }
 
   # orthogonalize and normalize
   A <- qr.Q(qr(A))
-  return(list(A=A, d=cpca$d, centroids=centroids, priors=priors, ylabs=ylabs,
+  return(list(A=A, d=lrlda$d, centroids=centroids, priors=priors, ylabs=ylabs,
               Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
 }
 #' Partial Least Squares Optimal Low-Rank Projection K (PLSOLK)
@@ -227,20 +227,20 @@ lol.project.plsolk <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   if (r > d) {
     stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
   }
-  A.pls <- lol.project.pls(X, Y, r=min(r, K-1))$A
+  A.pls <- lol.project.pls(X, Y, r=min(r, K))$A
   centroids <- t(centroids)
 
-  nv <- r - (K)
-  cpca <- list(d=NULL)
+  nv <- r - min(r, (K))
+  lrlda <- list(d=NULL)
   if (nv > 0) {
-    cpca <- lol.project.cpca(X, Y, r=nv, xfm=xfm, xfm.opts=xfm.opts)
-    A <- cbind(A.pls, cpca$A)
+    lrlda <- lol.project.lrlda(X, Y, r=nv, xfm=xfm, xfm.opts=xfm.opts)
+    A <- cbind(A.pls, lrlda$A)
   } else {
     A <- A.pls[, 1:r, drop=FALSE]
   }
 
   # orthogonalize and normalize
   A <- qr.Q(qr(A))
-  return(list(A=A, d=cpca$d, centroids=centroids, priors=priors, ylabs=ylabs,
+  return(list(A=A, d=lrlda$d, centroids=centroids, priors=priors, ylabs=ylabs,
               Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
 }

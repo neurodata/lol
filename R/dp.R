@@ -1,4 +1,4 @@
-#' Maximal Data  Piling
+#' Data  Piling
 #'
 #' A function for implementing the Maximal Data Piling (MDP) Algorithm.
 #'
@@ -19,13 +19,13 @@
 #' X <- data$X; Y <- data$Y
 #' model <- lol.project.mdp(X=X, Y=Y)  # use mdp to project into maximal data piling
 #' @export
-lol.project.mdp <- function(X, Y, ...) {
+lol.project.dp <- function(X, Y, ...) {
   info <- lol.utils.info(X, Y)
   priors <- info$priors; centroids <- info$centroids
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
-  if (r > d) {
-    stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
+  if (K > d) {
+    stop(sprintf("The number of classes, K=%d, must be lower than the number of native dimensions, d=%d", r, d))
   }
   deltas <- lol.utils.deltas(centroids, priors)
   centroids <- t(centroids)
@@ -36,7 +36,7 @@ lol.project.mdp <- function(X, Y, ...) {
 
   Q <- diag(d) - Xcc %*% ginv(Xcc)
 
-  A <- Q %*% (deltas[, 2:dim(deltas)[2], drop=FALSE])
+  A <- qr.Q(qr(Q %*% (deltas[, 2:dim(deltas)[2], drop=FALSE])))
   return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
               Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
 }

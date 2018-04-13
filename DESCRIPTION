@@ -26,8 +26,11 @@ Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
-Suggests: knitr,
-  rmarkdown,
-  parallel,
-  randomForest,
-  latex2exp
+Suggests:
+    knitr,
+    rmarkdown,
+    parallel,
+    randomForest,
+    latex2exp,
+    testthat,
+    covr

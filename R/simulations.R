@@ -105,7 +105,7 @@ lol.sims.mean_diff <- function(n, d, rotate=FALSE, priors=NULL, K=2, md=1, subse
   }
   mus <- array(0, dim=c(d, K))
   for (i in 1:K) {
-    mus[subset] <- i*md  # scale the difference in the means accordingly
+    mus[subset] <- (i - 1)*md  # scale the difference in the means accordingly
   }
   S <- array(offdiag, dim=c(d, d))
   diag(S) <- 1  # identity variance

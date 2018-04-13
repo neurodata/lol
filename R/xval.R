@@ -239,7 +239,12 @@ lol.xval.optimal_dimselect <- function(X, Y, rs, alg, sets=NULL, alg.dimname="r"
         } else {
           # otherwise, compute A.r on the new embedding dimension every time
           alg.hparams[[alg.dimname]] <- r
-          A.r <- do.call(alg, c(list(X=set$X.train, Y=as.factor(set$Y.train)), alg.hparams))
+          mod <- do.call(alg, c(list(X=set$X.train, Y=as.factor(set$Y.train)), alg.hparams))
+          if (is.nan(alg.embedding)) {
+            A.r <- mod
+          } else {
+            A.r <- mod[[alg.embedding]]
+          }
         }
         # embed the test points with the embedding matrix computed on the training data
         X.test.proj <- lol.embed(set$X.test, A.r)  # project the data with the projection just learned

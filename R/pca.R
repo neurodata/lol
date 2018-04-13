@@ -82,9 +82,9 @@ lol.utils.svd <- function(X, xfm=FALSE, xfm.opts=list(), nu=0, nv=0, t=.05) {
   return(svdX)
 }
 
-#' Class PCA
+#' Low-Rank Linear Discriminant Analysis (LRLDA)
 #'
-#' A function that performs PCA on the class-centered data. Same as low-rank LDA.
+#' A function that performs LRLDA on the class-centered data. Same as class-conditional PCA.
 #'
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
@@ -112,9 +112,9 @@ lol.utils.svd <- function(X, xfm=FALSE, xfm.opts=list(), nu=0, nv=0, t=.05) {
 #' library(lolR)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
-#' model <- lol.project.pca(X=X, Y=Y, r=2)  # use cpca to project into 2 dimensions
+#' model <- lol.project.lrlda(X=X, Y=Y, r=2)  # use cpca to project into 2 dimensions
 #' @export
-lol.project.cpca <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
+lol.project.lrlda <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   # class data
   classdat <- lol.utils.info(X, Y)
   priors <- classdat$priors; centroids <- t(classdat$centroids)
