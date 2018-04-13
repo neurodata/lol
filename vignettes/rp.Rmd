@@ -12,7 +12,6 @@ vignette: >
 ```{r}
 require(lolR)
 require(ggplot2)
-require(latex2exp)
 require(MASS)
 n=400
 d=30
@@ -44,7 +43,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 Projecting with LR-CCA to `3` dimensions and visualizing the first `2`:
 
 ```{r, fig.width=5}
-result <- lol.project.rp(X, Y, r)
+result <- lol.project.rp(X, r)
 
 data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
 data$y <- factor(data$y)
@@ -92,7 +91,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 Projecting with LR-CCA to `3` dimensions and visualizing the first `2`:
 
 ```{r, fig.width=5}
-result <- lol.project.rp(X, Y, r)
+result <- lol.project.rp(X, r)
 
 data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
 data$y <- factor(data$y)
@@ -140,7 +139,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 Projecting with RP to `3` dimensions and visualizing the first `2`:
 
 ```{r, fig.width=5}
-result <- lol.project.rp(X, Y, r)
+result <- lol.project.rp(X, r)
 
 data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
 data$y <- factor(data$y)

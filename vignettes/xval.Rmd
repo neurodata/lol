@@ -14,7 +14,6 @@ vignette: >
 ```{r}
 require(lolR)
 require(ggplot2)
-require(latex2exp)
 n = 400
 d = 30
 r = 3
