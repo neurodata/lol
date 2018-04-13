@@ -18,7 +18,6 @@
 - [Results](#results)
 - [License](./LICENSE)
 - [Issues](https://github.com/ebridge2/lol/issues)
-- [CRAN Package](https://cran.r-project.org/web/packages/lolR/index.html)
 
 # Overview
 
