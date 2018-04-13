@@ -25,7 +25,7 @@ lol.xval.eval(X, Y, r, alg, sets = NULL, alg.dimname = "r",
 
 \item{alg.dimname}{the name of the parameter accepted by \code{alg} for indicating the embedding dimensionality desired. Defaults to \code{r}.}
 
-\item{alg.opts}{any extraneous options to be passed to the classifier function, as a list. Defaults to an empty list. For example, this could be the embedding dimensionality to investigate.}
+\item{alg.opts}{the hyper-parameter options you want to pass into your algorithm, as a keyworded list. Defaults to \code{list()}, or no hyper-parameters.}
 
 \item{alg.embedding}{the attribute returned by \code{alg} containing the embedding matrix. Defaults to assuming that \code{alg} returns an embgedding matrix as \code{"A"}.
 \itemize{
@@ -50,10 +50,6 @@ lol.xval.eval(X, Y, r, alg, sets = NULL, alg.dimname = "r",
 }}
 
 \item{...}{trailing args.}
-
-\item{alg.opts}{the hyper-parameter options you want to pass into your algorithm, as a keyworded list. Defaults to \code{list()}, or no hyper-parameters.}
-
-\item{alg.dim}{the keyworded-argument taken by \code{alg} indicating the number of embedding dimensions required. Defaults to assuming that \code{alg} accepts the number of embedding dimensions as \code{r}.}
 }
 \value{
 Returns a list containing:
@@ -86,7 +82,7 @@ r=5  # embed into r=5 dimensions
 # run cross-validation with the nearestCentroid method and
 # leave-one-out cross-validation, which returns only
 # prediction labels so we specify classifier.return as NaN
-xval.fit <- lol.xval.eval(X, Y, lol.project.lol, alg.opts=list(r=r),
+xval.fit <- lol.xval.eval(X, Y, r, lol.project.lol,
                           classifier=lol.classify.nearestCentroid,
                           classifier.return=NaN, k='loo')
 

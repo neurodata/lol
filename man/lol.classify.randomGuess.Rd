@@ -22,7 +22,7 @@ A list of class \code{randomGuess}, with the following attributes:
 A function that trains a classifier based on random guessing.
 }
 \examples{
-library(lol)
+library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 model <- lol.classify.randomGuess(X, Y)

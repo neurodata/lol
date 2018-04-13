@@ -16,7 +16,7 @@
 #' @author Eric Bridgeford
 #'
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' model <- lol.classify.nearestCentroid(X, Y)
@@ -50,7 +50,7 @@ lol.classify.nearestCentroid <- function(X, Y, ...) {
 #' @author Eric Bridgeford
 #'
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' model <- lol.classify.nearestCentroid(X, Y)

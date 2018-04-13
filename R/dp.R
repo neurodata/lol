@@ -22,7 +22,7 @@
 #' library(lolR)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
-#' model <- lol.project.mdp(X=X, Y=Y)  # use mdp to project into maximal data piling
+#' model <- lol.project.dp(X=X, Y=Y)  # use mdp to project into maximal data piling
 #' @export
 lol.project.dp <- function(X, Y, ...) {
   info <- lol.utils.info(X, Y)
@@ -30,7 +30,7 @@ lol.project.dp <- function(X, Y, ...) {
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
   if (K > d) {
-    stop(sprintf("The number of classes, K=%d, must be lower than the number of native dimensions, d=%d", r, d))
+    stop(sprintf("The number of classes, K=%d, must be lower than the number of native dimensions, d=%d", K, d))
   }
   deltas <- lol.utils.deltas(centroids, priors)
   centroids <- t(centroids)

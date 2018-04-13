@@ -35,7 +35,7 @@ For more details see the help vignette:
 library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
-model <- lol.project.mdp(X=X, Y=Y)  # use mdp to project into maximal data piling
+model <- lol.project.dp(X=X, Y=Y)  # use mdp to project into maximal data piling
 }
 \author{
 Minh Tang and Eric Bridgeford

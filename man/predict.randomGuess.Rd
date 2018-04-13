@@ -24,7 +24,7 @@ Yhat \code{[n]} the predicted class of each of the \code{n} data point in \code{
 A function that predicts the class of points randomly with a sample from the pmf of trained class labels.
 }
 \examples{
-library(lol)
+library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 model <- lol.classify.randomGuess(X, Y)

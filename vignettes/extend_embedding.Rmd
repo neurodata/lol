@@ -32,7 +32,7 @@ For example, the below algorithm for `lol.project.lol`:
 #' \item{cr}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
 #' @author Eric Bridgeford
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' model <- lol.project.lol(X=X, Y=Y, r=5)  # use lol to project into 5 dimensions

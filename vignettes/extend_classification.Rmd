@@ -31,7 +31,7 @@ For example, consider the below classification algorithm built into the platform
 #' @author Eric Bridgeford
 #'
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' model <- lol.classify.nearestCentroid(X, Y)
@@ -104,7 +104,7 @@ To use the `lol.xval.eval`, your classification technique must be compatible wit
 #' @author Eric Bridgeford
 #'
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' model <- lol.classify.nearestCentroid(X, Y)

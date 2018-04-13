@@ -33,7 +33,7 @@ A list of class \code{embedding} containing the following:
 A function for recovering the Bayes Optimal Projection, which optimizes Bayes classification.
 }
 \examples{
-library(lol)
+library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 # obtain bayes-optimal projection of the data

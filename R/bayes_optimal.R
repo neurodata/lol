@@ -3,6 +3,7 @@
 #' A function for recovering the Bayes Optimal Projection, which optimizes Bayes classification.
 #'
 #' @import irlba
+#' @importFrom MASS ginv
 #' @param X \code{[n, p]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param mus \code{[d, K]} the \code{K} class means in \code{d} dimensions.
@@ -19,7 +20,7 @@
 #' \item{\code{cr}}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
 #' @author Eric Bridgeford
 #' @examples
-#' library(lol)
+#' library(lolR)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' # obtain bayes-optimal projection of the data
@@ -35,7 +36,7 @@ lol.project.bayes_optimal <- function(X, Y, mus, Sigmas, priors, ...) {
   centroids <- t(centroids)
   E <- lol.mvr(Sigmas, mus, priors)
 
-  A <- MASS::ginv(E) %*% deltas
+  A <- ginv(E) %*% deltas
   return(structure(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
                         Xr=lol.embed(X, A), cr=lol.embed(centroids, A)), class="embedding"))
 }
