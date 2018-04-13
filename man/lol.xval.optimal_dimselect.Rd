@@ -70,6 +70,18 @@ Returns a list containing:
 \description{
 A function for performing leave-one-out cross-validation for a given embedding model.
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("xval", package = "lolR")}
+
+For  extending cross-validation techniques shown here to arbitrary embedding algorithms, see the vignette:
+\code{vignette("extend_embedding", package = "lolR")}
+
+For  extending cross-validation techniques shown here to arbitrary classification algorithms, see the vignette:
+\code{vignette("extend_classification", package = "lolR")}
+}
+
 \examples{
 # train model and analyze with loo validation using lda classifier
 library(lolR)

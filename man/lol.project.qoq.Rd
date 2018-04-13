@@ -39,6 +39,12 @@ A list containing the following:
 \description{
 A function for implementing the Quadratic Optimal QDA Projection (QOQ) Algorithm, an intuitive adaptation of the Linear Optimal Low-Rank Projection (LOL).
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("qoq", package = "lolR")}
+}
+
 \examples{
 library(lolR)
 data <- lol.sims.qdtoep(n=200, d=30)  # 200 examples of 30 dimensions

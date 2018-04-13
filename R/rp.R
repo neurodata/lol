@@ -9,6 +9,11 @@
 #' @return A list containing the following:
 #' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("rp", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)

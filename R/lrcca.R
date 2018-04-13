@@ -15,6 +15,11 @@
 #' \item{\code{priors}}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
 #' \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
 #' \item{\code{cr}}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
+
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("lrcca", package = "lolR")}
+#'
 #' @author Eric Bridgeford and Minh Tang
 #' @examples
 #' library(lolR)

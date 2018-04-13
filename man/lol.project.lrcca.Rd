@@ -28,6 +28,12 @@ A list containing the following:
 \description{
 A function for implementing the Low-rank Canonical Correlation Analysis (LR-CCA) Algorithm.
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("lrcca", package = "lolR")}
+}
+
 \examples{
 library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions

@@ -27,6 +27,12 @@ A list containing the following:
 \description{
 A function for implementing the Mean-Augmented Partial Least-Squares (MPLS) Algorithm, a composition of a difference of the means and PLS.
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("mpls", package = "lolR")}
+}
+
 \examples{
 library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions

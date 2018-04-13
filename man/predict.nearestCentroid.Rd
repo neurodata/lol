@@ -24,6 +24,12 @@ Yhat \code{[n]} the predicted class of each of the \code{n} data point in \code{
 \description{
 A function that predicts the class of points based on the nearest centroid
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("centroid", package = "lolR")}
+}
+
 \examples{
 library(lol)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions

@@ -1,17 +1,16 @@
 ---
-title: "Writing Your Own Embedding Algorithms"
+title: "Extending lolR for Arbitrary Embedding Algorithms"
 author: "Eric Bridgeford"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{extend_embedding}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 # Writing New Embedding Algorithms
 
-The `lol` package makes it trivial for users to write their own embedding algorithms and leverage our functions.
 
 For example, the below algorithm for `lol.project.lol`:
 

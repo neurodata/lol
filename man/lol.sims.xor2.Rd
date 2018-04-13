@@ -28,6 +28,12 @@ A list of class \code{simulation} with the following:
 \description{
 A function to simulate from the 2-class xor problem.
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("sims", package = "lolR")}
+}
+
 \examples{
 library(lolR)
 data <- lol.sims.xor2(n=200, d=30)  # 200 examples of 30 dimensions

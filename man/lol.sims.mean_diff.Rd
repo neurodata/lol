@@ -39,6 +39,12 @@ A list of class \code{simulation} with the following:
 \description{
 A function for simulating data in which a difference in the means is present only in a subset of dimensions, and equal covariance.
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("sims", package = "lolR")}
+}
+
 \examples{
 library(lolR)
 data <- lol.sims.mean_diff(n=200, d=30)  # 200 examples of 30 dimensions

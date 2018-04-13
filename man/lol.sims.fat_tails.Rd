@@ -37,6 +37,12 @@ A list of class \code{simulation} with the following:
 \description{
 A function for simulating from 2 classes with differing means each with 2 sub-clusters, where one sub-cluster has a narrow tail and the other sub-cluster has a fat tail.
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("sims", package = "lolR")}
+}
+
 \examples{
 library(lolR)
 data <- lol.sims.fat_tails(n=200, d=30)  # 200 examples of 30 dimensions

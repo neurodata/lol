@@ -22,6 +22,12 @@ A list of class \code{nearestCentroid}, with the following attributes:
 \description{
 A function that trains a classifier based on the nearest centroid.
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("centroid", package = "lolR")}
+}
+
 \examples{
 library(lol)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions

@@ -27,6 +27,12 @@ A list containing the following:
 \description{
 A function for implementing the Partial Least-Squares (PLS) Algorithm.
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("pls", package = "lolR")}
+}
+
 \examples{
 library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions

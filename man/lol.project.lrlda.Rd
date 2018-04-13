@@ -39,6 +39,12 @@ A list containing the following:
 \description{
 A function that performs LRLDA on the class-centered data. Same as class-conditional PCA.
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("lrlda", package = "lolR")}
+}
+
 \examples{
 library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions

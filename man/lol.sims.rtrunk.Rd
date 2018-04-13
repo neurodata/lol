@@ -32,6 +32,12 @@ A list of class \code{simulation} with the following:
 \description{
 A simulation for the random trunk experiment.
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("sims", package = "lolR")}
+}
+
 \examples{
 library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions

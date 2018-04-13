@@ -19,6 +19,11 @@
 #' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
 #' \item{\code{d}}{the eigen values associated with the eigendecomposition.}
 #' \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("pca", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)
@@ -107,6 +112,11 @@ lol.utils.svd <- function(X, xfm=FALSE, xfm.opts=list(), nu=0, nv=0, t=.05) {
 #' \item{\code{priors}}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
 #' \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
 #' \item{\code{cr}}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("lrlda", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)

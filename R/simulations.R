@@ -19,6 +19,11 @@
 #' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 #' \item{simtype}{The name of the simulation.}
 #' \item{params}{Any extraneous parameters the simulation was created with.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("sims", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)
@@ -86,6 +91,11 @@ lol.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, t=0.8, 
 #' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 #' \item{simtype}{The name of the simulation.}
 #' \item{params}{Any extraneous parameters the simulation was created with.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("sims", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)
@@ -145,6 +155,11 @@ lol.sims.mean_diff <- function(n, d, rotate=FALSE, priors=NULL, K=2, md=1, subse
 #' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 #' \item{simtype}{The name of the simulation.}
 #' \item{params}{Any extraneous parameters the simulation was created with.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("sims", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)
@@ -209,6 +224,11 @@ lol.sims.toep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0.5
 #' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 #' \item{simtype}{The name of the simulation.}
 #' \item{params}{Any extraneous parameters the simulation was created with.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("sims", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)
@@ -276,6 +296,11 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
 #' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 #' \item{simtype}{The name of the simulation.}
 #' \item{params}{Any extraneous parameters the simulation was created with.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("sims", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)
@@ -332,6 +357,11 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2) {
 #' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 #' \item{simtype}{The name of the simulation.}
 #' \item{params}{Any extraneous parameters the simulation was created with.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("sims", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)
@@ -383,6 +413,11 @@ lol.sims.cigar <- function(n, d, rotate=FALSE, priors=NULL, a=0.15, b=4) {
 #' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 #' \item{simtype}{The name of the simulation.}
 #' \item{params}{Any extraneous parameters the simulation was created with.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("sims", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)

@@ -40,6 +40,17 @@
 #' \item{\code{model}}{The model returned by \code{alg} computed on all of the data.}
 #' \item{\code{classifier}}{The classifier trained on all of the embedded data.}
 #' \item{\code{lhats}}{the cross-validated error for each of the \code{k}-folds.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("xval", package = "lolR")}
+#'
+#' For  extending cross-validation techniques shown here to arbitrary embedding algorithms, see the vignette:
+#' \code{vignette("extend_embedding", package = "lolR")}
+#'
+#' For  extending cross-validation techniques shown here to arbitrary classification algorithms, see the vignette:
+#' \code{vignette("extend_classification", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' # train model and analyze with loo validation using lda classifier
@@ -169,6 +180,17 @@ nan.mean <- function(x) mean(x, na.rm=TRUE)
 #' \item{\code{optimal.r}}{the optimal number of embedding dimensions from \code{rs}}.
 #' \item{\code{model}}{the model trained on all of the data at the optimal number of embedding dimensions.}
 #' \item{\code{classifier}}{the classifier trained on all of the data at the optimal number of embedding dimensions.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("xval", package = "lolR")}
+#'
+#' For  extending cross-validation techniques shown here to arbitrary embedding algorithms, see the vignette:
+#' \code{vignette("extend_embedding", package = "lolR")}
+#'
+#' For  extending cross-validation techniques shown here to arbitrary classification algorithms, see the vignette:
+#' \code{vignette("extend_classification", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' # train model and analyze with loo validation using lda classifier

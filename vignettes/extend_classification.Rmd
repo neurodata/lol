@@ -1,17 +1,17 @@
 ---
-title: "Vignette Title"
-author: "Vignette Author"
+title: "Extending lolR with Arbitrary Classification Algorithms"
+author: "Eric Bridgeford"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{extend_classification}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 # Writing New Classification Algorithms
 
-The `lol` package makes it easy for users to write their own classification algorithms for cross-validation.
+The `lolR` package makes it easy for users to write their own classification algorithms for cross-validation.
 
 # Writing a Classification Method
 

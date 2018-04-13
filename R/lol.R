@@ -23,6 +23,11 @@
 #' \item{\code{priors}}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
 #' \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
 #' \item{\code{cr}}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("lol", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)
@@ -82,6 +87,11 @@ lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
 #' \item{\code{priors}}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
 #' \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
 #' \item{\code{cr}}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("qoq", package = "lolR")}
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)
@@ -211,6 +221,8 @@ lol.project.plsol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
 #' \item{\code{priors}}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
 #' \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
 #' \item{\code{cr}}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
+#'
+#'
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)

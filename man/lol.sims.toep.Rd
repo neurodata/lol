@@ -35,6 +35,12 @@ A list of class \code{simulation} with the following:
 \description{
 A function for simulating data in which the covariance is a non-symmetric toeplitz matrix.
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("sims", package = "lolR")}
+}
+
 \examples{
 library(lolR)
 data <- lol.sims.toep(n=200, d=30)  # 200 examples of 30 dimensions

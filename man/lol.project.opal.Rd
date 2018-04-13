@@ -27,6 +27,12 @@ A list containing the following:
 \description{
 A function for implementing the Optimal Partial Least-Squares (OPAL) Algorithm, a composition of a difference of the means and PLS on the resuals of the data and the class-conditional means.
 }
+\section{Details}{
+
+For more details see the help vignette:
+\code{vignette("opal", package = "lolR")}
+}
+
 \examples{
 library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
