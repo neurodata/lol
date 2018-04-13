@@ -170,7 +170,7 @@ lol.project.qoq <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
 #' @export
 lol.project.plsol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   # class data
-  info <- lolR:::lol.utils.info(X, Y)
+  info <- lol.utils.info(X, Y)
   priors <- info$priors; centroids <- info$centroids
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
