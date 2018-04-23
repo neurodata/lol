@@ -378,5 +378,5 @@ lol.xval.split <- function(X, Y, k='loo', ...) {
   } else {
     stop("You have not entered a valid parameter for xval.")
   }
-  return(structure(sets), class="XV")
+  return(structure(sets, class="XV"))
 }
