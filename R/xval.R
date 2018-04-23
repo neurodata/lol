@@ -333,7 +333,7 @@ lol.xval.check_xv_set <- function(sets, n, d) {
 }
 #' Cross-Validation Data Splitter
 #'
-#' \code{sg.bern.xval_split_data} A function to split a dataset into
+#' A function to split a dataset into
 #' training and testing sets for cross validation.
 #'
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
@@ -344,7 +344,7 @@ lol.xval.check_xv_set <- function(sets, n, d) {
 #' \item \code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.
 #' }
 #' @param ... optional args.
-#' @return sets the cross-validation sets as a list. Each element of the list contains the following items:
+#' @return sets the cross-validation sets as an object of class \code{"XV"}. Each element of the list contains the following items:
 #' \item{\code{X.train}}{the training data as a \code{[n - k, d]} array.}
 #' \item{\code{Y.train}}{the training labels as a \code{[n - k]} vector.}
 #' \item{\code{X.test}}{the testing data as a \code{[k, d]} array.}
@@ -378,5 +378,5 @@ lol.xval.split <- function(X, Y, k='loo', ...) {
   } else {
     stop("You have not entered a valid parameter for xval.")
   }
-  return(sets)
+  return(structure(sets), class="XV")
 }
