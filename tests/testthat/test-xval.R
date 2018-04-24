@@ -53,9 +53,31 @@ test_that('Optimal Embedding Dimensions', {
 test_that('Kfold Setup', {
   sets <- lol.xval.split(dat$X, dat$Y, k='loo')
   expect_true(length(sets) == n)
+  sapply(sets, function(set) {
+    expect_true(length(set$Y.train) == n - 1)
+    expect_true(all(dim(set$X.train) == c(n - 1, d)))
+    expect_true(length(set$Y.test) == 1)
+    expect_true(all(dim(set$X.test) == c(1, d)))
+  })
 
   sets <- lol.xval.split(dat$X, dat$Y, k=20)
   expect_true(length(sets) == 20)
+  sapply(sets, function(set) {
+    expect_true(length(set$Y.train) == n - n/20)
+    expect_true(all(dim(set$X.train) == c(n - n/20, d)))
+    expect_true(length(set$Y.test) == n/20)
+    expect_true(all(dim(set$X.test) == c(n/20, d)))
+  })
+
+
+  sets <- lol.xval.split(dat$X, dat$Y, k=20, reverse=TRUE)
+  expect_true(length(sets) == 20)
+  sapply(sets, function(set) {
+    expect_true(length(set$Y.train) == n/20)
+    expect_true(all(dim(set$X.train) == c(n/20, d)))
+    expect_true(length(set$Y.test) == n - n/20)
+    expect_true(all(dim(set$X.test) == c(n - n/20, d)))
+  })
 
   expect_error(lol.xval.split(dat$X, dat$Y, k=NULL))
 })

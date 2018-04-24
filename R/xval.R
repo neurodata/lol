@@ -340,15 +340,20 @@ lol.xval.check_xv_set <- function(sets, n, d) {
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
 #' @param k the cross-validated method to perform. Defaults to \code{'loo'}.
 #' \itemize{
-#' \item \code{'loo'}  Leave-one-out cross validation
-#' \item \code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.
+#' \item{if \code{k == round(k)}, performed k-fold cross-validation.}
+#' \item{if \code{k == 'loo'}, performs leave-one-out cross-validation.}
+#' }
+#' @param reverse whether to flip the training and testing partitions. Defaults to \code{FALSE}.
+#' \itemize{
+#' \item{if \code{isTRUE(reverse)}, flips the training and testing partitions, such that cross-validation will be performed with 1 training fold and k-1 testing folds.}
+#' \item{if \code{!isTRUE(reverse)}, standard cross-validation, with k-1 training folds and 1 testing fold.}
 #' }
 #' @param ... optional args.
 #' @return sets the cross-validation sets as an object of class \code{"XV"}. Each element of the list contains the following items:
-#' \item{\code{X.train}}{the training data as a \code{[n - k, d]} array.}
-#' \item{\code{Y.train}}{the training labels as a \code{[n - k]} vector.}
-#' \item{\code{X.test}}{the testing data as a \code{[k, d]} array.}
-#' \item{\code{Y.test}}{the testing labels as a \code{[k]} vector.}
+#' \item{\code{X.train}}{the training data as a \code{[n - n/k, d]} array.}
+#' \item{\code{Y.train}}{the training labels as a \code{[n - n/k]} vector.}
+#' \item{\code{X.test}}{the testing data as a \code{[n/k, d]} array.}
+#' \item{\code{Y.test}}{the testing labels as a \code{[n/k]} vector.}
 #' @author Eric Bridgeford
 #' @examples
 #' # prepare data for 10-fold validation
@@ -361,7 +366,7 @@ lol.xval.check_xv_set <- function(sets, n, d) {
 #' sets.xval.loo <- lol.xval.split(X, Y, k='loo')
 #'
 #' @export
-lol.xval.split <- function(X, Y, k='loo', ...) {
+lol.xval.split <- function(X, Y, k='loo', reverse=FALSE, ...) {
   Y <- factor(Y)
   n <- length(Y)
   if (k == 'loo') {
@@ -372,8 +377,13 @@ lol.xval.split <- function(X, Y, k='loo', ...) {
     k.folds <- split(samp.ids, rep(1:k), drop=TRUE)  # split the sample ids into xval folds
     # partition X and Y appropriately into training and testing sets
     sets <- lapply(k.folds, function(fold) {
-      list(X.train=X[-fold,,drop=FALSE], Y.train=Y[-fold,drop=FALSE],
-           X.test=X[fold,,drop=FALSE], Y.test=Y[fold,drop=FALSE])
+      if (reverse) {
+        train <- fold; test <- -fold
+      } else {
+        train <- -fold; test <- fold
+      }
+      list(X.train=X[train,,drop=FALSE], Y.train=Y[train,drop=FALSE],
+           X.test=X[test,,drop=FALSE], Y.test=Y[test,drop=FALSE])
     })
   } else {
     stop("You have not entered a valid parameter for xval.")
