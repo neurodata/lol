@@ -87,7 +87,7 @@ lol.xval.eval <- function(X, Y, r, alg, sets=NULL, alg.dimname="r", alg.opts=lis
   if (is.null(sets)) {
     sets <- lol.xval.split(X, Y, k=k)
   } else {
-    lol.xval.check_xv_set(sets, n, d)
+    lol.xval.check_xv_set(sets, n)
   }
 
   # hyperparameters are  the number of embedding dimensions and other options requested.
@@ -97,23 +97,23 @@ lol.xval.eval <- function(X, Y, r, alg, sets=NULL, alg.dimname="r", alg.opts=lis
 
   # compute fold-wise cross-validated error
   Lhat.fold <- sapply(sets, function(set) {
-    mod <- do.call(alg, c(list(X=set$X.train, Y=as.factor(set$Y.train)), alg.hparams)) # learn the projection with the algorithm specified
+    mod <- do.call(alg, c(list(X=X[set$train,,drop=FALSE], Y=as.factor(Y[set$train,drop=FALSE])), alg.hparams)) # learn the projection with the algorithm specified
     if (is.nan(alg.embedding)) {
       A <- mod
     } else {
       A <- mod[[alg.embedding]]
     }
     # embed the testing points
-    X.test.proj <- lol.embed(set$X.test, A)  # project the data with the projection just learned
+    X.test.proj <- lol.embed(X[set$test,,drop=FALSE], A)  # project the data with the projection just learned
     # produce the desired classifier with the training data
-    trained_classifier <- do.call(classifier, c(list(lol.embed(set$X.train, A), as.factor(set$Y.train)), classifier.opts))
+    trained_classifier <- do.call(classifier, c(list(lol.embed(X[set$train,,drop=FALSE], A), as.factor(Y[set$train,drop=FALSE])), classifier.opts))
     # compute cross-validated error of the held-out data
     if (is.nan(classifier.return)) {
       Yhat <- predict(trained_classifier, X.test.proj)
     } else {
       Yhat <- predict(trained_classifier, X.test.proj)[[classifier.return]]
     }
-    return(1 - sum(Yhat == set$Y.test)/length(Yhat))
+    return(1 - sum(Yhat == Y[set$test,drop=FALSE])/length(Yhat))
   })
 
   # compute the embedding with all of the data
@@ -228,7 +228,7 @@ lol.xval.optimal_dimselect <- function(X, Y, rs, alg, sets=NULL, alg.dimname="r"
   if (is.null(sets)) {
     sets <- lol.xval.split(X, Y, k=k)
   } else {
-    lol.xval.check_xv_set(sets, n, d)
+    lol.xval.check_xv_set(sets, n)
   }
   # compute  the top r embedding dimensions
   max.r <- max(rs)
@@ -244,7 +244,7 @@ lol.xval.optimal_dimselect <- function(X, Y, rs, alg, sets=NULL, alg.dimname="r"
     # just compute on the maximum number of embedding dimensions
     if (alg.structured) {
       # learn the projection with the algorithm specified
-      mod <- do.call(alg, c(list(X=set$X.train, Y=as.factor(set$Y.train)), alg.hparams))
+      mod <- do.call(alg, c(list(X=X[set$train,,drop=FALSE], Y=as.factor(Y[set$train,drop=FALSE])), alg.hparams))
       # assign the embedding  dimension
       if (is.nan(alg.embedding)) {
         A <- mod
@@ -261,7 +261,7 @@ lol.xval.optimal_dimselect <- function(X, Y, rs, alg, sets=NULL, alg.dimname="r"
         } else {
           # otherwise, compute A.r on the new embedding dimension every time
           alg.hparams[[alg.dimname]] <- r
-          mod <- do.call(alg, c(list(X=set$X.train, Y=as.factor(set$Y.train)), alg.hparams))
+          mod <- do.call(alg, c(list(X=X[set$train,,drop=FALSE], Y=as.factor(Y[set$train,drop=FALSE])), alg.hparams))
           if (is.nan(alg.embedding)) {
             A.r <- mod
           } else {
@@ -269,16 +269,16 @@ lol.xval.optimal_dimselect <- function(X, Y, rs, alg, sets=NULL, alg.dimname="r"
           }
         }
         # embed the test points with the embedding matrix computed on the training data
-        X.test.proj <- lol.embed(set$X.test, A.r)  # project the data with the projection just learned
+        X.test.proj <- lol.embed(X[set$test,,drop=FALSE], A.r)  # project the data with the projection just learned
         # compute the trained classifier
-        trained_classifier <- do.call(classifier, c(list(lol.embed(set$X.train, A.r), as.factor(set$Y.train)), classifier.opts))
+        trained_classifier <- do.call(classifier, c(list(lol.embed(X[set$train,,drop=FALSE], A.r), as.factor(Y[set$train,drop=FALSE])), classifier.opts))
         # and compute the held-out error for particular fold
         if (is.nan(classifier.return)) {
           Yhat <- predict(trained_classifier, X.test.proj)
         } else {
           Yhat <- predict(trained_classifier, X.test.proj)[[classifier.return]]
         }
-        return(data.frame(lhat=1 - sum(Yhat == set$Y.test)/length(Yhat), r=r, fold=i))
+        return(data.frame(lhat=1 - sum(Yhat == Y[set$test,drop=FALSE])/length(Yhat), r=r, fold=i))
       }, error=function(e){return(NULL)})
     })
     # skip nulls
@@ -309,28 +309,15 @@ lol.xval.optimal_dimselect <- function(X, Y, rs, alg, sets=NULL, alg.dimname="r"
               model=model, classifier=class))
 }
 
-lol.xval.check_xv_set <- function(sets, n, d) {
+lol.xval.check_xv_set <- function(sets, n) {
   lapply(sets, function(set) {
-    xtr.nk <- dim(set$X.train)[1]
-    xte.k <- dim(set$X.test)[1]
-    xtr.d <- dim(set$X.train)[2]
-    xte.d <- dim(set$X.test)[2]
-    ytr.nk <- length(set$Y.train)
-    yte.k <- length(set$Y.test)
-    if ((ytr.nk + yte.k != n)) {
-      stop("You have a cross-validation set with ytrain.n + ytest.n != n.")
-    }
-    if ((xtr.nk + xte.k != n)) {
-      stop("You have a cross-validation set with xtrain.n + xtest.n != n.")
-    }
-    if ((xtr.d != d)) {
-      stop("You have a cross-validation set where xtrain.d != d.")
-    }
-    if ((xte.d != d)) {
-      stop("You have a cross-validation set where xtest.d != d.")
+    n.setmax <- max(c(set$train), c(set$test))
+    if (n.setmax > n) {
+      stop("You have a cross-validation set with a requested sample > total number of samples.")
     }
   })
 }
+
 #' Cross-Validation Data Splitter
 #'
 #' A function to split a dataset into
@@ -349,11 +336,9 @@ lol.xval.check_xv_set <- function(sets, n, d) {
 #' \item{if \code{!isTRUE(reverse)}, standard cross-validation, with k-1 training folds and 1 testing fold.}
 #' }
 #' @param ... optional args.
-#' @return sets the cross-validation sets as an object of class \code{"XV"}. Each element of the list contains the following items:
-#' \item{\code{X.train}}{the training data as a \code{[n - n/k, d]} array.}
-#' \item{\code{Y.train}}{the training labels as a \code{[n - n/k]} vector.}
-#' \item{\code{X.test}}{the testing data as a \code{[n/k, d]} array.}
-#' \item{\code{Y.test}}{the testing labels as a \code{[n/k]} vector.}
+#' @return sets the cross-validation sets as an object of class \code{"XV"} containing the following:
+#' \item{\code{train}}{is \code{[n - n/k]} vector if \code{isTRUE(reverse)}, and a \code{[n/k]} vector otherwise.}
+#' \item{\code{test}}{is \code{[n/k]} vector if \code{isTRUE(reverse)}, and a \code{[n - n/k]} vector otherwise.}
 #' @author Eric Bridgeford
 #' @examples
 #' # prepare data for 10-fold validation
@@ -369,6 +354,10 @@ lol.xval.check_xv_set <- function(sets, n, d) {
 lol.xval.split <- function(X, Y, k='loo', reverse=FALSE, ...) {
   Y <- factor(Y)
   n <- length(Y)
+  n.x <- dim(X)[1]
+  if (n != n.x) {
+    stop("Your number of X samples and Y responses is not the same.")
+  }
   if (k == 'loo') {
     k <- n  # loo is just xval with k=n
   }
@@ -378,15 +367,14 @@ lol.xval.split <- function(X, Y, k='loo', reverse=FALSE, ...) {
     # partition X and Y appropriately into training and testing sets
     sets <- lapply(k.folds, function(fold) {
       if (reverse) {
-        train <- fold; test <- -fold
+        train <- samp.ids[fold]; test <- samp.ids[-fold]
       } else {
-        train <- -fold; test <- fold
+        train <- samp.ids[-fold]; test <- samp.ids[fold]
       }
-      list(X.train=X[train,,drop=FALSE], Y.train=Y[train,drop=FALSE],
-           X.test=X[test,,drop=FALSE], Y.test=Y[test,drop=FALSE])
+      list(train=train, test=test)
     })
   } else {
     stop("You have not entered a valid parameter for xval.")
   }
-  return(sets)
+  return(structure(sets, class="XV"))
 }

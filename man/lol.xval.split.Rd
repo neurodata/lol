@@ -26,11 +26,9 @@ lol.xval.split(X, Y, k = "loo", reverse = FALSE, ...)
 \item{...}{optional args.}
 }
 \value{
-sets the cross-validation sets as an object of class \code{"XV"}. Each element of the list contains the following items:
-\item{\code{X.train}}{the training data as a \code{[n - n/k, d]} array.}
-\item{\code{Y.train}}{the training labels as a \code{[n - n/k]} vector.}
-\item{\code{X.test}}{the testing data as a \code{[n/k, d]} array.}
-\item{\code{Y.test}}{the testing labels as a \code{[n/k]} vector.}
+sets the cross-validation sets as an object of class \code{"XV"} containing the following:
+\item{\code{train}}{is \code{[n - n/k]} vector if \code{isTRUE(reverse)}, and a \code{[n/k]} vector otherwise.}
+\item{\code{test}}{is \code{[n/k]} vector if \code{isTRUE(reverse)}, and a \code{[n - n/k]} vector otherwise.}
 }
 \description{
 A function to split a dataset into

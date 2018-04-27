@@ -9,7 +9,7 @@ dat <- lol.sims.mean_diff(n, d, md=2)
 sets <- lol.xval.split(dat$X, dat$Y, k=xv)
 alg <- lol.project.lol
 
-test_that('Failure Casees', {
+test_that('Failure Cases', {
   r <- 2
   expect_error(lol.xval.eval(dat$X, c(dat$Y, dat$Y), r, lol.project.lol, sets=sets))
   expect_error(lol.xval.optimal_dimselect(dat$X, c(dat$Y, dat$Y), c(2, 20), lol.project.lol, sets=sets))
@@ -54,29 +54,23 @@ test_that('Kfold Setup', {
   sets <- lol.xval.split(dat$X, dat$Y, k='loo')
   expect_true(length(sets) == n)
   sapply(sets, function(set) {
-    expect_true(length(set$Y.train) == n - 1)
-    expect_true(all(dim(set$X.train) == c(n - 1, d)))
-    expect_true(length(set$Y.test) == 1)
-    expect_true(all(dim(set$X.test) == c(1, d)))
+    expect_true(length(set$train) == n - 1)
+    expect_true(length(set$test) == 1)
   })
 
   sets <- lol.xval.split(dat$X, dat$Y, k=20)
   expect_true(length(sets) == 20)
   sapply(sets, function(set) {
-    expect_true(length(set$Y.train) == n - n/20)
-    expect_true(all(dim(set$X.train) == c(n - n/20, d)))
-    expect_true(length(set$Y.test) == n/20)
-    expect_true(all(dim(set$X.test) == c(n/20, d)))
+    expect_true(length(set$train) == n - n/20)
+    expect_true(length(set$test) == n/20)
   })
 
 
   sets <- lol.xval.split(dat$X, dat$Y, k=20, reverse=TRUE)
   expect_true(length(sets) == 20)
   sapply(sets, function(set) {
-    expect_true(length(set$Y.train) == n/20)
-    expect_true(all(dim(set$X.train) == c(n/20, d)))
-    expect_true(length(set$Y.test) == n - n/20)
-    expect_true(all(dim(set$X.test) == c(n - n/20, d)))
+    expect_true(length(set$train) == n/20)
+    expect_true(length(set$test) == n - n/20)
   })
 
   expect_error(lol.xval.split(dat$X, dat$Y, k=NULL))
