@@ -6,7 +6,7 @@ require(lolR)
 require(slb)
 require(randomForest)
 
-no_cores = detectCores() - 2
+no_cores = detectCores() - 5
 classifier.name <- "lda"
 classifier.alg <- MASS::lda
 classifier.return = 'class'
@@ -32,6 +32,10 @@ data <- c(data.pmlb, data.uci)
 
 # Setup Algorithms
 #=========================#
+
+classifier.algs <- c(lol.classify.randomGuess, MASS::lda, randomForest::randomForest)
+names(classifier.algs) <- c("RandomGuess", "LDA", "RF")
+
 opath <- './data/'
 dir.create(opath)
 opath <- './data/real_data/'
@@ -45,16 +49,16 @@ clusterExport(cl, "opath")
 clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
 clusterExport(cl, "classifier.name"); clusterExport(cl, "algs")
 clusterExport(cl, "classifier.algs")
-results <- parLapply(cl, names(data), function(taskname) {
+results <- parLapply(cl, data, function(dat) {
   require(lolR)
-  dat <- data[[taskname]]
+  taskname <- dat$taskname
   log.seq <- function(from=0, to=30, length=rlen) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }
 
   X <- as.matrix(dat$X); Y <- as.factor(dat$Y)
   n <- dim(X)[1]; d <- dim(X)[2]
-  if (d > 100) {
+  if (d > 50) {
     maxr <- min(d, 100)
     rs <- unique(log.seq(from=1, to=maxr, length=rlen))
     k = ceiling(n/d)
