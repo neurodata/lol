@@ -50,7 +50,7 @@ test_that("QOQ full-rank r == d", {
 
 test_that("QOQ full-rank r == K+1", {
   r <- K+1
-  run_data_test(data, alg=alg, r)
+  run_data_test(data, alg=alg, r, cutoff=NULL)
 })
 
 test_that("QOQ full-rank r == K", {

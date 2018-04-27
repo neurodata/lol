@@ -124,7 +124,7 @@ lol.project.qoq <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
     }
     # take the nv from the A computed for each class using the
     # nv with the top eigenvalues from Aclass
-    A <- cbind(deltas, Aclass[, sort(vclass, index.return=TRUE)$ix[1:nv]])
+    A <- cbind(deltas, Aclass[, sort(vclass, index.return=TRUE, decreasing=TRUE)$ix[1:nv]])
     vclass.res$d <- sort(vclass)[1:nv]
   } else {
     A <- deltas[, 1:r, drop=FALSE]
