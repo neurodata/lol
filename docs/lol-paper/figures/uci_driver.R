@@ -13,22 +13,23 @@ library(parallel)
 require(lolR)
 require(slbR)
 require(randomForest)
-no_cores = detectCores() - 5
+no_cores = detectCores() - 2
 classifier.name <- "lda"
 classifier.alg <- MASS::lda
-classifier.name <- "rf"
-classifier.alg <- randomForest::randomForest
-classifier.return = NaN
+classifier.return = 'class'
+#classifier.name <- "rf"
+#classifier.alg <- randomForest::randomForest
+#classifier.return = NaN
 ucipath = './data'
 
 cl = makeCluster(no_cores)
 
 # Setup Algorithms
 #==========================#
-algs <- list(lol.project.pca, lol.project.cpca, lol.project.lrcca, lol.project.rp, lol.project.pls,
+algs <- list(lol.project.pca, lol.project.lrlda, lol.project.lrcca, lol.project.rp, lol.project.pls,
              lol.project.mpls, lol.project.opal, lol.project.lol, lol.project.qoq, lol.project.plsol,
              lol.project.plsolk)
-names(algs) <- c("PCA", "LDA", "CCA", "RP", "PLS", "OPAL", "MPLS", "LOL", "QOQ", "PLSOL", "PLSOLK")
+names(algs) <- c("PCA", "LRLDA", "CCA", "RP", "PLS", "OPAL", "MPLS", "LOL", "QOQ", "PLSOL", "PLSOLK")
 experiments <- list()
 counter <- 1
 
@@ -46,14 +47,13 @@ for (i in 1:length(dset.names)) {
     n <- dim(result)[1]; d <- dim(result)[2]
     X <- result[, -d]; Y <- result[, d]
     n <- length(Y)
-    if (n > ncutoff) {
-      k <- 20
-    } else {
-      k <- 'loo'
-    }
+    k <- ceiling(n/d)
     data[[dset.names[i]]] <- list(X=X, Y=Y, exp=dset.names[i], xv=k)
   }, error = function(e) NaN)
 }
+
+classifier.algs <- c(lol.classify.randomGuess, MASS::lda, randomForest::randomForest)
+names(classifier.algs) <- c("RandomGuess", "LDA", "RF")
 
 # Setup Algorithms
 #=========================#
@@ -67,6 +67,7 @@ clusterExport(cl, "data"); clusterExport(cl, "rlen")
 clusterExport(cl, "experiments"); clusterExport(cl, "opath")
 clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
 clusterExport(cl, "classifier.name"); clusterExport(cl, "algs")
+clusterExport(cl, "classifier.algs")
 results <- parLapply(cl, data, function(dat) {
   require(lolR)
   log.seq <- function(from=0, to=30, length=rlen) {
@@ -77,7 +78,7 @@ results <- parLapply(cl, data, function(dat) {
   n <- dim(X)[1]; d <- dim(X)[2]
   maxr <- min(d, 100)
   rs <- unique(log.seq(from=1, to=maxr, length=rlen))
-  sets <- lol.xval.split(X, Y, k=dat$xv)
+  sets <- lol.xval.split(X, Y, k=dat$xv, reverse=TRUE)
   results <- data.frame(exp=c(), alg=c(), xv=c(), n=c(), d=c(), K=c(), fold=c(), r=c(), lhat=c())
 
   for (i in 1:length(algs)) {
@@ -94,19 +95,29 @@ results <- parLapply(cl, data, function(dat) {
       }
     }
     tryCatch({
-      xv_res <- lol.xval.optimal_r(X, Y, algs[[i]], rs, sets=sets, alg.opts=list(), alg.return="A", classifier=classifier.alg,
+      xv_res <- lol.xval.optimal_dimselect(X, Y, algs[[i]], rs, sets=sets, alg.opts=list(), alg.return="A", classifier=classifier.alg,
                                    classifier.return=classifier.ret, k=dat$xv)
-      results <- rbind(results, data.frame(exp=dat$exp, alg=names(algs)[i], xv=dat$xv, n=n, d=d, K=length(unique(Y)), fold=xv_res$folds.data$fold, r=xv_res$folds.data$r,
+      results <- rbind(results, data.frame(exp=dat$exp, alg=names(algs)[i], xv=dat$xv, n=n, d=d, K=length(unique(Y)),
+                                           fold=xv_res$folds.data$fold, r=xv_res$folds.data$r,
                                            lhat=xv_res$folds.data$lhat))
     }, error=function(e) {print(e); return(NULL)})
   }
 
-  for (i in 1:length(sets)) {
-    set <- sets[[i]]
-    model <- lol.classify.randomGuess(set$X.train, set$Y.train)
-    Yhat <- predict(model, set$X.test)
-    lhat <- 1 - sum(Yhat == set$Y.test)/length(Yhat)
-    results <- rbind(results, data.frame(exp=dat$exp, alg='RandomGuess', xv=dat$xv, n=n, d=d, K=length(unique(Y)), fold=i, r=NaN, lhat=lhat))
+
+  for (classifier in names(classifier.algs)) {
+    for (i in 1:length(sets)) {
+      tryCatch({
+        set <- sets[[i]]
+        model <- do.call(classifier.algs[[classifier]], list(set$X.train, factor(set$Y.train, levels=unique(set$Y.train))))
+        Yhat <- predict(model, set$X.test)
+        if (!is.null(classifier.return[[classifier]])) {
+          Yhat <- Yhat[[classifier.return[[classifier]]]]
+        }
+        lhat <- 1 - sum(as.numeric(Yhat) == as.numeric(set$Y.test))/length(Yhat)
+        result <- rbind(result, data.frame(exp=dat$exp, alg=classifier, xv=dat$xv, n=n, d=d, K=length(unique(Y)),
+                                           fold=i, r=NaN, lhat=lhat))
+      }, error=function(e) {print(e); NULL})
+    }
   }
 
   saveRDS(results, file=paste(opath, dat$exp, '.rds', sep=""))
