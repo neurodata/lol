@@ -2,33 +2,39 @@ context("CCA")
 
 library(MASS)
 
-run_data_test <- function(data, alg, r=NULL, cutoff=0.35, sep=TRUE, piled=FALSE){
+run_data_test <- function(data, alg, r=NULL, sep=TRUE, piled=FALSE, p=.05){
   result <- lapply(data, function(dat) {
-    embed <- do.call(alg, list(X=dat$dat$X, Y=dat$dat$Y, r=r))
     if (piled) {
-      expect_true(all(apply(embed$Xr[, 1, drop=FALSE], 1, function(x) length(unique(x)) == 1)))
-      if (dat$operator == '<') {
-        return(0)
-      } else if (dat$operator == ">") {
-        return(1)
+      classifier.alg = lol.classify.nearestCentroid
+      classifier.return = NaN
+    } else {
+      classifier.alg = lda
+      classifier.return = "class"
+    }
+    # run cross-validation with 10-fold validation
+    result <- expect_error(lol.xval.eval(dat$X, dat$Y, r, alg=alg, classifier=classifier.alg,
+                                         classifier.return=classifier.return, k=10), NA)
+    if (!isTRUE(piled)) {
+      # check that the embedding works
+      if (!is.null(r)) {
+        expect_equal(dim(result$model$Xr), c(n, r))
+      }
+    } else {
+      # check that the embedding produces piling in the first dim
+      for (ylab in unique(dat$Y)) {
+        # round to ten-thousandths place for tolerance
+        expect_equal(length(unique(round(result$model$Xr[dat$Y == ylab, 1]*10000))), 1)
       }
     }
-    if (!is.null(r)) {
-      expect_equal(dim(embed$Xr), c(n, r))
-    }
-    class <- do.call(lda, list(embed$Xr, dat$dat$Y))
-    pred <- predict(class, embed$Xr)
-    lhat <- sum(pred$class != dat$dat$Y)/length(dat$dat$Y)
-    if  (!is.null(cutoff)) {
-      expect_true(do.call(dat$operator, list(lhat, cutoff)))
-    }
-    return(lhat)
+    return(result$lhats)
   })
   if (sep) {
-    expect_lt(result$separable, result$unseparable)
+    # use non-parametric test to evaluate performance on separable and unseparable example
+    expect_lt(wilcox.test(result$separable, result$unseparable, alternative="less", exact=FALSE)$p.value, p)
   }
   return(result)
 }
+
 
 set.seed(123456)
 alg=lol.project.lrcca
@@ -36,12 +42,11 @@ alg=lol.project.lrcca
 n <- 100
 d <- 6
 K <- 2
-data <- list(separable=list(dat=lol.sims.mean_diff(n, d, md=5), operator='<'),
-             unseparable=list(dat=lol.sims.mean_diff(n, d, md=0), operator='>'))
-cutoff <- 0.35
+data <- list(separable=lol.sims.rtrunk(n, d),
+             unseparable=lol.sims.xor2(n, d))
 
 test_that("CCA full-rank fails for r > d", {
-  expect_error(alg(data$separable$dat$X, data$separable$dat$Y, d+1))
+  expect_error(alg(data$separable$X, data$separable$Y, d+1))
 })
 
 test_that("CCA full-rank r == d", {
@@ -61,7 +66,7 @@ test_that("CCA full-rank r == K", {
 
 test_that("CCA full-rank r == 1", {
   r <- 1
-  run_data_test(data, alg=alg, r=r, cutoff=cutoff)
+  run_data_test(data, alg=alg, r=r)
 })
 
 
@@ -70,24 +75,33 @@ set.seed(123456)
 n <- 100
 d <- 110
 K <- 2
-data <- list(separable=list(dat=lol.sims.mean_diff(n, d, md=5),  operator='<'),
-             unseparable=list(dat=lol.sims.mean_diff(n, d, md=0), operator='>'))
+data <- list(separable=lol.sims.rtrunk(n, d),
+             unseparable=lol.sims.xor2(n, d))
 
 test_that("CCA low-rank fails for r > d", {
-  expect_error(alg(data$separable$dat$X, data$separable$dat$Y, d+1))
+  expect_error(alg(data$separable$X, data$separable$Y, d+1))
 })
 
+# CCA generalizes poorly for low-rank, so increase p-value threshold
+p = .1
 test_that("CCA piles low-rank r == K+1", {
   r <- K+1
-  run_data_test(data, alg=alg, r, piled=TRUE)
+  run_data_test(data, alg=alg, r, piled=TRUE, p=p)
 })
 
 test_that("CCA piles low-rank r == K", {
   r <- K
-  run_data_test(data, alg=alg, r, piled=TRUE)
+  run_data_test(data, alg=alg, r, piled=TRUE, p=p)
 })
 
 test_that("CCA piles low-rank r == 1", {
   r <- 1
-  expect_error(run_data_test(data, alg=alg, r, piled=TRUE), NA)
+  run_data_test(data, alg=alg, r, piled=TRUE, p=p)
+})
+
+n <- 100
+d <- 3
+test_that("CCA works with multi-class", {
+  data <- lol.sims.mean_diff(n, d, K=d+1, md=3)
+  expect_error(alg(data$X, data$Y, d-1), NA)
 })

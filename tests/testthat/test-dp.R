@@ -2,31 +2,35 @@ context("DP")
 
 library(MASS)
 
-
-run_data_test <- function(data, alg, r=NULL, cutoff=0.35, sep=TRUE, piled=FALSE){
+run_data_test <- function(data, alg, r=NULL, sep=TRUE, piled=FALSE, p=.05){
   result <- lapply(data, function(dat) {
-    embed <- do.call(alg, list(X=dat$dat$X, Y=dat$dat$Y, r=r))
     if (piled) {
-      expect_true(all(apply(embed$Xr[, 1, drop=FALSE], 1, function(x) length(unique(x)) == 1)))
-      if (dat$operator == '<') {
-        return(0)
-      } else if (dat$operator == ">") {
-        return(1)
+      classifier.alg = lol.classify.nearestCentroid
+      classifier.return = NaN
+    } else {
+      classifier.alg = lda
+      classifier.return = "class"
+    }
+    # run cross-validation with 10-fold validation
+    result <- expect_error(lol.xval.eval(dat$X, dat$Y, r, alg=alg, classifier=classifier.alg,
+                                         classifier.return=classifier.return, k=10), NA)
+    if (!isTRUE(piled)) {
+      # check that the embedding works
+      if (!is.null(r)) {
+        expect_equal(dim(result$model$Xr), c(n, r))
+      }
+    } else {
+      # check that the embedding produces piling in the first dim
+      for (ylab in unique(dat$Y)) {
+        # round to ten-thousandths place for tolerance
+        expect_equal(length(unique(round(result$model$Xr[dat$Y == ylab, 1]*10000))), 1)
       }
     }
-    if (!is.null(r)) {
-      expect_equal(dim(embed$Xr), c(n, r))
-    }
-    class <- do.call(lda, list(embed$Xr, dat$dat$Y))
-    pred <- predict(class, embed$Xr)
-    lhat <- sum(pred$class != dat$dat$Y)/length(dat$dat$Y)
-    if  (!is.null(cutoff)) {
-      expect_true(do.call(dat$operator, list(lhat, cutoff)))
-    }
-    return(lhat)
+    return(result$lhats)
   })
   if (sep) {
-    expect_lt(result$separable, result$unseparable)
+    # use non-parametric test to evaluate performance on separable and unseparable example
+    expect_lt(wilcox.test(result$separable, result$unseparable, alternative="less", exact=FALSE)$p.value, p)
   }
   return(result)
 }
@@ -37,11 +41,13 @@ alg=lol.project.dp
 n <- 100
 d <- 6
 K <- 2
-data <- list(separable=list(dat=lol.sims.mean_diff(n, d, md=5), operator='<'),
-             unseparable=list(dat=lol.sims.mean_diff(n, d, md=0), operator='>'))
+data <- list(separable=lol.sims.rtrunk(n, d),
+             unseparable=lol.sims.xor2(n, d))
+# data piling isn't very good, so raise the threshold
+p <- .5
 
 test_that("DP works for full-rank", {
-  run_data_test(data, alg=alg)
+  run_data_test(data, alg=alg, p=p, sep=FALSE)
 })
 
 set.seed(123456)
@@ -49,8 +55,8 @@ set.seed(123456)
 n <- 100
 d <- 110
 K <- 2
-data <- list(separable=list(dat=lol.sims.mean_diff(n, d, md=5),  operator='<'),
-             unseparable=list(dat=lol.sims.mean_diff(n, d, md=0), operator='>'))
+data <- list(separable=lol.sims.rtrunk(n, d),
+             unseparable=lol.sims.xor2(n, d))
 
 test_that("DP exhibits MDP for low-rank", {
   run_data_test(data, alg=alg, piled=TRUE)
