@@ -51,7 +51,7 @@ clusterExport(cl, "classifier.name"); clusterExport(cl, "algs")
 clusterExport(cl, "classifier.algs")
 results <- parLapply(cl, data, function(dat) {
   require(lolR)
-  taskname <- dat$taskname
+  taskname <- dat$dataset
   log.seq <- function(from=0, to=30, length=rlen) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }
@@ -65,7 +65,12 @@ results <- parLapply(cl, data, function(dat) {
     if (k == n/d) {
       k <- k + 1
     }
+    if (k < 20) {
+      k = 20
+    }
     sets <- lol.xval.split(X, Y, k=k, reverse=TRUE)
+    sets <- sets[names(sets)[1:20]]
+
     results <- data.frame(exp=c(), alg=c(), xv=c(), n=c(), d=c(), K=c(), fold=c(), r=c(), lhat=c())
     for (i in 1:length(algs)) {
       classifier.ret <- classifier.return
@@ -106,7 +111,7 @@ results <- parLapply(cl, data, function(dat) {
       }
     }
 
-    saveRDS(results, file=paste(opath, dat$exp, '.rds', sep=""))
+    saveRDS(results, file=paste(opath, taskname, '.rds', sep=""))
     return(results)
   } else {
     return(NULL)
