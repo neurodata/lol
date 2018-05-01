@@ -61,7 +61,7 @@ predict.nearestCentroid <- function(object, X, ...) {
   dists <- array(0, dim=c(n, K))
   for (i in 1:n) {
     for (j in 1:K) {
-      dists[i, j] <- sqrt(sum((X[i,] - object$centroids[,j])^2))
+      dists[i, j] <- sqrt(sum((X[i,] - object$centroids[j,])^2))
     }
   }
   Yass <- apply(dists, c(1), which.min)

@@ -19,12 +19,13 @@ test_that("Nearest Centroid Finds correct Centers", {
 
 test_that("Nearest Centroid Classifies Properly", {
   n <- 100
-  d <- 2
+  d <- 4
   K <- 2
   nrep <- 10
 
-  dat=lol.sims.mean_diff(n, d, md=3)
+  dat=lol.sims.mean_diff(n, d, md=5)
   class <- lol.classify.nearestCentroid(dat$X, dat$Y)
+  expect_equal(dim(class$centroids), c(K, d))
   Yhat <- predict(class, dat$X)
   lhat <- mean(Yhat != dat$Y)
   expect_lt(lhat, 0.1)

@@ -4,7 +4,7 @@
 \alias{lol.xval.split}
 \title{Cross-Validation Data Splitter}
 \usage{
-lol.xval.split(X, Y, k = "loo", ...)
+lol.xval.split(X, Y, k = "loo", reverse = FALSE, ...)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
@@ -13,21 +13,25 @@ lol.xval.split(X, Y, k = "loo", ...)
 
 \item{k}{the cross-validated method to perform. Defaults to \code{'loo'}.
 \itemize{
-\item \code{'loo'}  Leave-one-out cross validation
-\item \code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.
+\item{if \code{k == round(k)}, performed k-fold cross-validation.}
+\item{if \code{k == 'loo'}, performs leave-one-out cross-validation.}
+}}
+
+\item{reverse}{whether to flip the training and testing partitions. Defaults to \code{FALSE}.
+\itemize{
+\item{if \code{isTRUE(reverse)}, flips the training and testing partitions, such that cross-validation will be performed with 1 training fold and k-1 testing folds.}
+\item{if \code{!isTRUE(reverse)}, standard cross-validation, with k-1 training folds and 1 testing fold.}
 }}
 
 \item{...}{optional args.}
 }
 \value{
-sets the cross-validation sets as a list. Each element of the list contains the following items:
-\item{\code{X.train}}{the training data as a \code{[n - k, d]} array.}
-\item{\code{Y.train}}{the training labels as a \code{[n - k]} vector.}
-\item{\code{X.test}}{the testing data as a \code{[k, d]} array.}
-\item{\code{Y.test}}{the testing labels as a \code{[k]} vector.}
+sets the cross-validation sets as an object of class \code{"XV"} containing the following:
+\item{\code{train}}{is \code{[n - n/k]} vector if \code{isTRUE(reverse)}, and a \code{[n/k]} vector otherwise.}
+\item{\code{test}}{is \code{[n/k]} vector if \code{isTRUE(reverse)}, and a \code{[n - n/k]} vector otherwise.}
 }
 \description{
-\code{sg.bern.xval_split_data} A function to split a dataset into
+A function to split a dataset into
 training and testing sets for cross validation.
 }
 \examples{

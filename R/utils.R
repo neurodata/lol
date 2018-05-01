@@ -15,7 +15,7 @@ lol.utils.info <- function(X, Y, ...) {
   K <- length(ylabs)
   # compute the fraction of each class for prior p
   priors = sapply(ylabs, function(y) sum(Y == y)/n)
-  centroids <- as.matrix(sapply(ylabs, function(y) colMeans(X[Y==y,,drop=FALSE])))
+  centroids <- as.matrix(array(sapply(ylabs, function(y) colMeans(X[Y==y,,drop=FALSE])), dim=c(d, K)))
   return(list(n=n, d=d, ylabs=ylabs, priors=priors, centroids=centroids, K=K))
 }
 

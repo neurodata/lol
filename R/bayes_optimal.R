@@ -11,13 +11,13 @@
 #' @param priors \code{[K]} the priors for each of the \code{K} classes.
 #' @param ... optional args.
 #' @return A list of class \code{embedding} containing the following:
-#' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
+#' \item{\code{A}}{\code{[d, K]} the projection matrix from \code{d} to \code{K} dimensions.}
 #' \item{\code{d}}{the eigen values associated with the eigendecomposition.}
 #' \item{\code{ylabs}}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
 #' \item{\code{centroids}}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
 #' \item{\code{priors}}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
-#' \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
-#' \item{\code{cr}}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
+#' \item{\code{Xr}}{\code{[n, K]} the \code{n} data points in reduced dimensionality \code{K}.}
+#' \item{\code{cr}}{\code{[K, K]} the \code{K} centroids in reduced dimensionality \code{K}.}
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)

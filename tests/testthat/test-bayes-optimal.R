@@ -1,34 +1,42 @@
 context("bayes-optimal")
 library(MASS)
 
-run_data_test <- function(data, alg, r=NULL, cutoff=0.35, sep=TRUE, piled=FALSE){
+run_data_test <- function(data, alg, r=NULL, sep=TRUE, piled=FALSE, p=.05){
   result <- lapply(data, function(dat) {
-    embed <- do.call(alg, list(X=dat$dat$X, Y=dat$dat$Y,  mus=dat$dat$mus,
-                               Sigmas=dat$dat$Sigmas, priors=dat$dat$priors))
+    embed <- do.call(alg, list(X=dat$X, Y=dat$Y, r=r, mus=dat$mus,
+                               Sigmas=dat$Sigmas, priors=dat$priors))
     if (piled) {
-      expect_true(all(apply(embed$Xr[, 1, drop=FALSE], 1, function(x) length(unique(x)) == 1)))
-      if (dat$operator == '<') {
-        return(0)
-      } else if (dat$operator == ">") {
-        return(1)
-      }
+      classifier.alg = lol.classify.nearestCentroid
+      classifier.return = NaN
+    } else {
+      classifier.alg = lda
+      classifier.return = "class"
     }
-    if (!is.null(r)) {
-      expect_equal(dim(embed$Xr), c(n, r))
-    }
-    class <- do.call(lda, list(embed$Xr, dat$dat$Y))
+    # run cross-validation with 10-fold validation
+    class <- do.call(classifier.alg, list(embed$Xr, dat$Y))
     pred <- predict(class, embed$Xr)
-    lhat <- sum(pred$class != dat$dat$Y)/length(dat$dat$Y)
-    if  (!is.null(cutoff)) {
-      expect_true(do.call(dat$operator, list(lhat, cutoff)))
+    lhat <- sum(pred$class != dat$Y)/length(dat$Y)
+    if (!isTRUE(piled)) {
+      # check that the embedding works
+      if (!is.null(r)) {
+        expect_equal(dim(embed$Xr), c(n, r))
+      }
+    } else {
+      # check that the embedding produces piling in the first dim
+      for (ylab in unique(dat$Y)) {
+        # round to ten-thousandths place for tolerance
+        expect_equal(length(unique(round(embed$Xr[dat$Y == ylab, 1]*10000))), 1)
+      }
     }
     return(lhat)
   })
   if (sep) {
+    # use non-parametric test to evaluate performance on separable and unseparable example
     expect_lt(result$separable, result$unseparable)
   }
   return(result)
 }
+
 
 set.seed(123456)
 alg=lol.project.bayes_optimal
@@ -36,12 +44,12 @@ alg=lol.project.bayes_optimal
 n <- 100
 d <- 6
 K <- 2
-data <- list(separable=list(dat=lol.sims.mean_diff(n, d, md=5), operator='<'),
-             unseparable=list(dat=lol.sims.mean_diff(n, d, md=0), operator='>'))
+data <- list(separable=lol.sims.rtrunk(n, d),
+             unseparable=lol.sims.xor2(n, d))
 cutoff <- 0.35
 
 test_that("Bayes Optimal full-rank", {
-  run_data_test(data, alg=alg, cutoff=NULL)
+  run_data_test(data, alg=alg)
 })
 
 
@@ -50,16 +58,16 @@ set.seed(12345)
 n <- 100
 d <- 110
 K <- 2
-data <- list(separable=list(dat=lol.sims.mean_diff(n, d, md=5),  operator='<'),
-             unseparable=list(dat=lol.sims.mean_diff(n, d, md=0), operator='>'))
+data <- list(separable=lol.sims.rtrunk(n, d),
+             unseparable=lol.sims.xor2(n, d))
 
 test_that("Bayes Optimal low-rank", {
-  run_data_test(data, alg=alg, cutoff=NULL)
+  run_data_test(data, alg=alg)
 })
 
 n <- 100
 d <- 3
-test_that("Bayes Optimal works with 3-class", {
+test_that("Bayes Optimal works with multi-class", {
   data <- lol.sims.mean_diff(n, d, K=d+1, md=3)
   expect_error(alg(data$X, data$Y, mus=data$mus, Sigmas=data$Sigmas, priors=data$priors), NA)
 })
