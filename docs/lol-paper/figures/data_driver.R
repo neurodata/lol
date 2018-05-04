@@ -30,6 +30,7 @@ data.pmlb <- slb.load.datasets(repositories="pmlb", tasks="classification", clea
 data.uci <- slb.load.datasets(repositories="uci", tasks="classification", clean.invalid=FALSE, clean.ohe=FALSE)
 data <- c(data.pmlb, data.uci)
 
+# Semi-Parallel
 # Setup Algorithms
 #=========================#
 
@@ -59,18 +60,24 @@ results <- parLapply(cl, data, function(dat) {
   X <- as.matrix(dat$X); Y <- as.factor(dat$Y)
   n <- dim(X)[1]; d <- dim(X)[2]
   if (d > 50) {
-    maxr <- min(d, 100)
+    # if the problem is not full-rank, make it full-rank by doing clever cross-validation
+    if (d < n) {
+      k = ceiling(n/d)
+      if (k == n/d) {
+        k <- k + 1
+      }
+      sets <- lol.xval.split(X, Y, k=k, reverse=TRUE)
+      if (k < 20) {
+        k = 20
+      }
+      sets <- sets[names(sets)[1:k]]
+    } else {
+      k=20
+      sets <- lol.xval.split(X, Y, k=k)
+    }
+    len.set <- sapply(sets, function(set) length(set$train))
+    maxr <- min(c(d - 1, min(len.set) - 1, 100))
     rs <- unique(log.seq(from=1, to=maxr, length=rlen))
-    k = ceiling(n/d)
-    if (k == n/d) {
-      k <- k + 1
-    }
-    if (k < 20) {
-      k = 20
-    }
-    sets <- lol.xval.split(X, Y, k=k, reverse=TRUE)
-    sets <- sets[names(sets)[1:20]]
-
     results <- data.frame(exp=c(), alg=c(), xv=c(), n=c(), d=c(), K=c(), fold=c(), r=c(), lhat=c())
     for (i in 1:length(algs)) {
       classifier.ret <- classifier.return
@@ -86,7 +93,7 @@ results <- parLapply(cl, data, function(dat) {
         }
       }
       tryCatch({
-        xv_res <- lol.xval.optimal_dimselect(X, Y, algs[[i]], rs, sets=sets, alg.opts=list(), alg.return="A", classifier=classifier.alg,
+        xv_res <- lol.xval.optimal_dimselect(X, Y, rs, algs[[i]], sets=sets, alg.opts=list(), alg.return="A", classifier=classifier.alg,
                                              classifier.return=classifier.ret, k=k)
         results <- rbind(results, data.frame(exp=taskname, alg=names(algs)[i], xv=k, n=n, d=d, K=length(unique(Y)),
                                              fold=xv_res$folds.data$fold, r=xv_res$folds.data$r,
@@ -120,3 +127,51 @@ results <- parLapply(cl, data, function(dat) {
 resultso <- do.call(rbind, results)
 saveRDS(resultso, file.path(opath, paste(classifier.name, '_results.rds', sep="")))
 stopCluster(cl)
+
+
+## Fully-Parallel
+# Parallelize Stuff
+#=========================#
+require(MASS)
+library(parallel)
+require(lolR)
+require(slb)
+require(randomForest)
+
+no_cores = detectCores() - 5
+classifier.name <- "lda"
+classifier.alg <- MASS::lda
+classifier.return = 'class'
+#classifier.name <- "rf"
+#classifier.alg <- randomForest::randomForest
+#classifier.return = NaN
+ucipath = './data'
+
+rlen <- 30
+
+# Setup Algorithms
+#==========================#
+algs <- list(lol.project.pca, lol.project.lrlda, lol.project.lrcca, lol.project.rp, lol.project.pls,
+             lol.project.mpls, lol.project.opal, lol.project.lol, lol.project.qoq, lol.project.plsol,
+             lol.project.plsolk)
+names(algs) <- c("PCA", "LRLDA", "CCA", "RP", "PLS", "OPAL", "MPLS", "LOL", "QOQ", "PLSOL", "PLSOLK")
+experiments <- list()
+counter <- 1
+
+data.pmlb <- slb.load.datasets(repositories="pmlb", tasks="classification", clean.invalid=TRUE, clean.ohe=10)
+data.uci <- slb.load.datasets(repositories="uci", tasks="classification", clean.invalid=FALSE, clean.ohe=FALSE)
+data <- c(data.pmlb, data.uci)
+
+# Semi-Parallel
+# Setup Algorithms
+#=========================#
+
+classifier.algs <- c(lol.classify.randomGuess, MASS::lda, randomForest::randomForest)
+names(classifier.algs) <- c("RandomGuess", "LDA", "RF")
+
+opath <- './data/'
+dir.create(opath)
+opath <- './data/real_data/'
+dir.create(opath)
+opath <- paste('./data/real_data/', classifier.name, '/', sep="")
+dir.create(opath)
