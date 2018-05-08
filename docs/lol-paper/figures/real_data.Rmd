@@ -89,7 +89,8 @@ g_legend<-function(a.gplot){
 # Results Loading
 
 ```{r, message=FALSE}
-results <- readRDS(file.path(opath, paste(classifier.name, "_", dataset.name, "_results.rds", sep="")))
+#results <- readRDS(file.path(opath, paste(classifier.name, "_", dataset.name, "_results.rds", sep="")))
+results <- readRDS(file.path(opath, paste(classifier.name, "_results.rds", sep="")))
 results <- results[complete.cases(results$lhat),]
 nan.mean <- function(x) {mean(x, na.rm=TRUE)}
 results.means <- aggregate(lhat ~ exp + alg + r + d + n + K, data = results, FUN = nan.mean)
@@ -284,12 +285,13 @@ g_legend<-function(a.gplot){
 
 ```{r, message=FALSE}
 #nan.median <- function(x) median(x, na.rm=TRUE)  
+lhat.mean <- 1
 #results.medians <- aggregate(lhat ~ exp + alg + r + d + n + K, data = results, FUN = nan.median)
 results.optimalr <- data.frame(exp=c(), alg=c(), r=c(), lhat=c(), fold=c())
 plot.normlol.results <- data.frame(r=c(), lhat=c(), exp=c(), alg=c())
 for (i in 1:length(exp_names)) {
   r.max <- max(results.means[results.means$exp == exp_names[i],]$r)
-  lhat.mean <- random.results[random.results$exp == exp_names[i],]$lhat
+  #lhat.mean <- random.results[random.results$exp == exp_names[i],]$lhat
   for (j in 1:length(algs)) {
     tryCatch({
     alg <- as.character(algs[j])
@@ -321,7 +323,7 @@ for (i in 1:length(exp_names)) {
     #  lhat.rat <- lhat.min - norm.lhat
     #}
     lhat.rat <- (lhat.min - norm.lhat)/lhat.mean
-    exp.fold <- results[results$exp == exp_names[i] & results$alg == algs[j] & results$r == r.min,]
+    exp.fold <- results[results$exp == as.character(exp_names[i]) & results$alg == algs[j] & results$r == r.min,]
     results.optimalr <- rbind(results.optimalr, data.frame(r=r.min, lhat=exp.fold$lhat,
                                                            fold=exp.fold$fold, alg=alg, exp=exp_names[i]))
     plot.normlol.results <- rbind(plot.normlol.results, data.frame(r=r.rat, lhat=lhat.rat,
@@ -420,7 +422,6 @@ ggplot(results.optimal.means, aes(x=r, y=lhat, shape=alg, fill=alg)) +
     scale_y_continuous(limits=c(.2, .35)) +
     scale_x_continuous(limits=c(0, 20)) +
     theme_bw()
-  
 ```
 
 # Heatmap
