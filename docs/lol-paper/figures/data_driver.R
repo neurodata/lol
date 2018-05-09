@@ -5,37 +5,40 @@ library(parallel)
 require(lolR)
 require(slb)
 require(randomForest)
+require(plyr)
 
-no_cores = detectCores() - 5
+no_cores = detectCores() - 15
 classifier.name <- "lda"
 classifier.alg <- MASS::lda
 classifier.return = 'class'
 #classifier.name <- "rf"
 #classifier.alg <- randomForest::randomForest
 #classifier.return = NaN
-ucipath = './data'
 
 rlen <- 30
 
 # Setup Algorithms
 #==========================#
 algs <- list(lol.project.pca, lol.project.lrlda, lol.project.lrcca, lol.project.rp, lol.project.pls,
-             lol.project.mpls, lol.project.opal, lol.project.lol, lol.project.qoq, lol.project.plsol,
-             lol.project.plsolk)
-names(algs) <- c("PCA", "LRLDA", "CCA", "RP", "PLS", "OPAL", "MPLS", "LOL", "QOQ", "PLSOL", "PLSOLK")
+             lol.project.lol)
+names(algs) <- c("PCA", "LRLDA", "CCA", "RP", "PLS", "LOL")
 experiments <- list()
 counter <- 1
 
 data.pmlb <- slb.load.datasets(repositories="pmlb", tasks="classification", clean.invalid=TRUE, clean.ohe=10)
 data.uci <- slb.load.datasets(repositories="uci", tasks="classification", clean.invalid=FALSE, clean.ohe=FALSE)
-data <- c(data.pmlb, data.uci)
+data <- c(data.uci, data.pmlb)
 
 # Semi-Parallel
 # Setup Algorithms
 #=========================#
 
-classifier.algs <- c(lol.classify.randomGuess, MASS::lda, randomForest::randomForest)
-names(classifier.algs) <- c("RandomGuess", "LDA", "RF")
+#classifier.algs <- c(lol.classify.randomGuess, MASS::lda, randomForest::randomForest)
+#names(classifier.algs) <- c("RandomGuess", "LDA", "RF")
+classifier.algs <- c(lol.classify.randomGuess, MASS::lda)
+names(classifier.algs) <- c("RandomGuess", "LDA")
+classifier.returns <- list(NULL, "class")
+names(classifier.returns) <- c("RandomGuess", "LDA")
 
 opath <- './data/'
 dir.create(opath)
@@ -44,134 +47,122 @@ dir.create(opath)
 opath <- paste('./data/real_data/', classifier.name, '/', sep="")
 dir.create(opath)
 
+k=10  # number of folds
+exp <- lapply(data, function(dat) {
+  tryCatch({
+    if (dat$p > 50) {
+      X <- as.matrix(dat$X); Y <- as.factor(dat$Y)
+      n <- dim(X)[1]; d <- dim(X)[2]
+      # if the problem is not full-rank, make it full-rank by doing clever cross-validation
+      sets <- lapply(1:k, function(i) {
+        vals <- 1:n  # all possible values
+        train <- sample(vals, size=min(c(1*n/k, d)))
+        test <- sample(vals[!(vals %in% train)], size = n - min(c(1*n/k, d)))
+        return(list(train=train, test=test))
+      })
+      return(list(sets=sets, X=dat$X, Y=dat$Y, n=dat$n, p=dat$p, K=dat$K, task=dat$task, repo=dat$repo, dataset=dat$dataset))
+    } else {
+      return(NULL)
+    }}, error=function(e){return(NULL)})
+})
+
+exp <- compact(exp)
+
+fold_rep <- data.frame(n=c(), p=c(), K=c(), task=c(), repo=c(), dataset=c(), fold=c())
+for (i in 1:length(names(exp))) {
+  task <- names(exp)[i]
+  X <- exp[[task]]$X; Y <- exp[[task]]$Y
+  n <- dim(X)[1]; d <- dim(X)[2]
+  for (j in 1:k) {
+    fold_rep <- rbind(fold_rep, data.frame(n=exp[[task]]$n, p=exp[[task]]$p, K=exp[[task]]$K, task=task,
+                                    repo=exp[[task]]$repo, dataset=exp[[task]]$dataset, fold=j))
+  }
+}
+fold_rep <- split(fold_rep, seq(nrow(fold_rep)))
+
 cl = makeCluster(no_cores)
-clusterExport(cl, "data"); clusterExport(cl, "rlen")
+clusterExport(cl, "exp"); clusterExport(cl, "rlen")
 clusterExport(cl, "opath")
 clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
 clusterExport(cl, "classifier.name"); clusterExport(cl, "algs")
-clusterExport(cl, "classifier.algs")
-results <- parLapply(cl, data, function(dat) {
+clusterExport(cl, "classifier.algs"); clusterExport(cl, "classifier.returns")
+clusterExport(cl, "k")
+results <- parLapply(cl, fold_rep, function(fold) {
   require(lolR)
+  dat <- exp[[as.character(fold$dataset)]]
   taskname <- dat$dataset
-  log.seq <- function(from=0, to=30, length=rlen) {
+  log.seq <- function(from=0, to=15, length=rlen) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }
 
   X <- as.matrix(dat$X); Y <- as.factor(dat$Y)
   n <- dim(X)[1]; d <- dim(X)[2]
-  if (d > 50) {
-    # if the problem is not full-rank, make it full-rank by doing clever cross-validation
-    if (d < n) {
-      k = ceiling(n/d)
-      if (k == n/d) {
-        k <- k + 1
-      }
-      sets <- lol.xval.split(X, Y, k=k, reverse=TRUE)
-      if (k < 20) {
-        k = 20
-      }
-      sets <- sets[names(sets)[1:k]]
-    } else {
-      k=20
-      sets <- lol.xval.split(X, Y, k=k)
-    }
-    len.set <- sapply(sets, function(set) length(set$train))
-    maxr <- min(c(d - 1, min(len.set) - 1, 100))
-    rs <- unique(log.seq(from=1, to=maxr, length=rlen))
-    results <- data.frame(exp=c(), alg=c(), xv=c(), n=c(), d=c(), K=c(), fold=c(), r=c(), lhat=c())
-    for (i in 1:length(algs)) {
-      classifier.ret <- classifier.return
-      if (classifier.name == "lda") {
+  sets <- dat$sets
+  len.set <- sapply(sets, function(set) length(set$train))
+  maxr <- min(c(d - 1, min(len.set) - 1))
+  sets <- list(sets[[fold$fold]])
+  rs <- unique(log.seq(from=1, to=maxr, length=rlen))
+  results <- data.frame(exp=c(), alg=c(), xv=c(), n=c(), d=c(), K=c(), fold=c(), r=c(), lhat=c())
+  for (i in 1:length(algs)) {
+    classifier.ret <- classifier.return
+    if (classifier.name == "lda") {
+      classifier.ret = "class"
+      classifier.alg = MASS::lda
+      if (names(algs)[i] == "QOQ") {
+        classifier.alg=MASS::qda
         classifier.ret = "class"
-        classifier.alg = MASS::lda
-        if (names(algs)[i] == "QOQ") {
-          classifier.alg=MASS::qda
-          classifier.ret = "class"
-        } else if (names(algs)[i] == "CCA") {
-          classifier.alg = lol.classify.nearestCentroid
-          classifier.ret = NaN
-        }
-      }
-      tryCatch({
-        xv_res <- lol.xval.optimal_dimselect(X, Y, rs, algs[[i]], sets=sets, alg.opts=list(), alg.return="A", classifier=classifier.alg,
-                                             classifier.return=classifier.ret, k=k)
-        results <- rbind(results, data.frame(exp=taskname, alg=names(algs)[i], xv=k, n=n, d=d, K=length(unique(Y)),
-                                             fold=xv_res$folds.data$fold, r=xv_res$folds.data$r,
-                                             lhat=xv_res$folds.data$lhat, repo=dat$repo))
-      }, error=function(e) {print(e); return(NULL)})
-    }
-
-
-    for (classifier in names(classifier.algs)) {
-      for (i in 1:length(sets)) {
-        tryCatch({
-          set <- sets[[i]]
-          model <- do.call(classifier.algs[[classifier]], list(set$X.train, factor(set$Y.train, levels=unique(set$Y.train))))
-          Yhat <- predict(model, set$X.test)
-          if (!is.null(classifier.return[[classifier]])) {
-            Yhat <- Yhat[[classifier.return[[classifier]]]]
-          }
-          lhat <- 1 - sum(as.numeric(Yhat) == as.numeric(set$Y.test))/length(Yhat)
-          result <- rbind(result, data.frame(exp=taskname, alg=classifier, xv=k, n=n, d=d, K=length(unique(Y)),
-                                             fold=i, r=NaN, lhat=lhat, repo=dat$repo))
-        }, error=function(e) {print(e); NULL})
+      } else if (names(algs)[i] == "CCA") {
+        classifier.alg = lol.classify.nearestCentroid
+        classifier.ret = NaN
       }
     }
-
-    saveRDS(results, file=paste(opath, taskname, '.rds', sep=""))
-    return(results)
-  } else {
-    return(NULL)
+    tryCatch({
+      xv_res <- lol.xval.optimal_dimselect(X, Y, rs, algs[[i]], sets=sets,
+                                           alg.opts=list(), alg.return="A", classifier=classifier.alg,
+                                           classifier.return=classifier.ret, k=k)
+      results <- rbind(results, data.frame(exp=taskname, alg=names(algs)[i], xv=k, n=n, d=d, K=length(unique(Y)),
+                                           fold=fold$fold, r=xv_res$folds.data$r,
+                                           lhat=xv_res$folds.data$lhat, repo=dat$repo))
+    }, error=function(e) {print(e); return(NULL)})
   }
+
+
+  for (classifier in names(classifier.algs)) {
+    for (i in 1:length(sets)) {
+      tryCatch({
+        set <- sets[[i]]
+        model <- do.call(classifier.algs[[classifier]], list(X[set$train, ], factor(Y[set$train], levels=unique(Y[set$train]))))
+        Yhat <- predict(model, X[set$test,])
+        if (!is.null(classifier.returns[[classifier]])) {
+          Yhat <- Yhat[[classifier.returns[[classifier]]]]
+        }
+        lhat <- 1 - sum(as.numeric(Yhat) == as.numeric(Y[set$test]))/length(Yhat)
+        results <- rbind(results, data.frame(exp=taskname, alg=classifier, xv=k, n=n, d=d, K=length(unique(Y)),
+                                             fold=fold$fold, r=NaN, lhat=lhat, repo=dat$repo))
+      }, error=function(e) {print(e); NULL})
+    }
+  }
+
+  saveRDS(results, file=paste(opath, taskname, '_', fold$fold, '.rds', sep=""))
+  return(results)
 })
 resultso <- do.call(rbind, results)
 saveRDS(resultso, file.path(opath, paste(classifier.name, '_results.rds', sep="")))
 stopCluster(cl)
 
+require(stringr)
 
-## Fully-Parallel
-# Parallelize Stuff
-#=========================#
-require(MASS)
-library(parallel)
-require(lolR)
-require(slb)
-require(randomForest)
+path <- './data/real_data/lda'
+repo.name = 'uci'
+classifier.name = 'lda'
+fnames <- list.files(path, pattern='*.rds')
 
-no_cores = detectCores() - 5
-classifier.name <- "lda"
-classifier.alg <- MASS::lda
-classifier.return = 'class'
-#classifier.name <- "rf"
-#classifier.alg <- randomForest::randomForest
-#classifier.return = NaN
-ucipath = './data'
-
-rlen <- 30
-
-# Setup Algorithms
-#==========================#
-algs <- list(lol.project.pca, lol.project.lrlda, lol.project.lrcca, lol.project.rp, lol.project.pls,
-             lol.project.mpls, lol.project.opal, lol.project.lol, lol.project.qoq, lol.project.plsol,
-             lol.project.plsolk)
-names(algs) <- c("PCA", "LRLDA", "CCA", "RP", "PLS", "OPAL", "MPLS", "LOL", "QOQ", "PLSOL", "PLSOLK")
-experiments <- list()
-counter <- 1
-
-data.pmlb <- slb.load.datasets(repositories="pmlb", tasks="classification", clean.invalid=TRUE, clean.ohe=10)
-data.uci <- slb.load.datasets(repositories="uci", tasks="classification", clean.invalid=FALSE, clean.ohe=FALSE)
-data <- c(data.pmlb, data.uci)
-
-# Semi-Parallel
-# Setup Algorithms
-#=========================#
-
-classifier.algs <- c(lol.classify.randomGuess, MASS::lda, randomForest::randomForest)
-names(classifier.algs) <- c("RandomGuess", "LDA", "RF")
-
-opath <- './data/'
-dir.create(opath)
-opath <- './data/real_data/'
-dir.create(opath)
-opath <- paste('./data/real_data/', classifier.name, '/', sep="")
-dir.create(opath)
+results <- data.frame(exp=c(), alg=c(), XV=c(), n=c(), d=c(), K=c(), fold=c(), r=c(), lhat=c(),
+                       repo=c())
+for (fname in fnames) {
+  foldid <- str_extract(fname, "(?<=_)(.*?)(?=[._])")
+  dat <- readRDS(file.path(path, fname))
+  dat$fold <- as.integer(foldid)
+  results <- rbind(resultso, dat)
+}
+saveRDS(results, file.path(path, paste(repo.name, '_', classifier.name, '_results.rds', sep="")))
