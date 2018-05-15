@@ -19,6 +19,7 @@
 - [Results](#results)
 - [License](./LICENSE)
 - [Issues](https://github.com/ebridge2/lol/issues)
+- [Citation](#citation)
 
 # Overview
 
