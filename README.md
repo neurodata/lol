@@ -6,6 +6,7 @@
 [![Travis-CI Build Status](https://travis-ci.org/neurodata/lol.svg?branch=master)](https://travis-ci.org/neurodata/lol)
 [![Codecov status](https://codecov.io/gh/neurodata/lol/branch/master/graph/badge.svg)](https://codecov.io/gh/neurodata/lol)
 [![Downloads badge](https://cranlogs.r-pkg.org/badges/lolR)](https://cranlogs.r-pkg.org/badges/lolR)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1246979.svg)](https://doi.org/10.5281/zenodo.1246979)
 
 
 ## Contents
@@ -18,6 +19,7 @@
 - [Results](#results)
 - [License](./LICENSE)
 - [Issues](https://github.com/ebridge2/lol/issues)
+- [Citation](#citation)
 
 # Overview
 
@@ -157,3 +159,7 @@ vignette('extend_classification')
 [Figure 2](https://htmlpreview.github.io/?https://github.com/neurodata/lol/blob/master/docs/lol-paper/figure_2.html)  
 
 [Figure 3](https://htmlpreview.github.io/?https://github.com/neurodata/lol/blob/master/docs/lol-paper/figure_3.html)
+
+# Citation
+
+For usage of the package and associated manuscript, please cite according to the enclosed [citations.bib](./citations.bib).
