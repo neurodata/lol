@@ -47,20 +47,11 @@ dir.create(opath)
 opath <- paste('./data/real_data/', classifier.name, '/', sep="")
 dir.create(opath)
 
-k = 10  # number of folds
-nk = 5
+k = 50  # number of folds
 exp <- lapply(data, function(dat) {
   tryCatch({
-    if (dat$p > 50) {
-      X <- as.matrix(dat$X); Y <- as.factor(dat$Y)
-      n <- dim(X)[1]; d <- dim(X)[2]
-      # if the problem is not full-rank, make it full-rank by doing clever cross-validation
-      sets <- lapply(1:(nk*k), function(i) {
-        vals <- 1:n  # all possible values
-        train <- sample(vals, size=min(c((k-1)*floor(n/k), d)))
-        test <- sample(vals[!(vals %in% train)], size = n - min(c((k-1)*floor(n/k), d)))
-        return(list(train=train, test=test))
-      })
+    if (dat$p > 100) {
+      sets <- lol.xval.split(dat$X, dat$Y, k=k, rank.low=TRUE)
       return(list(sets=sets, X=dat$X, Y=dat$Y, n=dat$n, p=dat$p, K=dat$K, task=dat$task, repo=dat$repo, dataset=dat$dataset))
     } else {
       return(NULL)
@@ -75,7 +66,7 @@ for (i in 1:length(names(exp))) {
   task <- names(exp)[i]
   X <- exp[[task]]$X; Y <- exp[[task]]$Y
   n <- dim(X)[1]; d <- dim(X)[2]
-  for (j in 1:(nk*k)) {
+  for (j in 1:(k)) {
     fold_rep <- rbind(fold_rep, data.frame(n=exp[[task]]$n, p=exp[[task]]$p, K=exp[[task]]$K, task=task,
                                     repo=exp[[task]]$repo, dataset=exp[[task]]$dataset, fold=j))
   }
