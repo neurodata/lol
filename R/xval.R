@@ -341,7 +341,7 @@ lol.xval.check_xv_set <- function(sets, n) {
 #' A function to split a dataset into training and testing sets for cross validation. The procedure for cross-validation
 #' is to split the data into k-folds. The k-folds are then rotated individually to form a single held-out testing set the model will be validated on,
 #' and the remaining (k-1) folds are used for training the developed model. Note that this cross-validation function includes functionality to be used for
-#' low-rank cross-validation. In that case, instead of using the full (k-1) folds for training, we subset \code{min((k-1)/k*n, d)} points to ensure that
+#' low-rank cross-validation. In that case, instead of using the full (k-1) folds for training, we subset \code{min((k-1)/k*n, d)} samples to ensure that
 #' the resulting training sets  are all low-rank. We still rotate properly over the held-out fold to ensure that the resulting testing sets
 #' do not have any shared examples, which would add a complicated  dependence structure to inference we attempt to infer on the testing sets.
 #'
@@ -373,10 +373,11 @@ lol.xval.check_xv_set <- function(sets, n) {
 #' sets.xval.loo <- lol.xval.split(X, Y, k='loo')
 #'
 #' @export
-lol.xval.split <- function(X, Y, k='loo', rank=FALSE, ...) {
+lol.xval.split <- function(X, Y, k='loo', rank.low=FALSE, ...) {
   Y <- factor(Y)
   n <- length(Y)
   n.x <- dim(X)[1]
+  d <- dim(X)[2]
   if (n != n.x) {
     stop("Your number of X samples and Y responses is not the same.")
   }
@@ -388,12 +389,12 @@ lol.xval.split <- function(X, Y, k='loo', rank=FALSE, ...) {
     k.folds <- split(samp.ids, rep(1:k), drop=TRUE)  # split the sample ids into xval folds
     # partition X and Y appropriately into training and testing sets
     sets <- lapply(k.folds, function(fold) {
-      if (rank) {
-        tset <- -fold[sample(1:n, min(floor((k-1)/k*n), d))]
-      } else {
-        tset <- -fold
+      train <- samp.ids[-fold]
+      # if low-rank specified, sub-sample d elements if not already low-rank
+      if (rank.low & length(train) > d) {
+        train <- fold[sample(train, d)]  # sample d-elements randomly
       }
-      train <- samp.ids[tset]
+
       test <- samp.ids[fold]
       list(train=train, test=test)
     })
