@@ -7,7 +7,7 @@ require(slb)
 require(randomForest)
 require(plyr)
 
-no_cores = detectCores() - 15
+no_cores = detectCores()
 classifier.name <- "lda"
 classifier.alg <- MASS::lda
 classifier.return = 'class'
@@ -47,23 +47,25 @@ dir.create(opath)
 opath <- paste('./data/real_data/', classifier.name, '/', sep="")
 dir.create(opath)
 
-k=10  # number of folds
+k = 10  # number of folds
+nk = 5
 exp <- lapply(data, function(dat) {
   tryCatch({
     if (dat$p > 50) {
       X <- as.matrix(dat$X); Y <- as.factor(dat$Y)
       n <- dim(X)[1]; d <- dim(X)[2]
       # if the problem is not full-rank, make it full-rank by doing clever cross-validation
-      sets <- lapply(1:k, function(i) {
+      sets <- lapply(1:(nk*k), function(i) {
         vals <- 1:n  # all possible values
-        train <- sample(vals, size=min(c(1*n/k, d)))
-        test <- sample(vals[!(vals %in% train)], size = n - min(c(1*n/k, d)))
+        train <- sample(vals, size=min(c((k-1)*floor(n/k), d)))
+        test <- sample(vals[!(vals %in% train)], size = n - min(c((k-1)*floor(n/k), d)))
         return(list(train=train, test=test))
       })
       return(list(sets=sets, X=dat$X, Y=dat$Y, n=dat$n, p=dat$p, K=dat$K, task=dat$task, repo=dat$repo, dataset=dat$dataset))
     } else {
       return(NULL)
-    }}, error=function(e){return(NULL)})
+    }
+  }, error=function(e){return(NULL)})
 })
 
 exp <- compact(exp)
@@ -73,22 +75,14 @@ for (i in 1:length(names(exp))) {
   task <- names(exp)[i]
   X <- exp[[task]]$X; Y <- exp[[task]]$Y
   n <- dim(X)[1]; d <- dim(X)[2]
-  for (j in 1:k) {
+  for (j in 1:(nk*k)) {
     fold_rep <- rbind(fold_rep, data.frame(n=exp[[task]]$n, p=exp[[task]]$p, K=exp[[task]]$K, task=task,
                                     repo=exp[[task]]$repo, dataset=exp[[task]]$dataset, fold=j))
   }
 }
 fold_rep <- split(fold_rep, seq(nrow(fold_rep)))
 
-cl = makeCluster(no_cores)
-clusterExport(cl, "exp"); clusterExport(cl, "rlen")
-clusterExport(cl, "opath")
-clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
-clusterExport(cl, "classifier.name"); clusterExport(cl, "algs")
-clusterExport(cl, "classifier.algs"); clusterExport(cl, "classifier.returns")
-clusterExport(cl, "k")
-results <- parLapply(cl, fold_rep, function(fold) {
-  require(lolR)
+results <- mclapply(fold_rep, function(fold) {
   dat <- exp[[as.character(fold$dataset)]]
   taskname <- dat$dataset
   log.seq <- function(from=0, to=15, length=rlen) {
@@ -102,7 +96,7 @@ results <- parLapply(cl, fold_rep, function(fold) {
   maxr <- min(c(d - 1, min(len.set) - 1))
   sets <- list(sets[[fold$fold]])
   rs <- unique(log.seq(from=1, to=maxr, length=rlen))
-  results <- data.frame(exp=c(), alg=c(), xv=c(), n=c(), d=c(), K=c(), fold=c(), r=c(), lhat=c())
+  results <- data.frame(exp=c(), alg=c(), xv=c(), n=c(), ntrain=c(), d=c(), K=c(), fold=c(), r=c(), lhat=c())
   for (i in 1:length(algs)) {
     classifier.ret <- classifier.return
     if (classifier.name == "lda") {
@@ -120,7 +114,7 @@ results <- parLapply(cl, fold_rep, function(fold) {
       xv_res <- lol.xval.optimal_dimselect(X, Y, rs, algs[[i]], sets=sets,
                                            alg.opts=list(), alg.return="A", classifier=classifier.alg,
                                            classifier.return=classifier.ret, k=k)
-      results <- rbind(results, data.frame(exp=taskname, alg=names(algs)[i], xv=k, n=n, d=d, K=length(unique(Y)),
+      results <- rbind(results, data.frame(exp=taskname, alg=names(algs)[i], xv=k, n=n, ntrain=length(sets[[1]]$train), d=d, K=length(unique(Y)),
                                            fold=fold$fold, r=xv_res$folds.data$r,
                                            lhat=xv_res$folds.data$lhat, repo=dat$repo))
     }, error=function(e) {print(e); return(NULL)})
@@ -137,18 +131,18 @@ results <- parLapply(cl, fold_rep, function(fold) {
           Yhat <- Yhat[[classifier.returns[[classifier]]]]
         }
         lhat <- 1 - sum(as.numeric(Yhat) == as.numeric(Y[set$test]))/length(Yhat)
-        results <- rbind(results, data.frame(exp=taskname, alg=classifier, xv=k, n=n, d=d, K=length(unique(Y)),
-                                             fold=fold$fold, r=NaN, lhat=lhat, repo=dat$repo))
+        results <- rbind(results, data.frame(exp=taskname, alg=classifier, xv=k, n=n, ntrain=length(sets[[1]]$train), d=d, K=length(unique(Y)),
+                                             fold=fold$fold, r=NaN, lhat=1 - max(model$priors), repo=dat$repo))
       }, error=function(e) {print(e); NULL})
     }
   }
 
   saveRDS(results, file=paste(opath, taskname, '_', fold$fold, '.rds', sep=""))
   return(results)
-})
+}, mc.cores=no_cores)
 resultso <- do.call(rbind, results)
+
 saveRDS(resultso, file.path(opath, paste(classifier.name, '_results.rds', sep="")))
-stopCluster(cl)
 
 require(stringr)
 
@@ -157,12 +151,13 @@ repo.name = 'uci'
 classifier.name = 'lda'
 fnames <- list.files(path, pattern='*.rds')
 
-results <- data.frame(exp=c(), alg=c(), XV=c(), n=c(), d=c(), K=c(), fold=c(), r=c(), lhat=c(),
+results <- data.frame(exp=c(), alg=c(), XV=c(), n=c(), ntrain=c(), d=c(), K=c(), fold=c(), r=c(), lhat=c(),
                        repo=c())
 for (fname in fnames) {
-  foldid <- str_extract(fname, "(?<=_)(.*?)(?=[._])")
+  foldid <- strsplit(fname, '[_,.]')[[1]]
+  foldid <- foldid[[length(foldid)-1]]
   dat <- readRDS(file.path(path, fname))
   dat$fold <- as.integer(foldid)
-  results <- rbind(resultso, dat)
+  results <- rbind(results, dat)
 }
-saveRDS(results, file.path(path, paste(repo.name, '_', classifier.name, '_results.rds', sep="")))
+saveRDS(results, file.path(path, paste(classifier.name, '_results.rds', sep="")))

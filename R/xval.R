@@ -1,6 +1,9 @@
 #' Embedding Cross Validation
 #'
-#' A function for performing leave-one-out cross-validation for a given embedding model.
+#' A function for performing leave-one-out cross-validation for a given embedding model. This function produces fold-wise
+#' cross-validated misclassification rates for standard embedding techniques. Users can optionally specify custom embedding techniques
+#' with proper configuration of \code{alg.*} parameters and hyperparameters. Optional classifiers implementing the S3 \code{predict} function can be used
+#' for classification, with hyperparameters to classifiers for determining misclassification rate specified in \code{classifier.*} parameters and hyperparameters.
 #'
 #' @importFrom MASS lda
 #' @importFrom stats predict
@@ -27,10 +30,15 @@
 #' \item{\code{!is.nan(classifier.return)} Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.}
 #' \item{\code{is.nan(classifier.return)} Assumes that \code{predict.classifer} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.}
 #' }
-#' @param k the cross-validated method to perform. Defaults to \code{'loo'}. See \code{\link{lol.xval.split}}
+#' @param k the cross-validated method to perform. Defaults to \code{'loo'}. If \code{sets} is provided, this option is ignored. See \code{\link{lol.xval.split}} for details.
 #' \itemize{
 #' \item{\code{'loo'} Leave-one-out cross validation}
 #' \item{\code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
+#' }
+#' @param rank whether to force the training set to low-rank. Defaults to \code{FALSE}. If \code{sets} is provided, this option is ignored. See \code{\link{lol.xval.split}} for details.
+#' \itemize{
+#' \item{if \code{rank == FALSE}, uses default cross-validation method with standard \code{k}-fold validation. Training sets are \code{k-1} folds, and testing sets are \code{1} fold, where the fold held-out for testing is rotated to ensure no dependence of potential downstream inference in the cross-validated misclassification rates.}
+#' \item{if ]code{rank == TRUE}, users cross-validation method with \code{ntrain = min((k-1)/k*n, d)} sample training sets, where \code{d}  is the number of dimensions in \code{X}. This ensures that the training data is always low-rank, \code{ntrain < d + 1}. Note that the resulting training sets may have \code{ntrain < (k-1)/k*n}, but the resulting testing sets will always be properly rotated \code{ntest = n/k} to ensure no dependencies in fold-wise testing.}
 #' }
 #' @param ... trailing args.
 #' @return Returns a list containing:
@@ -133,7 +141,12 @@ nan.mean <- function(x) mean(x, na.rm=TRUE)
 
 #' Optimal Cross-Validated Number of Embedding Dimensions
 #'
-#' A function for performing leave-one-out cross-validation for a given embedding model.
+#' A function for performing leave-one-out cross-validation for a given embedding model, that allows users to determine the optimal number of embedding dimensions for
+#' their algorithm-of-choice. This function produces fold-wise cross-validated misclassification rates for standard embedding techniques across a specified selection of
+#' embedding dimensions. Optimal embedding dimension is selected as the dimension with the lowest average misclassification rate across all folds.
+#' Users can optionally specify custom embedding techniques with proper configuration of \code{alg.*} parameters and hyperparameters.
+#' Optional classifiers implementing the S3 \code{predict} function can be used for classification, with hyperparameters to classifiers for
+#' determining misclassification rate specified in \code{classifier.*}.
 #'
 #' @importFrom MASS lda
 #' @importFrom stats predict
@@ -167,10 +180,15 @@ nan.mean <- function(x) mean(x, na.rm=TRUE)
 #' \item{\code{!is.nan(classifier.return)} Assumes that \code{predict.classifier} will return a list containing an attribute, \code{classifier.return}, that encodes the predicted labels.}
 #' \item{\code{is.nan(classifier.return)} Assumes that \code{predict.classifer} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.}
 #' }
-#' @param k the cross-validated method to perform. Defaults to \code{'loo'}. See \code{\link{lol.xval.split}}
+#' @param k the cross-validated method to perform. Defaults to \code{'loo'}. If \code{sets} is provided, this option is ignored. See \code{\link{lol.xval.split}} for details.
 #' \itemize{
 #' \item{\code{'loo'} Leave-one-out cross validation}
 #' \item{\code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
+#' }
+#' @param rank whether to force the training set to low-rank. Defaults to \code{FALSE}. If \code{sets} is provided, this option is ignored. See \code{\link{lol.xval.split}} for details.
+#' \itemize{
+#' \item{if \code{rank == FALSE}, uses default cross-validation method with standard \code{k}-fold validation. Training sets are \code{k-1} folds, and testing sets are \code{1} fold, where the fold held-out for testing is rotated to ensure no dependence of potential downstream inference in the cross-validated misclassification rates.}
+#' \item{if ]code{rank == TRUE}, users cross-validation method with \code{ntrain = min((k-1)/k*n, d)} sample training sets, where \code{d}  is the number of dimensions in \code{X}. This ensures that the training data is always low-rank, \code{ntrain < d + 1}. Note that the resulting training sets may have \code{ntrain < (k-1)/k*n}, but the resulting testing sets will always be properly rotated \code{ntest = n/k} to ensure no dependencies in fold-wise testing.}
 #' }
 #' @param ... trailing args.
 #' @return Returns a list containing:
@@ -215,7 +233,7 @@ nan.mean <- function(x) mean(x, na.rm=TRUE)
 #' @export
 lol.xval.optimal_dimselect <- function(X, Y, rs, alg, sets=NULL, alg.dimname="r", alg.opts=list(), alg.embedding="A",
                                        alg.structured=TRUE, classifier=lda, classifier.opts=list(),
-                                       classifier.return="class", k='loo', ...) {
+                                       classifier.return="class", k='loo', rank=FALSE, ...) {
   d <- dim(X)[2]
   Y <- factor(Y)
   n <- length(Y)
@@ -320,8 +338,12 @@ lol.xval.check_xv_set <- function(sets, n) {
 
 #' Cross-Validation Data Splitter
 #'
-#' A function to split a dataset into
-#' training and testing sets for cross validation.
+#' A function to split a dataset into training and testing sets for cross validation. The procedure for cross-validation
+#' is to split the data into k-folds. The k-folds are then rotated individually to form a single held-out testing set the model will be validated on,
+#' and the remaining (k-1) folds are used for training the developed model. Note that this cross-validation function includes functionality to be used for
+#' low-rank cross-validation. In that case, instead of using the full (k-1) folds for training, we subset \code{min((k-1)/k*n, d)} points to ensure that
+#' the resulting training sets  are all low-rank. We still rotate properly over the held-out fold to ensure that the resulting testing sets
+#' do not have any shared examples, which would add a complicated  dependence structure to inference we attempt to infer on the testing sets.
 #'
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
@@ -330,15 +352,15 @@ lol.xval.check_xv_set <- function(sets, n) {
 #' \item{if \code{k == round(k)}, performed k-fold cross-validation.}
 #' \item{if \code{k == 'loo'}, performs leave-one-out cross-validation.}
 #' }
-#' @param reverse whether to flip the training and testing partitions. Defaults to \code{FALSE}.
+#' @param rank whether to force the training set to low-rank. Defaults to \code{FALSE}.
 #' \itemize{
-#' \item{if \code{isTRUE(reverse)}, flips the training and testing partitions, such that cross-validation will be performed with 1 training fold and k-1 testing folds.}
-#' \item{if \code{!isTRUE(reverse)}, standard cross-validation, with k-1 training folds and 1 testing fold.}
+#' \item{if \code{rank == FALSE}, uses default cross-validation method with standard \code{k}-fold validation. Training sets are \code{k-1} folds, and testing sets are \code{1} fold, where the fold held-out for testing is rotated to ensure no dependence of potential downstream inference in the cross-validated misclassification rates.}
+#' \item{if ]code{rank == TRUE}, users cross-validation method with \code{ntrain = min((k-1)/k*n, d)} sample training sets, where \code{d}  is the number of dimensions in \code{X}. This ensures that the training data is always low-rank, \code{ntrain < d + 1}. Note that the resulting training sets may have \code{ntrain < (k-1)/k*n}, but the resulting testing sets will always be properly rotated \code{ntest = n/k} to ensure no dependencies in fold-wise testing.}
 #' }
 #' @param ... optional args.
 #' @return sets the cross-validation sets as an object of class \code{"XV"} containing the following:
-#' \item{\code{train}}{is \code{[n - n/k]} vector if \code{isTRUE(reverse)}, and a \code{[n/k]} vector otherwise.}
-#' \item{\code{test}}{is \code{[n/k]} vector if \code{isTRUE(reverse)}, and a \code{[n - n/k]} vector otherwise.}
+#' \item{\code{train}}{length \code{[ntrain]} vector indicating the indices of the training examples.}
+#' \item{\code{test}}{ length \codoe{[ntest]} vector indicating the indices of the testing examples.}
 #' @author Eric Bridgeford
 #' @examples
 #' # prepare data for 10-fold validation
@@ -351,7 +373,7 @@ lol.xval.check_xv_set <- function(sets, n) {
 #' sets.xval.loo <- lol.xval.split(X, Y, k='loo')
 #'
 #' @export
-lol.xval.split <- function(X, Y, k='loo', reverse=FALSE, ...) {
+lol.xval.split <- function(X, Y, k='loo', rank=FALSE, ...) {
   Y <- factor(Y)
   n <- length(Y)
   n.x <- dim(X)[1]
@@ -366,11 +388,13 @@ lol.xval.split <- function(X, Y, k='loo', reverse=FALSE, ...) {
     k.folds <- split(samp.ids, rep(1:k), drop=TRUE)  # split the sample ids into xval folds
     # partition X and Y appropriately into training and testing sets
     sets <- lapply(k.folds, function(fold) {
-      if (reverse) {
-        train <- samp.ids[fold]; test <- samp.ids[-fold]
+      if (rank) {
+        tset <- -fold[sample(1:n, min(floor((k-1)/k*n), d))]
       } else {
-        train <- samp.ids[-fold]; test <- samp.ids[fold]
+        tset <- -fold
       }
+      train <- samp.ids[tset]
+      test <- samp.ids[fold]
       list(train=train, test=test)
     })
   } else {
