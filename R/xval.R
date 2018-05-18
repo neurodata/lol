@@ -392,7 +392,7 @@ lol.xval.split <- function(X, Y, k='loo', rank.low=FALSE, ...) {
       train <- samp.ids[-fold]
       # if low-rank specified, sub-sample d elements if not already low-rank
       if (rank.low & length(train) > d) {
-        train <- fold[sample(train, d)]  # sample d-elements randomly
+        train <- train[sample(1:length(train), d)]  # sample d-elements randomly
       }
 
       test <- samp.ids[fold]

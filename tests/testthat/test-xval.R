@@ -13,7 +13,6 @@ test_that('Failure Cases', {
   r <- 2
   expect_error(lol.xval.eval(dat$X, c(dat$Y, dat$Y), r, lol.project.lol, sets=sets))
   expect_error(lol.xval.optimal_dimselect(dat$X, c(dat$Y, dat$Y), c(2, 20), lol.project.lol, sets=sets))
-
 })
 
 test_that('Cross Validation Returns Lhat', {
@@ -50,28 +49,51 @@ test_that('Optimal Embedding Dimensions', {
   expect_equal(length(result$folds.data$lhat), xv*length(rs))
 })
 
-test_that('Kfold Setup', {
+test_that('Kfold LOO Normal Case', {
   sets <- lol.xval.split(dat$X, dat$Y, k='loo')
   expect_true(length(sets) == n)
   sapply(sets, function(set) {
     expect_true(length(set$train) == n - 1)
     expect_true(length(set$test) == 1)
   })
+})
 
-  sets <- lol.xval.split(dat$X, dat$Y, k=20)
+test.sets <- lapply(sets, function(set) set$test)
+test_that('Kfold with LOO produces independent testing sets', {
+  testsamples <- do.call(c, test.sets)
+  expect_equal(length(testsamples), length(unique(testsamples)))
+})
+
+sets <- lol.xval.split(dat$X, dat$Y, k=20)
+test_that('Kfold with K folds Normal Case', {
   expect_true(length(sets) == 20)
   sapply(sets, function(set) {
     expect_true(length(set$train) == n - n/20)
     expect_true(length(set$test) == n/20)
   })
+})
 
+test.sets <- lapply(sets, function(set) set$test)
+test_that('Kfold with K folds produces independent testing sets', {
+  testsamples <- do.call(c, test.sets)
+  expect_equal(length(testsamples), length(unique(testsamples)))
+})
 
-  sets <- lol.xval.split(dat$X, dat$Y, k=20, reverse=TRUE)
+sets <- lol.xval.split(dat$X, dat$Y, k=20, rank.low=TRUE)
+test_that('Kfold Low-Rank Normal Case', {
   expect_true(length(sets) == 20)
   sapply(sets, function(set) {
-    expect_true(length(set$train) == n/20)
-    expect_true(length(set$test) == n - n/20)
+    expect_true(length(set$train) == d)
+    expect_true(length(set$test) == n/20)
   })
+})
 
+test.sets <- lapply(sets, function(set) set$test)
+test_that('Kfold with Low Rank produces independent testing sets', {
+  testsamples <- do.call(c, test.sets)
+  expect_equal(length(testsamples), length(unique(testsamples)))
+})
+
+test_that('Kfold Errors when K not provided', {
   expect_error(lol.xval.split(dat$X, dat$Y, k=NULL))
 })
