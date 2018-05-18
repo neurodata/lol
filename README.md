@@ -162,4 +162,4 @@ vignette('extend_classification')
 
 # Citation
 
-For usage of the package and associated manuscript, please cite according to the enclosed [citations.bib](./citations.bib).
+For usage of the package and associated manuscript, please cite according to the enclosed [citation.bib](./citation.bib).
