@@ -5,6 +5,10 @@ date: "March 12, 2018"
 output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE)
+```
+
 ```{r, message=FALSE}
 require(lolR)
 require(ggplot2)
@@ -43,39 +47,63 @@ compute_cutoff <- function(rs, lhats, t=0.05) {
 
 w=.8
 h=.2
-plot_sim_lhats <- function(data, data.full, cols, pt.dat, linetype, shape, title="", from=10, ylab=TeX("$\\hat{L}$"),
+plot_sim_lhats <- function(data_sub, data_sub.optimalr, cols, linetype, shape, title="", from=10, ylab=TeX("$\\hat{L}$"),
                            xlab="Embedded Dimensions", fsize=12, length.out=3) {
-  lims <- c(floor(10*min(pt.dat$lhat, na.rm=TRUE))/10, ceiling(10*max(pt.dat$lhat, na.rm=TRUE))/10)
+  lims <- c(floor(10*min(data_sub.optimalr$lhat.alg, na.rm=TRUE))/10, ceiling(10*max(data_sub.optimalr$lhat.alg, na.rm=TRUE))/10)
   if (is.na(sum(lims))) {
     return(ggplot())
   }
-  breaks = unique(round(seq(from=lims[1], to=lims[2], length.out = length.out), digits=1))
-  xlims <- c(min(data$r, na.rm=TRUE), max(data$r, na.rm=TRUE))
-  xbreaks <- seq(from=from, to=xlims[2], length.out=length.out)
-  plot_sims <- ggplot(data.full, aes(x=r, y=lhat, linetype=alg, shape=alg, fill=alg, color=alg)) +
-    geom_smooth(size=.95) +
-    scale_color_manual(values=cols, limits=names(cols),
-                       guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
-    geom_point(data=pt.dat, size=2) +
-    #geom_line(data=base::subset(data, alg == "CCA"), aes(x=r, y=lhat, group=alg, linetype color=alg), size=.75) +
-    #geom_point(data=base::subset(pt.dat, alg == "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=2) +
-    #geom_line(data=base::subset(data, alg != "CCA" & alg != "QOQ"), aes(x=r, y=lhat, group=alg, color=alg), size=.75) +
-    #geom_point(data=base::subset(pt.dat, alg != "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=2) +
-    #geom_line(data=base::subset(data, alg == "QOQ"), aes(x=r, y=lhat, group=alg, color=alg), linetype="dashed", size=.75) +
-    xlab(xlab) +
-    ylab(ylab) +
-    ggtitle(title) +
-    theme_bw() +
-    scale_y_continuous(limits=lims, breaks=breaks) +
-    scale_x_continuous(limits=xlims, breaks=xbreaks) +
-    scale_shape_manual(values=shape, limits=names(cols),
-                       guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
-    scale_fill_manual(values=cols, limits=names(cols),
-                      guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
-    theme(plot.margin = unit(c(h,w,h,h), "cm")) +
-    theme(legend.position="bottom", text=element_text(size=fsize))
-  return(plot_sims)
+  tryCatch({
+    breaks = unique(round(seq(from=lims[1], to=lims[2], length.out = length.out), digits=1))
+    xlims <- c(min(data_sub$r.alg, na.rm=TRUE), max(data_sub$r.alg, na.rm=TRUE))
+    xbreaks <- round(seq(from=from, to=xlims[2], length.out=length.out))
+    plot_sims <- ggplot(data_sub, aes(x=r.alg, y=lhat.alg, linetype=alg, shape=alg, fill=alg, color=alg)) +
+      stat_summary(size=.95, fun.y="mean", geom="line") +
+      stat_summary(fun.data = mean_cl_normal, geom = "errorbar", fun.args = list(mult = 1)) +
+      geom_point(data=data_sub.optimalr, size=2) +
+      scale_color_manual(values=cols, limits=names(cols),
+                         guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
+      scale_fill_manual(values=cols, limits=names(cols),
+                        guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
+      scale_shape_manual(values=shape, limits=names(cols),
+                         guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
+      scale_linetype_manual(values=linetype, limits=names(cols),
+                         guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
+      xlab(xlab) +
+      ylab(ylab) +
+      ggtitle(title) +
+      theme_bw() +
+      coord_cartesian(ylim=lims) +
+      scale_x_continuous(limits=xlims, breaks=xbreaks) +
+      theme(plot.margin = unit(c(h,w,h,h), "cm")) +
+      theme(legend.position="bottom", text=element_text(size=fsize))
+    return(plot_sims)
+  }, error=function(e) {return(ggplot())})
 }
+
+plot_sim_scatter <- function(data.sub.foldwise, cols, shape, title="",
+                             ylab=TeX("$\\frac{\\hat{L}_{LOL} - \\hat{L}_{alg}}{\\hat{L}_{chance}}$"), psize=1,
+                             xlab="Algorithm", fsize=12) {
+  tryCatch({
+      plot_sims <- ggplot(dat=subset(data.sub.foldwise, alg != "LOL"), aes(x=alg, y=lhat.norm, color=alg, group=alg)) +
+        geom_beeswarm(alpha=0.5, size=psize) +
+        xlab("Algorithm") +
+        scale_color_manual(values=cols, limits=names(cols),
+                           guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
+        scale_fill_manual(values=cols, limits=names(cols),
+                          guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
+        scale_shape_manual(values=shape, limits=names(cols),
+                           guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
+        xlab(xlab) +
+        ylab(ylab) +
+        ggtitle(title) +
+        theme_bw() +
+        theme(plot.margin = unit(c(h,w,h,h), "cm")) +
+        theme(legend.position="bottom", text=element_text(size=fsize))
+      return(plot_sims)
+  }, error=function(e) {return(ggplot())})
+}
+
 
 
 g_legend<-function(a.gplot){
@@ -89,11 +117,22 @@ g_legend<-function(a.gplot){
 # Results Loading
 
 ```{r, message=FALSE}
-#results <- readRDS(file.path(opath, paste(classifier.name, "_", dataset.name, "_results.rds", sep="")))
 results <- readRDS(file.path(opath, paste(classifier.name, "_results.rds", sep="")))
-#results <- subset(results, repo == repo)
-results <- results[complete.cases(results$lhat),]
-results <- results[results$d > 200,]
+# filter out bad rows
+results <- results[complete.cases(results$lhat) & !(is.infinite(results$lhat)) & complete.cases(results),]
+exp_names <- unique(as.character(results$exp))
+# make sure columns of interest are numeric
+numeric.cols <- c("d", "n", "ntrain", "K", "fold", "r", "lhat")
+for (col in numeric.cols) {
+  results[[col]] <- as.numeric(results[[col]])
+  if (col == "ntrain") {  # make sure that ntrain is constant across experiments, due to situation where one fold has fewer examples than another
+    for (exp in exp_names) {
+      results[results$exp == exp,]$ntrain = median(results[results$exp == exp,]$ntrain, na.rm=TRUE)
+    }    
+  }
+}
+results <- results[results$d > 100 & results$ntrain > 50,]
+# filter out duplicate experiments
 results <- results[!(results$exp %in% c("splice", "promoters", "molecular-biology_promoters")),]
 nan.mean <- function(x) {mean(x[!is.infinite(x)], na.rm=TRUE)}
 results.means <- aggregate(lhat ~ exp + alg + r + d + n + ntrain + K, data = results, FUN = nan.mean)
@@ -110,7 +149,6 @@ names(acols) <- algs
 #shapes <- c(21, 24, 21, 24, 23, 23, 21, 24, 23)
 shapes <- c(21, 24, 21, 24, 23, 23)
 names(shapes) <- algs
-exp_names <- unique(as.character(results$exp))
 ```
 
 # Analysis
@@ -143,65 +181,117 @@ for (i in 1:length(exp_names)) {
         colnames(lol.ss)[colnames(lol.ss) == "lhat"] = "lhat.lol"
         lol.optimalr <- ss.optimalr
         colnames(lol.optimalr)[colnames(lol.optimalr) == "lhat"] = "lhat.lol"
+        colnames(lol.optimalr)[colnames(lol.optimalr) == "rstar.norm"] = "rstar.norm.lol"
       }
       colnames(ss)[colnames(ss) == "lhat"] = "lhat.alg"
       colnames(ss.optimalr)[colnames(ss.optimalr) == "lhat"] = "lhat.alg"
-      ss.merged <- merge(ss, lol.ss, by=c("exp", "fold", "n", "d", "K", "r", "ntrain", "repo", "xv"))
+      ss.merged <- merge(ss, lol.ss, by=c("exp", "fold", "n", "d", "K", "ntrain", "repo", "xv"))
       ss.merged <- merge(ss.merged, ss.chance, by=c("exp", "fold", "n", "d", "K", "ntrain", "repo", "xv"), all=TRUE)
-      ss.merged$rstar.norm <- (ss.merged$r.y - ss.merged$r.x)/r.max
+      
       ss.optimalr <- merge(ss.optimalr, lol.optimalr, by=c("exp", "fold", "n", "d", "K", "ntrain", "repo", "xv"))
       ss.optimalr <- merge(ss.optimalr, ss.chance, by=c("exp", "fold", "n", "d", "K", "ntrain", "repo", "xv"), all=TRUE)
-      ss.optimalr$rstar.norm <- (ss.optimalr$r.y - ss.optimalr$r.x)/r.max
+      
+      
+      colnames(ss.merged)[colnames(ss.merged) == "r.x"] = "r.alg"
+      colnames(ss.optimalr)[colnames(ss.optimalr) == "r.x"] = "r.alg"
+      colnames(ss.merged)[colnames(ss.merged) == "r.y"] = "r.lol"
+      colnames(ss.optimalr)[colnames(ss.optimalr) == "r.y"] = "r.lol"
+      colnames(ss.merged)[colnames(ss.merged) == "alg"] <- "chance"
+      colnames(ss.merged)[colnames(ss.merged) == "alg.x"] <- "alg"
+      colnames(ss.optimalr)[colnames(ss.optimalr) == "alg"] <- "chance"
+      colnames(ss.optimalr)[colnames(ss.optimalr) == "alg.x"] <- "alg"
+      ss.merged$lhat.norm <- (ss.merged$lhat.lol - ss.merged$lhat.alg)/ss.merged$lhat.chance
+      ss.merged$r.max <- r.max
+      
+      ss.optimalr$lhat.norm <- (ss.optimalr$lhat.lol - ss.optimalr$lhat.alg)/ss.optimalr$lhat.chance
+      ss.optimalr$rstar.norm <- (ss.optimalr$r.lol - ss.optimalr$r.alg)/r.max
+      ss.optimalr$r.max <- r.max
       results.overall <- rbind(results.overall, ss.merged)
       results.optimalr <- rbind(results.optimalr, ss.optimalr)
     }, error=function(e) {print(NULL)})
   }
 }
-results.overall$lhat.norm <- (results.overall$lhat.lol - results.overall$lhat.alg)/results.overall$lhat.chance
-colnames(results.overall)[colnames(results.overall) == "alg"] <- "chance"
-colnames(results.overall)[colnames(results.overall) == "alg.x"] <- "alg"
-results.optimalr$lhat.norm <- (results.optimalr$lhat.lol - results.optimalr$lhat.alg)/results.optimalr$lhat.chance
-colnames(results.optimalr)[colnames(results.optimalr) == "alg"] <- "chance"
-colnames(results.optimalr)[colnames(results.optimalr) == "alg.x"] <- "alg"
+
+results.exp.overall <- aggregate(list(lhat.norm=results.overall$lhat.norm, lhat.alg=results.overall$lhat.alg,
+                                       lhat.lol=results.overall$lhat.lol, lhat.chance=results.overall$lhat.chance, r.max=results.overall$r.max),
+                                  by=list(exp=results.overall$exp, n=results.overall$n, K=results.overall$K,
+                                          ntrain=results.overall$ntrain, d=results.overall$d,
+                                          repo=results.overall$repo, r.alg=results.overall$r.alg,
+                                          alg=results.overall$alg), FUN=nan.mean)
+
 results.exp.optimalr <- aggregate(list(lhat.norm=results.optimalr$lhat.norm, lhat.alg=results.optimalr$lhat.alg,
                                        lhat.lol=results.optimalr$lhat.lol, lhat.chance=results.optimalr$lhat.chance,
-                                       rstar.norm=results.optimalr$rstar.norm),
+                                       rstar.norm=results.optimalr$rstar.norm, r.max=results.optimalr$r.max),
                                   by=list(exp=results.optimalr$exp, n=results.optimalr$n, K=results.optimalr$K,
                                           ntrain=results.optimalr$ntrain, d=results.optimalr$d,
-                                          repo=results.optimalr$repo, rstar.norm=results.optimalr$rstar.norm,
+                                          repo=results.optimalr$repo, r.alg=results.optimalr$r.alg,
                                           alg=results.optimalr$alg), FUN=nan.mean)
 ```
 
-# Overall Plots
+# Per-Dataset Plots
 
-```{r, message=FALSE}
+Given algorithm $a$ where $L_{a, i}$ is the $i^{th}$ fold's misclassification rate for dataset $j$ with $d$ possibilities, and $r \in [1, ..., p]$:
+
+\begin{align*}
+  \overbar{L}_{a, j}(r) = \textrm{mean}_{i \in [1, ..., k]}\left\{L_{a, i, j}(r)\right\}
+\end{align*}
+
+A single dot is produced where:
+
+\begin{align*}
+  r^*_{j} = \textrm{optimal argmin}_r\left\{\overbar{L}_{a, j}(r)\right\}
+\end{align*}
+
+which is defined as the optimum number of embedding dimensions. We use $\textrm{optimal argmin}$ here to indicate the smallest $r$ where $\overbar{L}_{a, i}(r)$ is within $5\%$ of the global minimum.
+
+```{r, fig.height=15, fig.width=25, message=FALSE}
 plots.curves <- list()
+plots.scatters <- list()
 for (i in 1:length(exp_names)) {
   exp <- exp_names[i]
-  data_sub <- results.means[results.means$exp == exp,]
-  data_sub.full <- results[results$exp == exp,]
-  pt.dat <- data.frame(x=c(), y=c())
-  for (alg in unique(data_sub$alg)) {
-    pt <- compute_cutoff(data_sub[data_sub$alg == alg,]$r, data_sub[data_sub$alg == alg,]$lhat)
-    pt.dat <- rbind(pt.dat, data.frame(r=pt$r, lhat=pt$lhat, alg=alg))
-  }
-  plots.curves[[i]] <- plot_sim_lhats(data_sub, data_sub.full, acols, pt.dat, linestyle, shapes, ylab="",
-                               title=sprintf("Exp %d, K=%d, n=%d, p=%d", i, data_sub[1,]$K, data_sub[1,]$n, data_sub[1,]$d), 
-                               from=1, fsize = 7)
+  data_sub <- results.overall[results.overall$exp == exp,]
+  data_sub.optimalr <- results.exp.optimalr[results.exp.optimalr$exp == exp,]
+  data_sub.optimalr.foldwise <- results.optimalr[results.optimalr$exp == exp,]
+  tryCatch({
+    plots.curves[[i]] <- plot_sim_lhats(data_sub, data_sub.optimalr, acols, linestyle, shapes, ylab="",
+                                 title=sprintf("Exp %d, K=%d, n=%d, p=%d", i, data_sub[1,]$K, data_sub[1,]$n, data_sub[1,]$d), 
+                                 from=1, fsize = 7)
+    plots.scatters[[i]] <- plot_sim_scatter(data_sub.optimalr.foldwise, acols, shapes,
+                                 title=sprintf("Exp %d, K=%d, n=%d, p=%d", i, data_sub[1,]$K, data_sub[1,]$n, data_sub[1,]$d),
+                                 fsize=12)
+    
+  }, error=function(e){NaN})
 }
 
-plot_leg <- g_legend(plots.curves[[1]])
-plots <- lapply(plots.curves, function(plot) plot + theme(legend.position=NaN) + xlab(""))
+curves.plot_leg <- g_legend(plots.curves[[1]])
+scatters.plot_leg <- g_legend(plots.scatters[[1]])
+plots.curves <- lapply(plots.curves, function(plot) plot + theme(legend.position=NaN) + xlab("") + ylab(""))
 plots.curves[[1]] <- plots.curves[[1]] + xlab("Embedded Dimensions") + ylab("Misclassification Rate")
+plots.scatters <- lapply(plots.scatters, function(plot) plot + theme(legend.position=NaN) + xlab("") + ylab(""))
+plots.scatters[[1]] <- plots.scatters[[1]] + xlab("Algorithm") +
+  ylab(TeX("Normalized Misclassification Rate"))
 
-#grid.arrange(arrangeGrob(grobs=plots, nrow=floor(sqrt(length(plots)))), plot_leg, nrow=1, widths=c(0.8, .15))
+grid.arrange(arrangeGrob(grobs=plots.curves, nrow=floor(sqrt(length(plots.curves)))), curves.plot_leg, nrow=2, heights=c(0.8, .15))
+grid.arrange(arrangeGrob(grobs=plots.scatters, nrow=floor(sqrt(length(plots.scatters)))), scatters.plot_leg, nrow=2, heights=c(0.8, .15))
 ```
-
 
 # Quadrant Plot
 
+For algorithm $a$ and problem $j$, the normalized embedding dimension per-dataset:
 
-```{r, message=FALSE}
+\begin{align*}
+  \left|\left|r^*_{a, j}\right|\right| = \frac{r^*_{LOL, j} - r^*_{a, j}}{p}
+\end{align*}
+
+with normalized misclassification rate per-dataset:
+
+\begin{align*}
+  \left|\left|overbar{L}_{a, j}(r)\right|\right| = \textrm{mean}_{i \in [1, ..., k]}\left\{\frac{overbar{L}_{a, j, i}\left(r^*_{LOL, j}\right) - overbar{L}_{a, j, i}\left(r^*_{a, j}\right)}{overbar{L}_{chance, j, i}}\right\}
+\end{align*}
+
+where the $chance$ classifier is simply the classifier that guesses the "most-present" class (the class with the highest prior) in the particular fold.
+
+```{r, message=FALSE, fig.height=5, fig.width=7}
 make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", leg.title="",
                              legend.style=guide_legend(ncol=2, byrow=TRUE)) {
   data$exp <- factor(data$exp)
@@ -209,7 +299,7 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
                     y=c(max(ylims), max(ylims), mean(ylims), mean(ylims)))
   center <- ggplot(data, aes(x=rstar.norm, y=lhat.norm)) +
     geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
-    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, fill=alg), alpha=0.3, size=1.2) +
+    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, fill=alg), alpha=0.6, size=1.2) +
     scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_shape_manual(values=shapes, guide=legend.style, name=leg.title) +
     ylab(yl) +
@@ -263,21 +353,20 @@ grid.arrange(make_marginal_2d(subset(results.exp.optimalr, !(alg %in% c("LOL")))
                               xl="Normalized Embedding Dimension", yl="Normalized Misclassification Rate"))
 ```
 
-#
+# Aggregated over Datasets Plot
 
-```{r}
-results.optimal.means <- data.frame(alg=c(), r=c(), lhat=c())
+The average misclassification rate per-algorithm over all problems at $r_{a, j}^*$.
+
+```{r, fig.height=3, fig.width=5}
+results.exp.optimalr.means <- aggregate(list(lhat.alg=results.exp.optimalr$lhat.alg, r.alg=results.exp.optimalr$r.alg),
+                                        by=list(alg=results.exp.optimalr$alg), FUN=nan.mean)
 print("Optimal")
 for (j in 1:length(algs)) {
-  results.optimal.means <- rbind(results.optimal.means, data.frame(alg=algs[j],
-                                                                   r=mean(results.optimalr$r[results.optimalr$alg == algs[j]]),
-                                                                   lhat=mean(results.optimalr$lhat[results.optimalr$alg == algs[j]])))
-  print(sprintf("Mean Lhat for %s: %.3f", algs[j], mean(results.optimalr$lhat[results.optimalr$alg == algs[j]])))
-  print(sprintf("Mean rhat for %s: %.3f", algs[j], mean(results.optimalr$r[results.optimalr$alg == algs[j]])))
-  print(sprintf("n for %s: %d", algs[j], dim(aggregate(lhat ~ alg + exp, results.optimalr[results.optimalr$alg == algs[j],], FUN=mean))[1]))
+  print(sprintf("Mean Lhat for %s: %.3f", algs[j], results.exp.optimalr.means[results.exp.optimalr.means$alg == algs[j],]$lhat.alg))
+  print(sprintf("Mean rstar for %s: %.3f", algs[j], results.exp.optimalr.means[results.exp.optimalr.means$alg == algs[j],]$r.alg))
 }
 
-ggplot(results.optimal.means, aes(x=r, y=lhat, shape=alg, fill=alg)) +
+ggplot(results.exp.optimalr.means, aes(x=r.alg, y=lhat.alg, shape=alg, fill=alg)) +
     geom_point(size=2) +
     scale_fill_manual(values=acols, guide=guide_legend(ncol=2, byrow=TRUE), name="Algorithm") +
     scale_shape_manual(values=shapes, guide=guide_legend(ncol=2, byrow=TRUE), name="Algorithm") +
@@ -285,29 +374,39 @@ ggplot(results.optimal.means, aes(x=r, y=lhat, shape=alg, fill=alg)) +
     xlab("Embedding Dimension") +
     labs(shape="Simulation", color="Algorithm") +
     ggtitle("Real Data Average Results") +
-    scale_y_continuous(limits=c(.1, .35)) +
-    scale_x_continuous(limits=c(0, 30)) +
     theme_bw()
 ```
 
-# Heatmap
+# Heatmaps
 
-```{r}
+We use a one-sided wilcoxon test for the following 2 hypotheses:
+
+\begin{align*}
+  H_0^{r, i, j}: \left|\left|r^*_{a, j}\right|\right| \geq \left|\left|r^*_{a, i}\right|\right| \\
+  H_A^{r, i, j}: \left|\left|r^*_{a, j}\right|\right| < \left|\left|r^*_{a, i}\right|\right|
+\end{align*}
+
+\begin{align*}
+  H_0^{L, i, j}: \left|\left|overbar{L}_{a, j}\left(r^*_{a, j}\right)\right|\right| \geq \left|\left|overbar{L}_{a, j}\left(r^*_{a, i}\right)\right|\right| \\
+  H_A^{L, i, j}: \left|\left|overbar{L}_{a, j}\left(r^*_{a, j}\right)\right|\right| < \left|\left|overbar{L}_{a, j}\left(r^*_{a, i}\right)\right|\right|
+\end{align*}
+
+```{r, fig.height=3.5, fig.width=5}
 rhat.test <- data.frame(x=c(), y=c(), p=c())
 lhat.test <- data.frame(x=c(), y=c(), p=c())
 for (i in 1:length(algs)) {
-  i.ss <- results.optimalr[results.optimalr$alg == algs[i],]
+  i.ss <- results.exp.optimalr[results.exp.optimalr$alg == algs[i],]
   for (j in 1:length(algs)) {
     tryCatch({
       if (algs[i] == algs[j]) {
         rhat.test <- rbind(rhat.test, data.frame(x=algs[i], y=algs[j], p=NaN))
         lhat.test <- rbind(lhat.test, data.frame(x=algs[i], y=algs[j], p=NaN))
       } else {
-        j.ss <- results.optimalr[results.optimalr$alg == algs[j],]
-        cmp <- merge(i.ss, j.ss, by=c("exp", "fold"), all=TRUE)
-        rhat.test <- rbind(rhat.test, data.frame(x=algs[j], y=algs[i], p=wilcox.test(cmp$r.x, cmp$r.y,
+        j.ss <- results.exp.optimalr[results.exp.optimalr$alg == algs[j],]
+        cmp <- merge(i.ss, j.ss, by=c("exp"), all=TRUE)
+        rhat.test <- rbind(rhat.test, data.frame(x=algs[j], y=algs[i], p=wilcox.test(cmp$r.alg.x/cmp$r.max.x, cmp$r.alg.y/cmp$r.max.y,
                                                                                      alternative = "less", paired=TRUE)$p.value))
-        lhat.test <- rbind(lhat.test, data.frame(x=algs[j], y=algs[i], p=wilcox.test(cmp$lhat.x, cmp$lhat.y,
+        lhat.test <- rbind(lhat.test, data.frame(x=algs[j], y=algs[i], p=wilcox.test(cmp$lhat.alg.x/cmp$lhat.chance.x, cmp$lhat.alg.y/cmp$lhat.chance.y,
                                                                                      alternative = "less", paired=TRUE)$p.value))
       }
     }, error=function(e){NaN})
@@ -342,61 +441,24 @@ print(lhat.hmap)
 print(rhat.hmap)
 ```
 
-# Per-Dataset Plots
+# Per-Dataset
 
-```{r}
-plot.scatter <- list()
-for (i in 1:length(exp_names)) {
-  data.sub.foldwise <- subset(paired.result, alg != "LOL" & exp == exp_names[i])
-  plot.scatter[[i]] <- ggplot(dat=data.sub.foldwise, aes(x=alg, y=lhat, color=alg, group=alg)) +
-    geom_beeswarm(alpha=0.5, size=2) +
-    xlab("Algorithm") +
-    scale_y_continuous(limits=c(-0.2, .15)) +
-    scale_color_manual(values=acols, guide=legend.style, name="Algorithm") +
-    ylab(TeX("$Mean\\left(\\frac{\\hat{L}_{LOL} - \\hat{L}_{Alg}}{\\hat{L}_{chance}}\\right)$")) +
-    theme_bw()
-}
+The normalized misclassification rate per-dataset in a beeswarm plot:
 
-```
-
-# Overall Plots
-
-```{r}
+```{r, fig.height=3, fig.width=4}
 legend.style=guide_legend(ncol=2, byrow=TRUE)
-ggplot(dat=subset(plot.normlol.results, alg != "LOL"), aes(x=alg, y=lhat, color=alg, group=alg)) +
+ggplot(dat=subset(results.exp.optimalr, alg != "LOL"), aes(x=alg, y=lhat.norm, color=alg, group=alg)) +
   geom_beeswarm(alpha=0.5, size=2) +
   xlab("Algorithm") +
   scale_y_continuous(limits=c(-0.2, .15)) +
   scale_color_manual(values=acols, guide=legend.style, name="Algorithm") +
   ylab(TeX("$Mean\\left(\\frac{\\hat{L}_{LOL} - \\hat{L}_{Alg}}{\\hat{L}_{chance}}\\right)$")) +
   theme_bw()
-
-wilcox.result <- data.frame(algi=c(), algj=c(), p=c())
-for (i in 1:length(algs)) {
-  i.ss <- plot.normlol.results[plot.normlol.results$alg == algs[i],]
-  for (j in 1:length(algs)) {
-    j.ss <- plot.normlol.results[plot.normlol.results$alg == algs[j],]
-    cmp <- merge(i.ss, j.ss, by=c("exp"), all=TRUE)
-    wilcox.result <- rbind(wilcox.result, data.frame(x=algs[j], y=algs[i], p=wilcox.test(cmp$lhat.mean.x, cmp$lhat.mean.y,
-                                                                                         alternative = "less", exact=FALSE, paired=TRUE)$p.value))
-    
-  }
-}
-lhat.hmap <- ggplot(wilcox.result, aes(x=x, y=y, fill=p)) +
-  geom_tile() +
-  geom_text(aes(label = round(p, 3))) +
-  scale_fill_gradientn(name=TeX("$p$-value"), trans="log", breaks=c(0.001, 0.01, 0.1, 1),
-                       colours=rev(c("#f2f0f7", "#cbc9e2", "#9e9ac8", "#6a51a3")),
-                       limits=c(0.001, 1)) +
-  ggtitle(TeX("Test of whether Algorithm i < Algorithm j in $\\hat{L}$ ")) +
-  xlab("Algorithm j") +
-  ylab("Algorithm i")
-print(lhat.hmap)
 ```
 
 
 
-```{r, message=FALSE}
+```{r, echo=FALSE, eval=FALSE, message=FALSE}
 rs <- plot.normlol.results$r[plot.normlol.results$alg == "PLS"]
 lhats <- plot.normlol.results$lhat[plot.normlol.results$alg == "PLS"]
 print(sprintf("Lower-Left (r <= 0 & lhat <= 0): %.3f", sum(rs <= 0 & lhats <= 0)/length(rs)))
@@ -406,29 +468,33 @@ print(sprintf("Top-Right (r >= 0 & lhat >= 0): %.3f", sum(rs >= 0 & lhats >= 0)/
 print(sprintf("Center (r == 0 & lhat == 0): %.3f", sum(rs == 0 & lhats == 0)/length(rs)))
 ```
 
-```{r}
-pls.ss <- subset(plot.normlol.results, alg == "PLS")
-chancep <- ggplot(pls.ss, aes(x=lhat.chance, y=lhat)) +
+And the difference between the normalized misclassification of LOL with that of PLS as a function of several different variables:
+
+
+```{r, fig.height=3.5, fig.width=10}
+pls.ss <- subset(results.exp.optimalr, alg == "PLS")
+pls.ss$lhat.mean <- apply(pls.ss[, c("lhat.alg", "lhat.lol")], 1, function(x) {as.numeric(mean(x[1], x[2], na.rm=TRUE))})
+chancep <- ggplot(pls.ss, aes(x=lhat.chance, y=lhat.norm)) +
   geom_point(size=1.5) +
   geom_smooth(method = "loess", size = 1.5) +
   xlab(TeX("$\\hat{L}_{chance}$")) +
   ylab("")
 
-pp <- ggplot(pls.ss, aes(x=p, y=lhat)) +
+pp <- ggplot(pls.ss, aes(x=d, y=lhat.norm)) +
   geom_point(size=1.5) +
   geom_smooth(method = "loess", size = 1.5) +
   xlab(TeX("p")) +
   ylab("") +
   scale_x_continuous(trans=log10_trans())
 
-np <- ggplot(pls.ss, aes(x=n, y=lhat)) +
+np <- ggplot(pls.ss, aes(x=n, y=lhat.norm)) +
   geom_point(size=1.5) +
   geom_smooth(method = "loess", size = 1.5) +
   xlab(TeX("n")) +
   ylab("") +
   scale_x_continuous(trans=log10_trans())
 
-npp <- ggplot(pls.ss, aes(x=np, y=lhat)) +
+npp <- ggplot(pls.ss, aes(x=n/d, y=lhat.norm)) +
   geom_point(size=1.5) +
   geom_smooth(method = "loess", size = 1.5) +
   xlab(TeX("n/p")) +
@@ -436,25 +502,25 @@ npp <- ggplot(pls.ss, aes(x=np, y=lhat)) +
   scale_x_continuous(trans=log10_trans())
 
 
-kp <- ggplot(pls.ss, aes(x=K, y=lhat)) +
+kp <- ggplot(pls.ss, aes(x=K, y=lhat.norm)) +
   geom_point(size=1.5) +
   geom_smooth(method = "loess", size = 1.5) +
   ylab("") +
   xlab(TeX("K"))
 
-mp <- ggplot(pls.ss, aes(x=lhat.mean, y=lhat)) +
+mp <- ggplot(pls.ss, aes(x=lhat.mean, y=lhat.norm)) +
   geom_point(size=1.5) +
   geom_smooth(method = "loess", size = 1.5) +
   ylab("") +
   xlab(TeX("$Mean\\left(\\hat{L}_{LOL}, \\hat{L}_{PLS}\\right)$"))
 
-pls.ss$alpha <- ifelse(pls.ss$lhat < 0, 1, 0)
+pls.ss$alpha <- ifelse(pls.ss$lhat.norm < 0, 1, 0)
 pls.ss$alpha <- factor(pls.ss$alpha, levels=c(1, 0))
 acols <- c("#00ff00", "#ff0000")
 names(acols) <- c(1, 0)
 labs.alpha <- lapply(c("$\\hat{L}_{LOL} < \\hat{L}_{PLS}$", "$\\hat{L}_{LOL} > \\hat{L}_{PLS}$"), TeX)
 
-np_diffp <- ggplot(pls.ss, aes(x=n, y=p, color=alpha)) +
+np_diffp <- ggplot(pls.ss, aes(x=n, y=d, color=alpha)) +
   geom_point(size=1.5) +
   scale_x_continuous(trans=log10_trans()) +
   scale_color_manual(values=acols, labels=labs.alpha,

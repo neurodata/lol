@@ -50,7 +50,7 @@ dir.create(opath)
 k = 50  # number of folds
 exp <- lapply(data, function(dat) {
   tryCatch({
-    if (dat$p > 100) {
+    if (dat$p > 50) {
       sets <- lol.xval.split(dat$X, dat$Y, k=k, rank.low=TRUE)
       return(list(sets=sets, X=dat$X, Y=dat$Y, n=dat$n, p=dat$p, K=dat$K, task=dat$task, repo=dat$repo, dataset=dat$dataset))
     } else {
@@ -61,7 +61,7 @@ exp <- lapply(data, function(dat) {
 
 exp <- compact(exp)
 
-fold_rep <- data.frame(n=c(), p=c(), K=c(), task=c(), repo=c(), dataset=c(), fold=c())
+fold_rep <- data.frame(n=numeric(), p=numeric(), K=numeric(), task=c(), repo=c(), dataset=c(), fold=numeric())
 for (i in 1:length(names(exp))) {
   task <- names(exp)[i]
   X <- exp[[task]]$X; Y <- exp[[task]]$Y
@@ -111,28 +111,19 @@ results <- mclapply(fold_rep, function(fold) {
     }, error=function(e) {print(e); return(NULL)})
   }
 
+  classifier <- "RandomGuess"
+  model <- do.call(classifier.algs[[classifier]], list(X[sets[[1]]$train, ], factor(Y[sets[[1]]$train], levels=unique(Y[sets[[1]]$train]))))
+  results <- rbind(results, data.frame(exp=taskname, alg=classifier, xv=k, n=n, ntrain=length(sets[[1]]$train), d=d, K=length(unique(Y)),
+                                       fold=fold$fold, r=NaN, lhat=1 - max(model$priors), repo=dat$repo))
 
-  for (classifier in names(classifier.algs)) {
-    for (i in 1:length(sets)) {
-      tryCatch({
-        set <- sets[[i]]
-        model <- do.call(classifier.algs[[classifier]], list(X[set$train, ], factor(Y[set$train], levels=unique(Y[set$train]))))
-        Yhat <- predict(model, X[set$test,])
-        if (!is.null(classifier.returns[[classifier]])) {
-          Yhat <- Yhat[[classifier.returns[[classifier]]]]
-        }
-        lhat <- 1 - sum(as.numeric(Yhat) == as.numeric(Y[set$test]))/length(Yhat)
-        results <- rbind(results, data.frame(exp=taskname, alg=classifier, xv=k, n=n, ntrain=length(sets[[1]]$train), d=d, K=length(unique(Y)),
-                                             fold=fold$fold, r=NaN, lhat=1 - max(model$priors), repo=dat$repo))
-      }, error=function(e) {print(e); NULL})
-    }
-  }
+  results <- results[complete.cases(results$lhat),]
 
   saveRDS(results, file=paste(opath, taskname, '_', fold$fold, '.rds', sep=""))
   return(results)
 }, mc.cores=no_cores)
 resultso <- do.call(rbind, results)
-
+# filter out bad rows
+resultso <- resultso[complete.cases(resultso$lhat) & !(is.infinite(resultso$lhat)) & complete.cases(resultso),]
 saveRDS(resultso, file.path(opath, paste(classifier.name, '_results.rds', sep="")))
 
 require(stringr)
