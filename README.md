@@ -154,11 +154,7 @@ vignette('extend_classification')
 
 # Results
 
-## lolR Paper
-
-[Figure 2](https://htmlpreview.github.io/?https://github.com/neurodata/lol/blob/master/docs/lol-paper/figure_2.html)  
-
-[Figure 3](https://htmlpreview.github.io/?https://github.com/neurodata/lol/blob/master/docs/lol-paper/figure_3.html)
+In this [benchmark comparison](http://docs.neurodata.io/lol/lol-paper/figures/real_data.html), we show that LOL does better than all linear embedding techniques in supervised HDLSS settings when dimensionality is high (d > 100, ntrain <= d) on 20 benchmark problems from the [UCI](https://archive.ics.uci.edu/ml/index.php) and [PMLB](https://github.com/EpistasisLab/penn-ml-benchmarks) datasets. LOL provides a good tradeoff between maintaining the class conditional difference (good misclassification rate) in a small number of dimensions (low number of embedding dimensions).
 
 # Citation
 
