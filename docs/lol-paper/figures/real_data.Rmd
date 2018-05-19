@@ -1,9 +1,12 @@
 ---
-title: "PLS vs. LOL"
+title: "Comparing Embedding Techniques across Benchmark Problems"
 author: "Eric Bridgeford"
-date: "March 12, 2018"
+date: "May 18, 2018"
 output: html_document
 ---
+
+In this notebook, we compare the performance of LOL to that of several other linear embedding techniques across the problems from the [UCI](https://archive.ics.uci.edu/ml/index.php) repository and [PMLB](https://github.com/EpistasisLab/penn-ml-benchmarks) repository that can be classified as high-dimensionality, low sample-size (HDLSS) where $d > 100$. The data below was collected with $k=50$ fold validation. Testing sets were rotated across all folds, with the training set comprising the remaining $k-1=49$ folds. As only a handful of problems are low-rank and therefore HDLSS $n < d$, we subsample the training set to be $\textrm{min}(n\frac{k-1}{k}, d-1)$ where $n$ is the number of provided samples, $\frac{k-1}{k} = \frac{49}{50}$ is the fraction of samples for training, and $d$ is the native dimensionality of the data. This ensures that all examples shown below are on HDLSS data. The datasets were run using the [real data driver script](https://github.com/neurodata/lol/blob/master/docs/lol-paper/figures/data_driver.R).
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning = FALSE)
@@ -233,16 +236,16 @@ results.exp.optimalr <- aggregate(list(lhat.norm=results.optimalr$lhat.norm, lha
 Given algorithm $a$ where $L_{a, i}$ is the $i^{th}$ fold's misclassification rate for dataset $j$ with $d$ possibilities, and $r \in [1, ..., p]$:
 
 \begin{align*}
-  \overbar{L}_{a, j}(r) = \textrm{mean}_{i \in [1, ..., k]}\left\{L_{a, i, j}(r)\right\}
+  \bar{L}_{a, j}(r) = \textrm{mean}_{i \in [1, ..., k]}\left\{L_{a, j, i}(r)\right\}
 \end{align*}
 
 A single dot is produced where:
 
 \begin{align*}
-  r^*_{j} = \textrm{optimal argmin}_r\left\{\overbar{L}_{a, j}(r)\right\}
+  r^*_{a, j} = \textrm{optimal argmin}_r\left\{\bar{L}_{a, j}(r)\right\}
 \end{align*}
 
-which is defined as the optimum number of embedding dimensions. We use $\textrm{optimal argmin}$ here to indicate the smallest $r$ where $\overbar{L}_{a, i}(r)$ is within $5\%$ of the global minimum.
+which is defined as the optimum number of embedding dimensions. We use $\textrm{optimal argmin}$ here to indicate the smallest $r$ where $\bar{L}_{a, i}(r)$ is within $5\%$ of the global minimum. Then the optimal misclassification rate is $\bar{L}_{a, j}\left(r^*_{a, j}\right)$.
 
 ```{r, fig.height=15, fig.width=25, message=FALSE}
 plots.curves <- list()
@@ -277,7 +280,7 @@ grid.arrange(arrangeGrob(grobs=plots.scatters, nrow=floor(sqrt(length(plots.scat
 
 # Quadrant Plot
 
-For algorithm $a$ and problem $j$, the normalized embedding dimension per-dataset:
+For algorithm $a$ and problem $j$, the normalized embedding dimension:
 
 \begin{align*}
   \left|\left|r^*_{a, j}\right|\right| = \frac{r^*_{LOL, j} - r^*_{a, j}}{p}
@@ -286,7 +289,7 @@ For algorithm $a$ and problem $j$, the normalized embedding dimension per-datase
 with normalized misclassification rate per-dataset:
 
 \begin{align*}
-  \left|\left|overbar{L}_{a, j}(r)\right|\right| = \textrm{mean}_{i \in [1, ..., k]}\left\{\frac{overbar{L}_{a, j, i}\left(r^*_{LOL, j}\right) - overbar{L}_{a, j, i}\left(r^*_{a, j}\right)}{overbar{L}_{chance, j, i}}\right\}
+  \left|\left|\bar{L}_{a, j}(r)\right|\right| = \textrm{mean}_{i \in [1, ..., k]}\left\{\frac{\bar{L}_{a, j, i}\left(r^*_{LOL, j}\right) - \bar{L}_{a, j, i}\left(r^*_{a, j}\right)}{\bar{L}_{chance, j, i}}\right\}
 \end{align*}
 
 where the $chance$ classifier is simply the classifier that guesses the "most-present" class (the class with the highest prior) in the particular fold.
@@ -355,7 +358,7 @@ grid.arrange(make_marginal_2d(subset(results.exp.optimalr, !(alg %in% c("LOL")))
 
 # Aggregated over Datasets Plot
 
-The average misclassification rate per-algorithm over all problems at $r_{a, j}^*$.
+The average misclassification rate per-algorithm aggregated over all problems at $r_{a, j}^*$:
 
 ```{r, fig.height=3, fig.width=5}
 results.exp.optimalr.means <- aggregate(list(lhat.alg=results.exp.optimalr$lhat.alg, r.alg=results.exp.optimalr$r.alg),
@@ -379,17 +382,22 @@ ggplot(results.exp.optimalr.means, aes(x=r.alg, y=lhat.alg, shape=alg, fill=alg)
 
 # Heatmaps
 
-We use a one-sided wilcoxon test for the following 2 hypotheses:
+We use a one-sided wilcoxon test for the following 2 hypotheses for algorithms $u$ and $v$ per dataset $j$:
 
 \begin{align*}
-  H_0^{r, i, j}: \left|\left|r^*_{a, j}\right|\right| \geq \left|\left|r^*_{a, i}\right|\right| \\
-  H_A^{r, i, j}: \left|\left|r^*_{a, j}\right|\right| < \left|\left|r^*_{a, i}\right|\right|
+  H_0^{r, u, v}: r^*_{u, j} \geq r^*_{v, j} \\
+  H_A^{r, u, v}: r^*_{u, j} < r^*_{v, j}
 \end{align*}
 
+that the number of embedding dimensions on a single dataset is lower for algorithm $u$ than algorithm $v$, and:
+
 \begin{align*}
-  H_0^{L, i, j}: \left|\left|overbar{L}_{a, j}\left(r^*_{a, j}\right)\right|\right| \geq \left|\left|overbar{L}_{a, j}\left(r^*_{a, i}\right)\right|\right| \\
-  H_A^{L, i, j}: \left|\left|overbar{L}_{a, j}\left(r^*_{a, j}\right)\right|\right| < \left|\left|overbar{L}_{a, j}\left(r^*_{a, i}\right)\right|\right|
+  H_0^{L, u, v}: \bar{L}_{u, j}\left(r^*_{u, u}\right) \geq \bar{L}_{v, j}\left(r^*_{v, j}\right) \\
+  H_A^{L, u, v}: \bar{L}_{u, j}\left(r^*_{u, u}\right) < \bar{L}_{v, j}\left(r^*_{v, j}\right)
 \end{align*}
+
+that the misclassification rate on a single dataset is lower for algorithm $u$ than algorithm $v$.
+
 
 ```{r, fig.height=3.5, fig.width=5}
 rhat.test <- data.frame(x=c(), y=c(), p=c())
@@ -404,7 +412,7 @@ for (i in 1:length(algs)) {
       } else {
         j.ss <- results.exp.optimalr[results.exp.optimalr$alg == algs[j],]
         cmp <- merge(i.ss, j.ss, by=c("exp"), all=TRUE)
-        rhat.test <- rbind(rhat.test, data.frame(x=algs[j], y=algs[i], p=wilcox.test(cmp$r.alg.x/cmp$r.max.x, cmp$r.alg.y/cmp$r.max.y,
+        rhat.test <- rbind(rhat.test, data.frame(x=algs[j], y=algs[i], p=wilcox.test(cmp$r.alg.x, cmp$r.alg.y,
                                                                                      alternative = "less", paired=TRUE)$p.value))
         lhat.test <- rbind(lhat.test, data.frame(x=algs[j], y=algs[i], p=wilcox.test(cmp$lhat.alg.x/cmp$lhat.chance.x, cmp$lhat.alg.y/cmp$lhat.chance.y,
                                                                                      alternative = "less", paired=TRUE)$p.value))
@@ -423,9 +431,9 @@ lhat.hmap <- ggplot(lhat.test, aes(x=x, y=y, fill=p)) +
   scale_fill_gradientn(name=TeX("$p$-value"), trans="log", breaks=c(0.001, 0.01, 0.1, 1),
                        colours=rev(c("#f2f0f7", "#cbc9e2", "#9e9ac8", "#6a51a3")),
                        limits=c(0.001, 1)) +
-  ggtitle(TeX("Test of whether Algorithm i < Algorithm j in $\\hat{L}$ ")) +
-  xlab("Algorithm j") +
-  ylab("Algorithm i")
+  ggtitle(TeX("Test of whether $\\hat{L}_{u, j}^* < $\\hat{L}_{v, j}^*$")) +
+  xlab("Algorithm u") +
+  ylab("Algorithm v")
 
 rhat.hmap <- ggplot(rhat.test, aes(x=x, y=y, fill=p)) +
   geom_tile() +
@@ -433,9 +441,9 @@ rhat.hmap <- ggplot(rhat.test, aes(x=x, y=y, fill=p)) +
   scale_fill_gradientn(name=TeX("$p$-value"), trans="log", breaks=c(0.001, 0.01, 0.1, 1),
                        colours=rev(c("#f2f0f7", "#cbc9e2", "#9e9ac8", "#6a51a3")),
                        limits=c(0.001, 1)) +
-  ggtitle(TeX("Test of whether Algorithm i < Algorithm j in $\\hat{r}$ ")) +
-  xlab("Algorithm j") +
-  ylab("Algorithm i")
+  ggtitle(TeX("Test of whether $r^*_{u, j} < r^*_{v, j}$")) +
+  xlab("Algorithm u") +
+  ylab("Algorithm v")
 
 print(lhat.hmap)
 print(rhat.hmap)
