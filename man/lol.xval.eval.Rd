@@ -6,7 +6,8 @@
 \usage{
 lol.xval.eval(X, Y, r, alg, sets = NULL, alg.dimname = "r",
   alg.opts = list(), alg.embedding = "A", classifier = lda,
-  classifier.opts = list(), classifier.return = "class", k = "loo", ...)
+  classifier.opts = list(), classifier.return = "class", k = "loo",
+  rank.low = FALSE, ...)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
@@ -43,10 +44,16 @@ lol.xval.eval(X, Y, r, alg, sets = NULL, alg.dimname = "r",
 \item{\code{is.nan(classifier.return)} Assumes that \code{predict.classifer} returns a \code{[n]} vector/array containing the prediction labels for \code{[n, d]} inputs.}
 }}
 
-\item{k}{the cross-validated method to perform. Defaults to \code{'loo'}. See \code{\link{lol.xval.split}}
+\item{k}{the cross-validated method to perform. Defaults to \code{'loo'}. If \code{sets} is provided, this option is ignored. See \code{\link{lol.xval.split}} for details.
 \itemize{
 \item{\code{'loo'} Leave-one-out cross validation}
 \item{\code{isinteger(k)}  perform \code{k}-fold cross-validation with \code{k} as the number of folds.}
+}}
+
+\item{rank.low}{whether to force the training set to low-rank. Defaults to \code{FALSE}. If \code{sets} is provided, this option is ignored. See \code{\link{lol.xval.split}} for details.
+\itemize{
+\item{if \code{rank.low == FALSE}, uses default cross-validation method with standard \code{k}-fold validation. Training sets are \code{k-1} folds, and testing sets are \code{1} fold, where the fold held-out for testing is rotated to ensure no dependence of potential downstream inference in the cross-validated misclassification rates.}
+\item{if ]code{rank.low == TRUE}, users cross-validation method with \code{ntrain = min((k-1)/k*n, d)} sample training sets, where \code{d}  is the number of dimensions in \code{X}. This ensures that the training data is always low-rank, \code{ntrain < d + 1}. Note that the resulting training sets may have \code{ntrain < (k-1)/k*n}, but the resulting testing sets will always be properly rotated \code{ntest = n/k} to ensure no dependencies in fold-wise testing.}
 }}
 
 \item{...}{trailing args.}
@@ -59,7 +66,10 @@ Returns a list containing:
 \item{\code{lhats}}{the cross-validated error for each of the \code{k}-folds.}
 }
 \description{
-A function for performing leave-one-out cross-validation for a given embedding model.
+A function for performing leave-one-out cross-validation for a given embedding model. This function produces fold-wise
+cross-validated misclassification rates for standard embedding techniques. Users can optionally specify custom embedding techniques
+with proper configuration of \code{alg.*} parameters and hyperparameters. Optional classifiers implementing the S3 \code{predict} function can be used
+for classification, with hyperparameters to classifiers for determining misclassification rate specified in \code{classifier.*} parameters and hyperparameters.
 }
 \section{Details}{
 
