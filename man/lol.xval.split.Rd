@@ -28,7 +28,7 @@ lol.xval.split(X, Y, k = "loo", rank.low = FALSE, ...)
 \value{
 sets the cross-validation sets as an object of class \code{"XV"} containing the following:
 \item{\code{train}}{length \code{[ntrain]} vector indicating the indices of the training examples.}
-\item{\code{test}}{ length \codoe{[ntest]} vector indicating the indices of the testing examples.}
+\item{\code{test}}{ length \code{[ntest]} vector indicating the indices of the testing examples.}
 }
 \description{
 A function to split a dataset into training and testing sets for cross validation. The procedure for cross-validation
