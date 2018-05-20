@@ -360,7 +360,7 @@ lol.xval.check_xv_set <- function(sets, n) {
 #' @param ... optional args.
 #' @return sets the cross-validation sets as an object of class \code{"XV"} containing the following:
 #' \item{\code{train}}{length \code{[ntrain]} vector indicating the indices of the training examples.}
-#' \item{\code{test}}{ length \codoe{[ntest]} vector indicating the indices of the testing examples.}
+#' \item{\code{test}}{ length \code{[ntest]} vector indicating the indices of the testing examples.}
 #' @author Eric Bridgeford
 #' @examples
 #' # prepare data for 10-fold validation
