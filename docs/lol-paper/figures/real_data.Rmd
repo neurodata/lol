@@ -62,7 +62,7 @@ plot_sim_lhats <- function(data_sub, data_sub.optimalr, cols, linetype, shape, t
     xbreaks <- round(seq(from=from, to=xlims[2], length.out=length.out))
     plot_sims <- ggplot(data_sub, aes(x=r.alg, y=lhat.alg, linetype=alg, shape=alg, fill=alg, color=alg)) +
       stat_summary(size=.95, fun.y="mean", geom="line") +
-      stat_summary(fun.data = mean_cl_normal, geom = "errorbar", fun.args = list(mult = 1)) +
+      #stat_summary(fun.data = mean_cl_normal, geom = "errorbar", fun.args = list(mult = 1)) +
       geom_point(data=data_sub.optimalr, aes(x=r.alg, y=lhat.alg, shape=alg, fill=alg, color=alg), size=2) +
       scale_color_manual(values=cols, limits=names(cols),
                          guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
@@ -77,7 +77,7 @@ plot_sim_lhats <- function(data_sub, data_sub.optimalr, cols, linetype, shape, t
       ggtitle(title) +
       theme_bw() +
       coord_cartesian(ylim=lims) +
-      scale_x_continuous(limits=xlims, breaks=xbreaks, trans=log10_trans()) +
+      scale_x_continuous(limits=xlims, breaks=xbreaks) +#, trans=log10_trans()) +
       theme(plot.margin = unit(c(h,w,h,h), "cm")) +
       theme(legend.position="bottom", text=element_text(size=fsize))
     return(plot_sims)
@@ -325,14 +325,16 @@ where the $chance$ classifier is simply the classifier that guesses the "most-pr
 make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", leg.title="",
                              legend.style=guide_legend(ncol=2, byrow=TRUE)) {
   data$exp <- factor(data$exp)
-  box <- data.frame(x=c(max(xlims), mean(xlims), mean(xlims), max(xlims)),
-                    y=c(max(ylims), max(ylims), mean(ylims), mean(ylims)))
+  box <- data.frame(x=c(min(xlims), mean(xlims), mean(xlims), min(xlims)),
+                    y=c(min(ylims), min(ylims), mean(ylims), mean(ylims)))
   data.medians <- aggregate(list(lhat.norm=data$lhat.norm, rstar.norm=data$rstar.norm), by=list(alg=data$alg), FUN=median)
+  data.medians <- rbind(data.medians, data.frame(lhat.norm=0, rstar.norm=0, alg="LOL"))  # add dot for LOL
   center <- ggplot(data, aes(x=rstar.norm, y=lhat.norm)) +
     geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
-    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, fill=alg), alpha=0.4, size=1.2) +
-    geom_point(data=data.medians, aes(x=rstar.norm, y=lhat.norm, shape=alg, fill=alg), alpha=1.0, size=2.5) +
+    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, color=alg, fill=alg), alpha=0.4, size=1.2) +
+    geom_point(data=data.medians, aes(x=rstar.norm, y=lhat.norm, shape=alg, color=alg, fill=alg), alpha=1.0, size=2.5) +
     scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
+    scale_color_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_shape_manual(values=shapes, guide=legend.style, name=leg.title) +
     ylab(yl) +
     xlab(xl) +
@@ -344,7 +346,7 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
   center_leg <- ggplot(data, aes(x=rstar.norm, y=lhat.norm)) +
     geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
     geom_line(aes(x=rstar.norm, y=lhat.norm, linetype=alg, color=alg), alpha=1.0, size=1.0) +
-    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, fill=alg), alpha=1.0, size=1.8) +
+    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, color=alg, fill=alg), alpha=1.0, size=1.8) +
     scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_color_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_linetype_manual(values=linestyle, guide=legend.style, name=leg.title) +
@@ -364,22 +366,26 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
     scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_linetype_manual(values=linestyle, guide=legend.style, name=leg.title) +
     scale_x_continuous(limits=ylims) +
-    ylab("") +
+    ylab("Likelihood") +
     xlab("") +
     ggtitle("") +
     theme_bw() +
-    theme(legend.position=NaN) +
+    theme(legend.position=NaN,
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank()) +
     coord_flip()
   top <- ggplot(data, aes(x=rstar.norm, y=..scaled.., color=alg, linetype=alg)) +
     geom_density(size=1.1) +
     scale_color_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_linetype_manual(values=linestyle, guide=legend.style, name=leg.title) +
     scale_x_continuous(limits=xlims) +
-    ylab("") +
+    ylab("Likelihood") +
     xlab("") +
     ggtitle("") +
     theme_bw() + 
-    theme(legend.position=NaN)
+    theme(legend.position=NaN,
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
   return(arrangeGrob(top, leg, center + theme(legend.position=NaN), right, ncol=2, nrow=2, widths=c(4,1.5), heights=c(2,4)))
 }
 
@@ -388,6 +394,18 @@ grid.arrange(make_marginal_2d(subset(results.exp.optimalr, !(alg %in% c("LOL")))
                               xl="Normalized Embedding Dimension", yl="Normalized Misclassification Rate"))
 ```
 
+```{r}
+dset.mnist <- plots.curves[[which(as.character(exp_names) == "mnist")]]
+dset.mrn <- plots.curves[[which(as.character(exp_names) == "MRN")]]
+scatter <- make_marginal_2d(subset(results.exp.optimalr, !(alg %in% c("LOL"))), 
+                              c(-1, 1), c(-.1, .1), plot.title="(C) Performance Across HDLSS Benchmarks", leg.title="Algorithm",
+                              xl="Normalized Embedding Dimension", yl="Normalized Misclassification Rate")
+
+fig.5 <- grid.arrange(arrangeGrob(dset.mnist + ggtitle("(A) MNIST dataset, n=70000, d=784") + xlab("Embedding Dimension") + ylab("Misclassification Rate"),
+                                  dset.mrn + ggtitle("(B) MRN dataset, n=114, d > 500,000,000") +  xlab("") + ylab(""),
+                                  widths = c(0.5, 0.5), nrow=1),
+                      scatter, nrow=2, heights=c(0.35, 0.65))
+```
 
 # Aggregated over Datasets Plot
 

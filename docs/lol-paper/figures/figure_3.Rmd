@@ -105,7 +105,7 @@ plot_sim_lhats <- function(data, cols, pt.dat, linestyle, title="", by=10, from=
     geom_line(size=.95) +
     scale_color_manual(values=cols, guide=guide_legend(nrow=3, byrow=TRUE, override.aes=list(shape=NA)), name="Algorithm") +
     scale_linetype_manual(values=linestyle, guide=guide_legend(nrow=3, byrow=TRUE), name="Algorithm") +
-    geom_point(data=pt.dat, aes(x=r, y=lhat, color=alg), size=2) +
+    #geom_point(data=pt.dat, aes(x=r, y=lhat, color=alg), size=2) +
     #geom_line(data=base::subset(data, alg == "CCA"), aes(x=r, y=lhat, group=alg, linetype color=alg), size=.75) +
     #geom_point(data=base::subset(pt.dat, alg == "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=2) +
     #geom_line(data=base::subset(data, alg != "CCA" & alg != "QOQ"), aes(x=r, y=lhat, group=alg, color=alg), size=.75) +
