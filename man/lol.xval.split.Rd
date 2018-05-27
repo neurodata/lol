@@ -4,7 +4,7 @@
 \alias{lol.xval.split}
 \title{Cross-Validation Data Splitter}
 \usage{
-lol.xval.split(X, Y, k = "loo", reverse = FALSE, ...)
+lol.xval.split(X, Y, k = "loo", rank.low = FALSE, ...)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
@@ -17,22 +17,26 @@ lol.xval.split(X, Y, k = "loo", reverse = FALSE, ...)
 \item{if \code{k == 'loo'}, performs leave-one-out cross-validation.}
 }}
 
-\item{reverse}{whether to flip the training and testing partitions. Defaults to \code{FALSE}.
+\item{rank.low}{whether to force the training set to low-rank. Defaults to \code{FALSE}.
 \itemize{
-\item{if \code{isTRUE(reverse)}, flips the training and testing partitions, such that cross-validation will be performed with 1 training fold and k-1 testing folds.}
-\item{if \code{!isTRUE(reverse)}, standard cross-validation, with k-1 training folds and 1 testing fold.}
+\item{if \code{rank.low == FALSE}, uses default cross-validation method with standard \code{k}-fold validation. Training sets are \code{k-1} folds, and testing sets are \code{1} fold, where the fold held-out for testing is rotated to ensure no dependence of potential downstream inference in the cross-validated misclassification rates.}
+\item{if ]code{rank.low == TRUE}, users cross-validation method with \code{ntrain = min((k-1)/k*n, d)} sample training sets, where \code{d}  is the number of dimensions in \code{X}. This ensures that the training data is always low-rank, \code{ntrain < d + 1}. Note that the resulting training sets may have \code{ntrain < (k-1)/k*n}, but the resulting testing sets will always be properly rotated \code{ntest = n/k} to ensure no dependencies in fold-wise testing.}
 }}
 
 \item{...}{optional args.}
 }
 \value{
 sets the cross-validation sets as an object of class \code{"XV"} containing the following:
-\item{\code{train}}{is \code{[n - n/k]} vector if \code{isTRUE(reverse)}, and a \code{[n/k]} vector otherwise.}
-\item{\code{test}}{is \code{[n/k]} vector if \code{isTRUE(reverse)}, and a \code{[n - n/k]} vector otherwise.}
+\item{\code{train}}{length \code{[ntrain]} vector indicating the indices of the training examples.}
+\item{\code{test}}{ length \code{[ntest]} vector indicating the indices of the testing examples.}
 }
 \description{
-A function to split a dataset into
-training and testing sets for cross validation.
+A function to split a dataset into training and testing sets for cross validation. The procedure for cross-validation
+is to split the data into k-folds. The k-folds are then rotated individually to form a single held-out testing set the model will be validated on,
+and the remaining (k-1) folds are used for training the developed model. Note that this cross-validation function includes functionality to be used for
+low-rank cross-validation. In that case, instead of using the full (k-1) folds for training, we subset \code{min((k-1)/k*n, d)} samples to ensure that
+the resulting training sets  are all low-rank. We still rotate properly over the held-out fold to ensure that the resulting testing sets
+do not have any shared examples, which would add a complicated  dependence structure to inference we attempt to infer on the testing sets.
 }
 \examples{
 # prepare data for 10-fold validation
