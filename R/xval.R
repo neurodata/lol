@@ -297,7 +297,7 @@ lol.xval.optimal_dimselect <- function(X, Y, rs, alg, sets=NULL, alg.dimname="r"
           Yhat <- predict(trained_classifier, X.test.proj)[[classifier.return]]
         }
         return(data.frame(lhat=1 - sum(Yhat == Y[set$test,drop=FALSE])/length(Yhat), r=r, fold=i))
-      }, error=function(e){return(NULL)})
+      }, error=function(e){print(e); return(NULL)})
     })
     # skip nulls
     res.rs <- res.rs[!sapply(res.rs, is.null)]

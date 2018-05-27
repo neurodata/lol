@@ -27,7 +27,10 @@ counter <- 1
 
 data.pmlb <- slb.load.datasets(repositories="pmlb", tasks="classification", clean.invalid=TRUE, clean.ohe=10)
 data.uci <- slb.load.datasets(repositories="uci", tasks="classification", clean.invalid=FALSE, clean.ohe=FALSE)
-data <- c(data.uci, data.pmlb)
+data.rorb <- slb.load.datasets(repositories="neurodata", tasks="classification", clean.invalid=FALSE, clean.ohe=FALSE)
+data <- c(data.pmlb, data.uci, data.rorb)
+
+#data <- slb.load.datasets(dataset="mushroom", clean.invalid=TRUE, clean.ohe=10, repository="pmlb")
 
 # Semi-Parallel
 # Setup Algorithms
@@ -124,7 +127,7 @@ results <- mclapply(fold_rep, function(fold) {
 resultso <- do.call(rbind, results)
 # filter out bad rows
 resultso <- resultso[complete.cases(resultso$lhat) & !(is.infinite(resultso$lhat)) & complete.cases(resultso),]
-saveRDS(resultso, file.path(opath, paste(classifier.name, '_results.rds', sep="")))
+saveRDS(resultso, file.path(opath, paste(classifier.name, '_rorb_results.rds', sep="")))
 
 require(stringr)
 

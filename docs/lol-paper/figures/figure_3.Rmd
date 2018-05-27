@@ -20,7 +20,7 @@ require(reshape2)
 require(R.matlab)
 require(grid)
 require(plyr)
-classifier.alg = "rf"
+classifier.alg = "lda"
 # compute the cutoff for the particular trial to get an approximate elbow
 # by computing the smallest r with an associated lhat within 5%
 # of the global minimum lhat
@@ -41,7 +41,7 @@ w=.8
 h=.2
 sim_cov_plot <- function(Sigmas, mus, priors, title="", yl="Dimension", xl="Dimension", ndim=10,
                          nbreaks=4, legend.name=TeX("")) {
-  Sigma <- lol:::lol.mvr(Sigmas, mus, priors)
+  Sigma <- lolR:::lol.mvr(Sigmas, mus, priors)
   Sigma <- Sigma[1:ndim, 1:ndim]  # subset
   Sigma <- (Sigma - min(Sigma))/(max(Sigma) - min(Sigma))
   labs <- c(1, 10)
@@ -90,7 +90,7 @@ sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndi
 }
 
 
-plot_sim_lhats <- function(data, cols, pt.dat, linetype, title="", by=10, from=10, ylab=TeX("$\\hat{L}$"),
+plot_sim_lhats <- function(data, cols, pt.dat, linestyle, title="", by=10, from=10, ylab=TeX("$\\hat{L}$"),
                            xlab="Embedded Dimensions", fsize=12) {
   lims <- c(floor(10*min(data$lhat))/10, ceiling(10*max(data$lhat))/10)
   if (unique(data$sim)[1] == "Toeplitz") {
@@ -103,11 +103,9 @@ plot_sim_lhats <- function(data, cols, pt.dat, linetype, title="", by=10, from=1
   xbreaks <- seq(from=from, to=xlims[2], by=by)
   plot_sims <- ggplot(data, aes(x=r, y=lhat, linetype=alg, color=alg)) +
     geom_line(size=.95) +
-    scale_color_manual(values=cols, limits=names(cols),
-                       guide=guide_legend(nrow=3, byrow=TRUE, override.aes=list(shape=NA)), name="Algorithm") +
-    scale_linetype_manual(values=linetype, limits=names(cols),
-                       guide=guide_legend(nrow=3, byrow=TRUE), name="Algorithm") +
-    geom_point(data=pt.dat, aes(x=r, y=lhat, linetype=alg, color=alg), size=2) +
+    scale_color_manual(values=cols, guide=guide_legend(nrow=3, byrow=TRUE, override.aes=list(shape=NA)), name="Algorithm") +
+    scale_linetype_manual(values=linestyle, guide=guide_legend(nrow=3, byrow=TRUE), name="Algorithm") +
+    geom_point(data=pt.dat, aes(x=r, y=lhat, color=alg), size=2) +
     #geom_line(data=base::subset(data, alg == "CCA"), aes(x=r, y=lhat, group=alg, linetype color=alg), size=.75) +
     #geom_point(data=base::subset(pt.dat, alg == "CCA"), aes(x=r, y=lhat, group=alg, color=alg), size=2) +
     #geom_line(data=base::subset(data, alg != "CCA" & alg != "QOQ"), aes(x=r, y=lhat, group=alg, color=alg), size=.75) +
@@ -215,17 +213,20 @@ results <- rbind(results$overall[, colnames(results$overall) != 'se'], resultsm)
 #results <- results$overall
 nan.mean <- function(x) mean(x, na.rm=TRUE)
 results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = nan.mean)
-algs <-  c("LOL", "QOQ", "ROAD", "LASSO", "PLS", "CCA", "PCA", "LDA", "RP")
-acols <- c("#00FF00", "#00FF00", "#AAAAAA", "#AAAAAA", "#AAAAAA", "#666666", "#666666", "#666666", "#000000")
+algs <-  c("LOL", "QOQ", "PLS", "CCA", "LDA", "PCA", "ROAD", "LASSO")
+acols <- c("#f41711", "#f41711", "#94d6c9", "#87c6cc", "#99b4c6", "#020202", "#666666", "#666666")
+linestyle <- c(1,3,3,1,3,1,1,3,1)
+linestyle <- c("solid", "dotted", "dotted", "solid", "dotted", "solid", "solid", "dotted")
 names(acols) <- algs
-linestyle <- c("solid", "dashed", "solid", "dashed", "dotted", "solid", "dashed", "dotted", "solid")
 names(linestyle) <- algs
 sim_plots <- list()
 results.means$alg <- revalue(results.means$alg, c("cPCA"="LDA"))
 
 results.means$type <- revalue(results.means$alg, linestyle)
 results.means$color <- revalue(results.means$alg, acols)
+
 counter <- 1
+
 for (i in 1:length(sim_names)) {
   sim <- sim_names[i]
   data_sub <- results.means[results.means$sim == sim,]
@@ -234,7 +235,8 @@ for (i in 1:length(sim_names)) {
     pt <- compute_cutoff(data_sub[data_sub$alg == alg,]$r, data_sub[data_sub$alg == alg,]$lhat)
     pt.dat <- rbind(pt.dat, data.frame(r=pt$r, lhat=pt$lhat, alg=alg))
   }
-  sim_plots[[counter]] <- plot_sim_lhats(data_sub, acols, pt.dat, linestyle, ylab=paste(sim_titles[i], sim), from=sim_min[i], by=by[i])
+  sim_plots[[counter]] <- plot_sim_lhats(data_sub, acols, pt.dat, linestyle, ylab=paste(sim_titles[i], sim),
+                                         from=sim_min[i], by=by[i])
   counter <- counter + 1
 }
 ```
@@ -243,7 +245,13 @@ We merge and combine the plots:
 
 ```{r, fig.show='hide'}
 nsim <- length(sim_names)
-sim_leg <- g_legend(sim_plots[[1]])
+sim_leg.plot <- ggplot(data=results.means, aes(x=r, y=lhat, color=alg, linetype=alg)) +
+  geom_line(size=1.2) +
+  scale_color_manual(values=acols, guide=guide_legend(nrow=3, byrow=TRUE), name="Algorithm") +
+  scale_linetype_manual(values=linestyle, guide=guide_legend(nrow=3, byrow=TRUE), name="Algorithm") +
+  theme(legend.position="bottom", axis.title.y=element_text(size=fsize))
+
+sim_leg <- g_legend(sim_leg.plot)
 cov_leg <- g_legend(cov_plots[[1]])
 mean_leg <- g_legend(mean_plots[[3]])
 

@@ -34,7 +34,7 @@ repo.name <- "uci"
 # compute the cutoff for the particular trial to get an approximate elbow
 # by computing the smallest r with an associated lhat within 5%
 # of the global minimum lhat
-compute_cutoff <- function(rs, lhats, t=0.05) {
+compute_cutoff <- function(rs, lhats, t=0) {
   rs <- rs[complete.cases(lhats) & complete.cases(rs)]; lhats <- lhats[complete.cases(lhats) & complete.cases(rs)]
   sr.ix <- sort(rs, decreasing=FALSE, index.return=TRUE)$ix
   # compute minimum value
@@ -52,7 +52,7 @@ w=.8
 h=.2
 plot_sim_lhats <- function(data_sub, data_sub.optimalr, cols, linetype, shape, title="", from=10, ylab=TeX("$\\hat{L}$"),
                            xlab="Embedded Dimensions", fsize=12, length.out=3) {
-  lims <- c(floor(10*min(data_sub.optimalr$lhat.alg, na.rm=TRUE))/10, ceiling(10*max(data_sub.optimalr$lhat.alg, na.rm=TRUE))/10)
+  lims <- c(floor(100*min(data_sub.optimalr$lhat.alg, na.rm=TRUE))/100, ceiling(100*max(data_sub.optimalr$lhat.alg, na.rm=TRUE))/100)
   if (is.na(sum(lims))) {
     return(ggplot())
   }
@@ -63,7 +63,7 @@ plot_sim_lhats <- function(data_sub, data_sub.optimalr, cols, linetype, shape, t
     plot_sims <- ggplot(data_sub, aes(x=r.alg, y=lhat.alg, linetype=alg, shape=alg, fill=alg, color=alg)) +
       stat_summary(size=.95, fun.y="mean", geom="line") +
       stat_summary(fun.data = mean_cl_normal, geom = "errorbar", fun.args = list(mult = 1)) +
-      geom_point(data=data_sub.optimalr, size=2) +
+      geom_point(data=data_sub.optimalr, aes(x=r.alg, y=lhat.alg, shape=alg, fill=alg, color=alg), size=2) +
       scale_color_manual(values=cols, limits=names(cols),
                          guide=guide_legend(nrow=2, byrow=TRUE), name="Algorithm") +
       scale_fill_manual(values=cols, limits=names(cols),
@@ -77,7 +77,7 @@ plot_sim_lhats <- function(data_sub, data_sub.optimalr, cols, linetype, shape, t
       ggtitle(title) +
       theme_bw() +
       coord_cartesian(ylim=lims) +
-      scale_x_continuous(limits=xlims, breaks=xbreaks) +
+      scale_x_continuous(limits=xlims, breaks=xbreaks, trans=log10_trans()) +
       theme(plot.margin = unit(c(h,w,h,h), "cm")) +
       theme(legend.position="bottom", text=element_text(size=fsize))
     return(plot_sims)
@@ -115,17 +115,38 @@ g_legend<-function(a.gplot){
   legend <- tmp$grobs[[leg]]
   return(legend)
 }
+
+parse_mrn <- function() {
+  data <- list(LOL=lol.mrn, PCA=pca.mrn, LRLDA=lrlda.mrn)
+  result <- data.frame()
+  for (alg in names(data)) {
+    colnames(data[[alg]]) <- c(1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+    for (fold in 1:dim(data[[alg]])[1]) {
+      result <- rbind(result, data.frame(exp="MRN", alg=alg, xv=40, n=114, ntrain=111, d=500000000, K=2,fold=fold,
+                                         r=colnames(data[[alg]]),lhat=as.numeric(data[[alg]][fold,]), repo="neurodata"))
+    }
+  }
+  result <- rbind(result, data.frame(exp="MRN", alg="RandomGuess", xv=40, n=114, ntrain=111, d=500000000, K=2, fold=1:dim(pca.mrn)[1],
+                                     r=NaN, lhat=0.5, repo="neurodata"))
+  return(result)
+}
+
+lol.mrn <- read.csv('./data/real_data/lda/LOL-MRN-40.csv')
+pca.mrn <- read.csv('./data/real_data/lda/PCA-LDA-MRN-40.csv')
+lrlda.mrn <- read.csv('./data/real_data/lda/RR-LDA-MRN-40.csv')
+results.mrn <- parse_mrn()
 ```
 
 # Results Loading
 
 ```{r, message=FALSE}
 results <- readRDS(file.path(opath, paste(classifier.name, "_results.rds", sep="")))
+results <- rbind(results, results.mrn)
 # filter out bad rows
-results <- results[complete.cases(results$lhat) & !(is.infinite(results$lhat)) & complete.cases(results),]
+results <- results[complete.cases(results$lhat) & !(is.infinite(results$lhat)) & complete.cases(results[colnames(results) != "r"]),]
 exp_names <- unique(as.character(results$exp))
 # make sure columns of interest are numeric
-numeric.cols <- c("d", "n", "ntrain", "K", "fold", "r", "lhat")
+numeric.cols <- c("d", "n", "ntrain", "K", "fold", "lhat", "r")
 for (col in numeric.cols) {
   results[[col]] <- as.numeric(results[[col]])
   if (col == "ntrain") {  # make sure that ntrain is constant across experiments, due to situation where one fold has fewer examples than another
@@ -134,9 +155,9 @@ for (col in numeric.cols) {
     }    
   }
 }
-results <- results[results$d > 100 & results$ntrain > 50,]
+results <- results[results$d > 100 & results$ntrain/results$K > 10,]  # subset out datasets with low d and incredibly low sample size:class ratio
 # filter out duplicate experiments
-results <- results[!(results$exp %in% c("splice", "promoters", "molecular-biology_promoters")),]
+results <- results[!(results$exp %in% c("splice", "promoters", "molecular-biology_promoters", "rorb")),]
 nan.mean <- function(x) {mean(x[!is.infinite(x)], na.rm=TRUE)}
 results.means <- aggregate(lhat ~ exp + alg + r + d + n + ntrain + K, data = results, FUN = nan.mean)
 random.results <- aggregate(lhat ~ exp + alg, data=subset(results, alg == "RandomGuess"), FUN=mean)
@@ -144,14 +165,15 @@ random.results <- aggregate(lhat ~ exp + alg, data=subset(results, alg == "Rando
 #acols <- c("#00FF00", "#00FF00", "#990000", "#990000", "#990000", "#AAAA55", "#000099", "#000099", "#000099")
 #linestyle <- c("solid", "dashed", "solid", "dashed", "dotted", "solid", "solid", "dashed", "dotted")
 algs <-  c("LOL", "PLS", "CCA", "LRLDA", "PCA", "RP")
-acols <- c("#00FF00", "#990000", "#AAAA55", "#000099", "#d06900", "#800080")
-linestyle <- c("solid", "dashed", "solid","solid", "solid", "solid")
+acols <- c("#f41711", "#94d6c9", "#87c6cc", "#99b4c6", "#020202", "#5f8793")
+linestyle <- c("solid", "dotted", "solid","dotted", "solid", "solid")
 names(linestyle) <- algs
 names(algs) <- acols
 names(acols) <- algs
 #shapes <- c(21, 24, 21, 24, 23, 23, 21, 24, 23)
-shapes <- c(21, 24, 21, 24, 23, 23)
+shapes <- c(21, 24, 21, 22, 21, 23)
 names(shapes) <- algs
+exp_names <- unique(as.character(results$exp))
 ```
 
 # Analysis
@@ -162,6 +184,7 @@ names(shapes) <- algs
 ```{r, message=FALSE}
 #nan.median <- function(x) median(x, na.rm=TRUE)  
 lhat.mean <- 1
+k.fold <- length(unique(results$fold))
 #results.medians <- aggregate(lhat ~ exp + alg + r + d + n + K, data = results, FUN = nan.median)
 results.optimalr <- data.frame()
 results.overall <- data.frame()
@@ -169,10 +192,12 @@ for (i in 1:length(exp_names)) {
   r.max <- max(results.means[results.means$exp == as.character(exp_names[i]),]$r)
   ss.chance <- results[results$alg == "RandomGuess" & results$exp == as.character(exp_names[i]),]
   colnames(ss.chance)[colnames(ss.chance) == "lhat"] = "lhat.chance"
+  ss.chance <- ss.chance[, colnames(ss.chance) != "r"]
   for (j in 1:length(algs)) {
     tryCatch({
       alg <- as.character(algs[j])
-      ss <- results[results$exp == as.character(exp_names[i]) & results$alg == algs[j],]
+      ss <- results[results$exp == exp_names[i] & results$alg == algs[j] & complete.cases(results),]
+      
       ss.means <- aggregate(lhat ~ r + n + d, data=ss, FUN = nan.mean)
       rs <- ss.means$r; lhats <- ss.means$lhat
       min.result <- compute_cutoff(rs, lhats)
@@ -180,7 +205,7 @@ for (i in 1:length(exp_names)) {
       ss.optimalr <- results[results$exp == exp_names[i] & results$alg == algs[j] & results$r == r.star,]
       if (alg == 'LOL') {
         r.lol <- r.star
-        lol.ss <- results[results$exp == exp_names[i] & results$alg == algs[j],]
+        lol.ss <- ss
         colnames(lol.ss)[colnames(lol.ss) == "lhat"] = "lhat.lol"
         lol.optimalr <- ss.optimalr
         colnames(lol.optimalr)[colnames(lol.optimalr) == "lhat"] = "lhat.lol"
@@ -194,7 +219,6 @@ for (i in 1:length(exp_names)) {
       ss.optimalr <- merge(ss.optimalr, lol.optimalr, by=c("exp", "fold", "n", "d", "K", "ntrain", "repo", "xv"))
       ss.optimalr <- merge(ss.optimalr, ss.chance, by=c("exp", "fold", "n", "d", "K", "ntrain", "repo", "xv"), all=TRUE)
       
-      
       colnames(ss.merged)[colnames(ss.merged) == "r.x"] = "r.alg"
       colnames(ss.optimalr)[colnames(ss.optimalr) == "r.x"] = "r.alg"
       colnames(ss.merged)[colnames(ss.merged) == "r.y"] = "r.lol"
@@ -203,6 +227,7 @@ for (i in 1:length(exp_names)) {
       colnames(ss.merged)[colnames(ss.merged) == "alg.x"] <- "alg"
       colnames(ss.optimalr)[colnames(ss.optimalr) == "alg"] <- "chance"
       colnames(ss.optimalr)[colnames(ss.optimalr) == "alg.x"] <- "alg"
+
       ss.merged$lhat.norm <- (ss.merged$lhat.lol - ss.merged$lhat.alg)/ss.merged$lhat.chance
       ss.merged$r.max <- r.max
       
@@ -211,9 +236,11 @@ for (i in 1:length(exp_names)) {
       ss.optimalr$r.max <- r.max
       results.overall <- rbind(results.overall, ss.merged)
       results.optimalr <- rbind(results.optimalr, ss.optimalr)
-    }, error=function(e) {print(NULL)})
+    }, error=function(e) {print(sprintf("exp: %d, alg: %d", i, j))})
   }
 }
+results.overall <- results.overall[complete.cases(results.overall),]
+results.optimalr <- results.optimalr[complete.cases(results.optimalr),]
 
 results.exp.overall <- aggregate(list(lhat.norm=results.overall$lhat.norm, lhat.alg=results.overall$lhat.alg,
                                        lhat.lol=results.overall$lhat.lol, lhat.chance=results.overall$lhat.chance, r.max=results.overall$r.max),
@@ -233,7 +260,7 @@ results.exp.optimalr <- aggregate(list(lhat.norm=results.optimalr$lhat.norm, lha
 
 # Per-Dataset Plots
 
-Given algorithm $a$ where $L_{a, i}$ is the $i^{th}$ fold's misclassification rate for dataset $j$ with $d$ possibilities, and $r \in [1, ..., p]$:
+Given algorithm $a$ where $L_{a, j, i}$ is the $i^{th}$ fold's misclassification rate for dataset $j$ if the $D$ datasets, and $r \in [1, ..., p]$:
 
 \begin{align*}
   \bar{L}_{a, j}(r) = \textrm{mean}_{i \in [1, ..., k]}\left\{L_{a, j, i}(r)\right\}
@@ -242,10 +269,10 @@ Given algorithm $a$ where $L_{a, i}$ is the $i^{th}$ fold's misclassification ra
 A single dot is produced where:
 
 \begin{align*}
-  r^*_{a, j} = \textrm{optimal argmin}_r\left\{\bar{L}_{a, j}(r)\right\}
+  r^*_{a, j} = \textrm{argmin}_r\left\{\bar{L}_{a, j}(r)\right\}
 \end{align*}
 
-which is defined as the optimum number of embedding dimensions. We use $\textrm{optimal argmin}$ here to indicate the smallest $r$ where $\bar{L}_{a, i}(r)$ is within $5\%$ of the global minimum. Then the optimal misclassification rate is $\bar{L}_{a, j}\left(r^*_{a, j}\right)$.
+which is defined as the optimum number of embedding dimensions.
 
 ```{r, fig.height=15, fig.width=25, message=FALSE}
 plots.curves <- list()
@@ -257,10 +284,10 @@ for (i in 1:length(exp_names)) {
   data_sub.optimalr.foldwise <- results.optimalr[results.optimalr$exp == exp,]
   tryCatch({
     plots.curves[[i]] <- plot_sim_lhats(data_sub, data_sub.optimalr, acols, linestyle, shapes, ylab="",
-                                 title=sprintf("Exp %d, K=%d, n=%d, p=%d", i, data_sub[1,]$K, data_sub[1,]$n, data_sub[1,]$d), 
+                                 title=sprintf("Exp %d, K=%d, n=%d, p=%d", i, data_sub[1,]$K, data_sub[1,]$ntrain, data_sub[1,]$d), 
                                  from=1, fsize = 7)
     plots.scatters[[i]] <- plot_sim_scatter(data_sub.optimalr.foldwise, acols, shapes,
-                                 title=sprintf("Exp %d, K=%d, n=%d, p=%d", i, data_sub[1,]$K, data_sub[1,]$n, data_sub[1,]$d),
+                                 title=sprintf("Exp %d, K=%d, n=%d, p=%d", i, data_sub[1,]$K, data_sub[1,]$ntrain, data_sub[1,]$d),
                                  fsize=12)
     
   }, error=function(e){NaN})
@@ -300,9 +327,11 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
   data$exp <- factor(data$exp)
   box <- data.frame(x=c(max(xlims), mean(xlims), mean(xlims), max(xlims)),
                     y=c(max(ylims), max(ylims), mean(ylims), mean(ylims)))
+  data.medians <- aggregate(list(lhat.norm=data$lhat.norm, rstar.norm=data$rstar.norm), by=list(alg=data$alg), FUN=median)
   center <- ggplot(data, aes(x=rstar.norm, y=lhat.norm)) +
     geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
-    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, fill=alg), alpha=0.6, size=1.2) +
+    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, fill=alg), alpha=0.4, size=1.2) +
+    geom_point(data=data.medians, aes(x=rstar.norm, y=lhat.norm, shape=alg, fill=alg), alpha=1.0, size=2.5) +
     scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_shape_manual(values=shapes, guide=legend.style, name=leg.title) +
     ylab(yl) +
@@ -314,8 +343,11 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
     theme_bw()
   center_leg <- ggplot(data, aes(x=rstar.norm, y=lhat.norm)) +
     geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
-    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, fill=alg), size=2) +
+    geom_line(aes(x=rstar.norm, y=lhat.norm, linetype=alg, color=alg), alpha=1.0, size=1.0) +
+    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, fill=alg), alpha=1.0, size=1.8) +
     scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
+    scale_color_manual(values=acols, guide=legend.style, name=leg.title) +
+    scale_linetype_manual(values=linestyle, guide=legend.style, name=leg.title) +
     scale_shape_manual(values=shapes, guide=legend.style, name=leg.title) +
     ylab(yl) +
     xlab(xl) +
@@ -327,7 +359,7 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
   leg <- g_legend(center_leg)
   center <- center + theme(legend.position=NaN)
   right <- ggplot(data, aes(x=lhat.norm, y=..scaled.., color=alg, linetype=alg)) +
-    geom_density() +
+    geom_density(size=1.1) +
     scale_color_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_linetype_manual(values=linestyle, guide=legend.style, name=leg.title) +
@@ -339,7 +371,7 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
     theme(legend.position=NaN) +
     coord_flip()
   top <- ggplot(data, aes(x=rstar.norm, y=..scaled.., color=alg, linetype=alg)) +
-    geom_density() +
+    geom_density(size=1.1) +
     scale_color_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_linetype_manual(values=linestyle, guide=legend.style, name=leg.title) +
     scale_x_continuous(limits=xlims) +
@@ -351,10 +383,11 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
   return(arrangeGrob(top, leg, center + theme(legend.position=NaN), right, ncol=2, nrow=2, widths=c(4,1.5), heights=c(2,4)))
 }
 
-grid.arrange(make_marginal_2d(subset(results.exp.optimalr, !(alg %in% c("LOL"))),
-                              c(-1, 1), c(-.15, .15), plot.title="Real Data Results", leg.title="Algorithm",
+grid.arrange(make_marginal_2d(subset(results.exp.optimalr, !(alg %in% c("LOL"))), 
+                              c(-1, 1), c(-.1, .1), plot.title="Performance Across HDLSS Benchmarks", leg.title="Algorithm",
                               xl="Normalized Embedding Dimension", yl="Normalized Misclassification Rate"))
 ```
+
 
 # Aggregated over Datasets Plot
 
@@ -431,7 +464,7 @@ lhat.hmap <- ggplot(lhat.test, aes(x=x, y=y, fill=p)) +
   scale_fill_gradientn(name=TeX("$p$-value"), trans="log", breaks=c(0.001, 0.01, 0.1, 1),
                        colours=rev(c("#f2f0f7", "#cbc9e2", "#9e9ac8", "#6a51a3")),
                        limits=c(0.001, 1)) +
-  ggtitle(TeX("Test of whether $\\hat{L}_{u, j}^* < $\\hat{L}_{v, j}^*$")) +
+  ggtitle(TeX("(B) Test of whether $\\hat{L}_{v, j} < $\\hat{L}_{u, j}$")) +
   xlab("Algorithm u") +
   ylab("Algorithm v")
 
@@ -441,7 +474,7 @@ rhat.hmap <- ggplot(rhat.test, aes(x=x, y=y, fill=p)) +
   scale_fill_gradientn(name=TeX("$p$-value"), trans="log", breaks=c(0.001, 0.01, 0.1, 1),
                        colours=rev(c("#f2f0f7", "#cbc9e2", "#9e9ac8", "#6a51a3")),
                        limits=c(0.001, 1)) +
-  ggtitle(TeX("Test of whether $r^*_{u, j} < r^*_{v, j}$")) +
+  ggtitle(TeX("(C) Test of whether $r_{v, j} < r_{u, j}$")) +
   xlab("Algorithm u") +
   ylab("Algorithm v")
 
