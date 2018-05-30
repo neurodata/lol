@@ -339,30 +339,33 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
     ylab(yl) +
     xlab(xl) +
     labs(shape="Simulation", color="Algorithm") +
-    ggtitle(plot.title) +
+    ggtitle("") +
     scale_y_continuous(limits=ylims) +
     scale_x_continuous(limits=xlims) +
     theme_bw()
   center_leg <- ggplot(data, aes(x=rstar.norm, y=lhat.norm)) +
     geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
     geom_line(aes(x=rstar.norm, y=lhat.norm, linetype=alg, color=alg), alpha=1.0, size=1.0) +
-    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, color=alg, fill=alg), alpha=1.0, size=1.8) +
+    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, color=alg, fill=alg), alpha=0.4, size=1.2) +
+    geom_point(data=data.medians, aes(x=rstar.norm, y=lhat.norm, shape=alg, color=alg, fill=alg), alpha=1.0, size=2.5) +
     scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_color_manual(values=acols, guide=legend.style, name=leg.title) +
-    scale_linetype_manual(values=linestyle, guide=legend.style, name=leg.title) +
     scale_shape_manual(values=shapes, guide=legend.style, name=leg.title) +
+    scale_linetype_manual(values=linestyle, guide=legend.style, name=leg.title) +
     ylab(yl) +
     xlab(xl) +
     labs(shape="Simulation", color="Algorithm") +
-    ggtitle(plot.title) +
+    ggtitle("") +
     scale_y_continuous(limits=ylims) +
     scale_x_continuous(limits=xlims) +
-    theme_bw()
+    theme_bw() +
+    guides(linetype=FALSE)
   leg <- g_legend(center_leg)
   center <- center + theme(legend.position=NaN)
   right <- ggplot(data, aes(x=lhat.norm, y=..scaled.., color=alg, linetype=alg)) +
     geom_density(size=1.1) +
     scale_color_manual(values=acols, guide=legend.style, name=leg.title) +
+    geom_vline(xintercept=0, ymin=0, ymax=1, color=as.character(acols["LOL"]), size=1.1) +
     scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_linetype_manual(values=linestyle, guide=legend.style, name=leg.title) +
     scale_x_continuous(limits=ylims) +
@@ -371,22 +374,27 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
     ggtitle("") +
     theme_bw() +
     theme(legend.position=NaN,
-          axis.text.x=element_blank(),
-          axis.ticks.x=element_blank()) +
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x=element_blank()) +
     coord_flip()
   top <- ggplot(data, aes(x=rstar.norm, y=..scaled.., color=alg, linetype=alg)) +
     geom_density(size=1.1) +
     scale_color_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_linetype_manual(values=linestyle, guide=legend.style, name=leg.title) +
+    geom_vline(xintercept=0, ymin=0, ymax=1, color=as.character(acols["LOL"]), size=1.1) +
     scale_x_continuous(limits=xlims) +
     ylab("Likelihood") +
     xlab("") +
-    ggtitle("") +
+    ggtitle(plot.title) +
     theme_bw() + 
     theme(legend.position=NaN,
         axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
-  return(arrangeGrob(top, leg, center + theme(legend.position=NaN), right, ncol=2, nrow=2, widths=c(4,1.5), heights=c(2,4)))
+        axis.ticks.y=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x=element_blank())
+  return(arrangeGrob(top, leg, center + theme(legend.position=NaN), right, ncol=2, nrow=2, widths=c(4,1.2), heights=c(2,4)))
 }
 
 grid.arrange(make_marginal_2d(subset(results.exp.optimalr, !(alg %in% c("LOL"))), 
@@ -395,16 +403,30 @@ grid.arrange(make_marginal_2d(subset(results.exp.optimalr, !(alg %in% c("LOL")))
 ```
 
 ```{r}
-dset.mnist <- plots.curves[[which(as.character(exp_names) == "mnist")]]
-dset.mrn <- plots.curves[[which(as.character(exp_names) == "MRN")]]
+
+plots.curves[[which(as.character(exp_names) == "mnist")]] <- plots.curves[[which(as.character(exp_names) == "mnist")]] +
+  scale_x_continuous(breaks=c(1, 50, 100)) +
+  scale_y_continuous(breaks=c(.15, .18, .21)) +
+  coord_cartesian(xlim=c(1, 100), ylim=c(.15, .21))
+
+plots.curves[[which(as.character(exp_names) == "MRN")]] <- plots.curves[[which(as.character(exp_names) == "MRN")]] +
+  scale_x_continuous(breaks=c(1, 50, 100)) +
+  scale_y_continuous(breaks=c(.14, .22, .3)) +
+  coord_cartesian(xlim=c(1, 100), ylim=c(.14, .3))
+
+
+
+dset.mnist <- plots.curves[[which(as.character(exp_names) == "mnist")]] + theme(text=element_text(size=10))
+dset.mrn <- plots.curves[[which(as.character(exp_names) == "MRN")]] + theme(text=element_text(size=10))
 scatter <- make_marginal_2d(subset(results.exp.optimalr, !(alg %in% c("LOL"))), 
-                              c(-1, 1), c(-.1, .1), plot.title="(C) Performance Across HDLSS Benchmarks", leg.title="Algorithm",
+                              c(-1, 1), c(-.1, .1), plot.title="(A) Performance Across HDLSS Benchmarks", leg.title="Algorithm",
                               xl="Normalized Embedding Dimension", yl="Normalized Misclassification Rate")
 
-fig.5 <- grid.arrange(arrangeGrob(dset.mnist + ggtitle("(A) MNIST dataset, n=70000, d=784") + xlab("Embedding Dimension") + ylab("Misclassification Rate"),
-                                  dset.mrn + ggtitle("(B) MRN dataset, n=114, d > 500,000,000") +  xlab("") + ylab(""),
+fig.5 <- grid.arrange(scatter,
+                      arrangeGrob(dset.mnist + ggtitle("(B) MNIST dataset, n=70,000, d=784") + xlab("Embedding Dimension") + ylab("Misclassification Rate"),
+                                  dset.mrn + ggtitle("(C) Sex dataset, n=114, d > 500,000,000") +  xlab("") + ylab(""),
                                   widths = c(0.5, 0.5), nrow=1),
-                      scatter, nrow=2, heights=c(0.35, 0.65))
+                      nrow=2, heights=c(0.65, 0.35))
 ```
 
 # Aggregated over Datasets Plot
