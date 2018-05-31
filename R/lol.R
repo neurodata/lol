@@ -14,6 +14,16 @@
 #' \item{\code{c(opt1, opt2, etc.)} apply the transform specified in opt1, followed by opt2, etc.}
 #' }
 #' @param xfm.opts optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.
+#' @param first.moment the function to capture the first moment. Defaults to \code{'delta'}.
+#' \item{\code{'delta'} capture the first moment with the hyperplane separating the per-class means.}
+#' \item{\code{FALSE} do not capture the first moment.}
+#' @param second.moment the function to capture the second moment. Defaults to \code{'linear'}.
+#' \itemize{
+#' \item{\code{'linear'} performs PCA on the class-conditional data to capture the second moment, retaining the vectors with the top singular values.}
+#' \item{\code{'quadratic'} performs PCA on the data for each class separately to capture the second moment, retaining the vectors with the top singular values from each class's PCA.}
+#' \item{\code{'pls'} performs PLS on the data to capture the second moment, retaining the vectors that maximize the correlation between the different classes.}
+#' \item{\code{FALSE} do not capture the second moment.}
+#' }
 #' @param ... trailing args.
 #' @return A list containing the following:
 #' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
@@ -35,7 +45,7 @@
 #' X <- data$X; Y <- data$Y
 #' model <- lol.project.lol(X=X, Y=Y, r=5)  # use lol to project into 5 dimensions
 #' @export
-lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
+lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), first.moment='delta', second.moment='linear', ...) {
   # class data
   info <- lol.utils.info(X, Y)
   priors <- info$priors; centroids <- info$centroids
@@ -44,6 +54,8 @@ lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   if (r > d) {
     stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
   }
+
+
   deltas <- lol.utils.deltas(centroids, priors)[, 2:K]
   centroids <- t(centroids)
 
@@ -51,7 +63,7 @@ lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   lrlda <- list(d=NULL)
   if (nv > 0) {
     lrlda <- lol.project.lrlda(X, Y, r=nv, xfm=xfm, xfm.opts=xfm.opts)
-    A <- cbind(deltas, lrlda$A)
+    A <- cbind(first.moment=deltas, second.moment=lrlda$A)
   } else {
     A <- deltas[, 1:r, drop=FALSE]
   }
