@@ -4,7 +4,9 @@
 \alias{lol.project.lol}
 \title{Linear Optimal Low-Rank Projection (LOL)}
 \usage{
-lol.project.lol(X, Y, r, xfm = FALSE, xfm.opts = list(), ...)
+lol.project.lol(X, Y, r, second.moment.xfm = FALSE,
+  second.moment.xfm.opts = list(), first.moment = "delta",
+  second.moment = "linear", orthogonalize = FALSE, ...)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
@@ -13,7 +15,7 @@ lol.project.lol(X, Y, r, xfm = FALSE, xfm.opts = list(), ...)
 
 \item{r}{the rank of the projection. Note that \code{r >= K}, and \code{r < d}.}
 
-\item{xfm}{whether to transform the variables before taking the SVD.
+\item{second.moment.xfm}{whether to transform the variables before taking the SVD.
 \itemize{
 \item{\code{FALSE} apply no transform to the variables.}
 \item{\code{'unit'} unit transform the variables, defaulting to centering and scaling to mean 0, variance 1. See \link[base]{scale} for details and optional args.}
@@ -22,7 +24,24 @@ lol.project.lol(X, Y, r, xfm = FALSE, xfm.opts = list(), ...)
 \item{\code{c(opt1, opt2, etc.)} apply the transform specified in opt1, followed by opt2, etc.}
 }}
 
-\item{xfm.opts}{optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.}
+\item{second.moment.xfm.opts}{optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{second.moment.xfm.opts[[i]]} corresponds to the optional arguments for \code{second.moment.xfm[[i]]}.
+Defaults to the default options for each transform scheme.}
+
+\item{first.moment}{the function to capture the first moment. Defaults to \code{'delta'}.
+\itemize{
+\item{\code{'delta'} capture the first moment with the hyperplane separating the per-class means.}
+\item{\code{FALSE} do not capture the first moment.}
+}}
+
+\item{second.moment}{the function to capture the second moment. Defaults to \code{'linear'}.
+\itemize{
+\item{\code{'linear'} performs PCA on the class-conditional data to capture the second moment, retaining the vectors with the top singular values.}
+\item{\code{'quadratic'} performs PCA on the data for each class separately to capture the second moment, retaining the vectors with the top singular values from each class's PCA.}
+\item{\code{'pls'} performs PLS on the data to capture the second moment, retaining the vectors that maximize the correlation between the different classes.}
+\item{\code{FALSE} do not capture the second moment.}
+}}
+
+\item{orthogonalize}{whether to orthogonalize the projection matrix. Defaults to \code{FALSE}.}
 
 \item{...}{trailing args.}
 }
@@ -37,7 +56,8 @@ A list containing the following:
 \item{\code{cr}}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
 }
 \description{
-A function for implementing the Linear Optimal Low-Rank Projection (LOL) Algorithm.
+A function for implementing the Linear Optimal Low-Rank Projection (LOL) Algorithm. This algorithm allows users to find an optimal
+projection from `d` to `r` dimensions, where `r << d`, by combining information from the first and second moments in thet data.
 }
 \section{Details}{
 
@@ -50,6 +70,8 @@ library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 model <- lol.project.lol(X=X, Y=Y, r=5)  # use lol to project into 5 dimensions
+
+model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='quadratic')  # use qoq to project into 5 dimensions
 }
 \author{
 Eric Bridgeford
