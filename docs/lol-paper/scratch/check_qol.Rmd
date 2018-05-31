@@ -1,0 +1,144 @@
+---
+title: "Check QO Code"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r, message=FALSE}
+require(lolR)
+require(ggplot2)
+require(MASS)
+require(abind)
+n=1000
+d=5
+r=3
+rot=-pi/4  # rotation in radians
+R = rbind(c(cos(rot), -sin(rot), 0, 0, 0), c(sin(rot), cos(rot), 0, 0, 0),
+          c(0,0,1,0,0), c(0,0,0,1,0), c(0,0,0,0,1))  # rotation matrix for rotation by 45 degrees in first 2 dimensions
+
+lol.project.qoq <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
+  # class data
+  info <- lolR:::lol.utils.info(X, Y)
+  priors <- info$priors; centroids <- info$centroids
+  K <- info$K; ylabs <- info$ylabs
+  n <- info$n; d <- info$d
+  if (r > d) {
+    stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
+  }
+  deltas <- lolR:::lol.utils.deltas(centroids, priors)[, 2:K]
+  centroids <- t(centroids)
+
+  nv <- r - (K) + 1
+  Aclass <- array(0, dim=c(d, 0))  # the class-wise egvecs
+  vclass <- c()  # the class-wise egvals
+  vclass.res <- list(d=NULL)
+  if (nv >= 0) {
+    for (ylab in ylabs) {
+      Xclass = X[Y == ylab,]
+      obj <- lol.project.pca(Xclass, r=nv, xfm=xfm, xfm.opts=xfm.opts)
+      Aclass <- cbind(Aclass, obj$A)
+      vclass <- c(vclass, obj$d[1:nv])
+    }
+    # take the nv from the A computed for each class using the
+    # nv with the top eigenvalues from Aclass
+    A <- cbind(deltas, Aclass[, sort(vclass, index.return=TRUE, decreasing=TRUE)$ix[1:nv]])
+    vclass.res$d <- sort(vclass)[1:nv]
+  } else {
+    A <- deltas[, 1:r, drop=FALSE]
+  }
+  colnames(A) <- NULL
+
+  return(list(A=A, d=vclass.res$d, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
+}
+
+lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
+  # class data
+  info <- lolR:::lol.utils.info(X, Y)
+  priors <- info$priors; centroids <- info$centroids
+  K <- info$K; ylabs <- info$ylabs
+  n <- info$n; d <- info$d
+  if (r > d) {
+    stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
+  }
+  deltas <- lolR:::lol.utils.deltas(centroids, priors)[, 2:K]
+  centroids <- t(centroids)
+
+  nv <- r - (K) + 1
+  lrlda <- list(d=NULL)
+  if (nv > 0) {
+    lrlda <- lol.project.lrlda(X, Y, r=nv, xfm=xfm, xfm.opts=xfm.opts)
+    A <- cbind(deltas, lrlda$A)
+  } else {
+    A <- deltas[, 1:r, drop=FALSE]
+  }
+  colnames(A) <- NULL
+
+  # orthogonalize and normalize
+  A <- qr.Q(qr(A))
+  return(list(A=A, d=lrlda$d, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
+}
+```
+
+# Generate Data
+
+```{r}
+mu0 = array(0, dim=c(d))
+Sigma0 = diag(d)
+Sigma0[1,1] = 5
+mu1 = t(R) %*% mu0
+Sigma1 = t(R) %*% Sigma0 %*% R
+
+mus = abind(mu0, mu1, along=2)
+Sigmas = abind(Sigma0, Sigma1, along=3)
+data = lolR:::lol.sims.sim_gmm(mus, Sigmas, n=n, priors = c(0.5, 0.5))
+X = data$X; Y = data$Y
+```
+
+# Visualize Data
+
+Below, we visualize the data rotated 45 degrees in the first and second dimensions:
+
+```{r}
+X.dat = data.frame(x1=X[,1], x2=X[,2], class=Y)
+X.dat$class <- factor(X.dat$class)
+ggplot(X.dat, aes(x=x1, y=x2, color=class, group=class, fill=class)) +
+  geom_point() + 
+  stat_ellipse(type = "norm", level=.6825)
+```
+
+# Projection vectors using LO
+
+We look at the second 2 vectors the data projects onto with LOL (the top 2 non-mean vectors). These should be "between" the two ellipses:
+
+```{r}
+lol.result <- lol.project.lol(X, Y, r=4)
+proj1.result <- data.frame(x1=rbind(lol.result$A[1,2], 0), x2=rbind(lol.result$A[2,2], 0), vector=1)
+proj2.result <- data.frame(x1=rbind(0, lol.result$A[1,3]), x2=rbind(0, lol.result$A[2,3]), vector=2)
+proj.dat = rbind(proj1.result, proj2.result)
+proj.dat$vector <- factor(proj.dat$vector)
+ggplot(X.dat, aes(x=x1, y=x2, color=class, group=class)) +
+  geom_point() + 
+  stat_ellipse(type = "norm", level=.6825) +
+  geom_line(data=proj.dat, aes(x=x1, y=x2, color=vector, group=vector), color='black')
+```
+
+As we can see, the directions are orthogonal to the point clouds due to the class-conditional covariance structure.
+
+# Projection vectors using QO
+
+```{r}
+lol.result <- lol.project.qoq(X, Y, r=4)
+proj1.result <- data.frame(x1=rbind(lol.result$A[1,2], 0), x2=rbind(lol.result$A[2,2], 0), vector=1)
+proj2.result <- data.frame(x1=rbind(0, lol.result$A[1,3]), x2=rbind(0, lol.result$A[2,3]), vector=2)
+proj.dat = rbind(proj1.result, proj2.result)
+proj.dat$vector <- factor(proj.dat$vector)
+ggplot(X.dat, aes(x=x1, y=x2, color=class, group=class)) +
+  geom_point() + 
+  stat_ellipse(type = "norm", level=.6825) +
+  geom_line(data=proj.dat, aes(x=x1, y=x2, color=vector, group=vector), color='black')
+```
+
+as we can see, the directions are exactly in-line with the point clouds.

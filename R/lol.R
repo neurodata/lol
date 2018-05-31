@@ -44,10 +44,10 @@ lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   if (r > d) {
     stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
   }
-  deltas <- lol.utils.deltas(centroids, priors)
+  deltas <- lol.utils.deltas(centroids, priors)[, 2:K]
   centroids <- t(centroids)
 
-  nv <- r - (K)
+  nv <- r - (K) + 1
   lrlda <- list(d=NULL)
   if (nv > 0) {
     lrlda <- lol.project.lrlda(X, Y, r=nv, xfm=xfm, xfm.opts=xfm.opts)
@@ -55,6 +55,7 @@ lol.project.lol <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   } else {
     A <- deltas[, 1:r, drop=FALSE]
   }
+  colnames(A) <- NULL
 
   # orthogonalize and normalize
   A <- qr.Q(qr(A))
@@ -108,14 +109,14 @@ lol.project.qoq <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   if (r > d) {
     stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
   }
-  deltas <- lol.utils.deltas(centroids, priors)
+  deltas <- lol.utils.deltas(centroids, priors)[, 2:K]
   centroids <- t(centroids)
 
-  nv <- r - (K)
+  nv <- r - (K) + 1
   Aclass <- array(0, dim=c(d, 0))  # the class-wise egvecs
   vclass <- c()  # the class-wise egvals
   vclass.res <- list(d=NULL)
-  if (nv > 0) {
+  if (nv >= 0) {
     for (ylab in ylabs) {
       Xclass = X[Y == ylab,]
       obj <- lol.project.pca(Xclass, r=nv, xfm=xfm, xfm.opts=xfm.opts)
@@ -129,6 +130,7 @@ lol.project.qoq <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), ...) {
   } else {
     A <- deltas[, 1:r, drop=FALSE]
   }
+  colnames(A) <- NULL
 
   # orthogonalize and normalize
   A <- qr.Q(qr(A))
