@@ -208,12 +208,12 @@ Next, we aggregate over the respective iterations, and subset plots for each fun
 
 ```{r}
 # read the results in
-results <- readRDS(paste('./data/fig3/lol_fig3_', classifier.alg, '.rds', sep=""))
-results <- rbind(results$overall[, colnames(results$overall) != 'se'], resultsm)
+results <- readRDS(paste('./data/sims/lol_sims_', classifier.alg, '.rds', sep=""))
+results <- rbind(results[, colnames(results) != 'se'], resultsm)
 #results <- results$overall
 nan.mean <- function(x) mean(x, na.rm=TRUE)
 results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = nan.mean)
-algs <-  c("LOL", "QOQ", "PLS", "CCA", "LDA", "PCA", "ROAD", "LASSO")
+algs <-  c("LOL", "QOL", "PLS", "CCA", "LDA", "PCA", "ROAD", "LASSO")
 acols <- c("#f41711", "#f41711", "#94d6c9", "#87c6cc", "#99b4c6", "#020202", "#666666", "#666666")
 linestyle <- c(1,3,3,1,3,1,1,3,1)
 linestyle <- c("solid", "dotted", "dotted", "solid", "dotted", "solid", "solid", "dotted")
@@ -221,15 +221,14 @@ names(acols) <- algs
 names(linestyle) <- algs
 sim_plots <- list()
 results.means$alg <- revalue(results.means$alg, c("cPCA"="LDA"))
+results.means$alg <- revalue(results.means$alg, c("LRLDA"="LDA"))
 
-results.means$type <- revalue(results.means$alg, linestyle)
-results.means$color <- revalue(results.means$alg, acols)
 
 counter <- 1
 
 for (i in 1:length(sim_names)) {
   sim <- sim_names[i]
-  data_sub <- results.means[results.means$sim == sim,]
+  data_sub <- results.means[results.means$sim == sim & results.means$alg %in% algs,]
   pt.dat <- data.frame(x=c(), y=c())
   for (alg in unique(data_sub$alg)) {
     pt <- compute_cutoff(data_sub[data_sub$alg == alg,]$r, data_sub[data_sub$alg == alg,]$lhat)
