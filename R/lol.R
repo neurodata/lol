@@ -13,21 +13,14 @@
 #' }
 #' @param second.moment the function to capture the second moment. Defaults to \code{'linear'}.
 #' \itemize{
-#' \item{\code{'linear'} performs PCA on the class-conditional data to capture the second moment, retaining the vectors with the top singular values.}
-#' \item{\code{'quadratic'} performs PCA on the data for each class separately to capture the second moment, retaining the vectors with the top singular values from each class's PCA.}
-#' \item{\code{'pls'} performs PLS on the data to capture the second moment, retaining the vectors that maximize the correlation between the different classes.}
+#' \item{\code{'linear'} performs PCA on the class-conditional data to capture the second moment, retaining the vectors with the top singular values.   Transform options for \code{second.moment.xfm} and arguments in \code{second.moment.opts} should be in accordance with the trailing arguments for \link{lol.project.lrlda}.}
+#' \item{\code{'quadratic'} performs PCA on the data for each class separately to capture the second moment, retaining the vectors with the top singular values from each class's PCA. Transform options for \code{second.moment.xfm} and arguments in \code{second.moment.opts} should be in accordance with the trailing arguments for \link{lol.project.pca}.}
+#' \item{\code{'pls'} performs PLS on the data to capture the second moment, retaining the vectors that maximize the correlation between the different classes. Transform options for \code{second.moment.xfm} and arguments in \code{second.moment.opts} should be in accordance with the trailing arguments for \link{lol.project.pls}.}
 #' \item{\code{FALSE} do not capture the second moment.}
 #' }
 #' @param orthogonalize whether to orthogonalize the projection matrix. Defaults to \code{FALSE}.
-#' @param second.moment.xfm whether to transform the variables before taking the SVD.
-#' \itemize{
-#' \item{\code{FALSE} apply no transform to the variables.}
-#' \item{\code{'unit'} unit transform the variables, defaulting to centering and scaling to mean 0, variance 1. See \link[base]{scale} for details and optional args.}
-#' \item{\code{'log'} log-transform the variables, for use-cases such as having high variance in larger values. Defaults to natural logarithm. See \link[base]{log} for details and optional args.}
-#' \item{\code{'rank'} rank-transform the variables. Defalts to breaking ties with the average rank of the tied values. See \link[base]{rank} for details and optional args.}
-#' \item{\code{c(opt1, opt2, etc.)} apply the transform specified in opt1, followed by opt2, etc.}
-#' }
-#' @param second.moment.xfm.opts optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{second.moment.xfm.opts[[i]]} corresponds to the optional arguments for \code{second.moment.xfm[[i]]}.
+#' @param second.moment.xfm whether to use extraneous options in estimation of the second moment component. The transforms specified should be a numbered list of transforms you wish to apply, and will be applied in accordance with \code{second.moment}.
+#' @param second.moment.xfm.opts optional arguments to pass to the \code{second.moment.xfm} option specified. Should be a numbered list of lists, where \code{second.moment.xfm.opts[[i]]} corresponds to the optional arguments for \code{second.moment.xfm[[i]]}.
 #' Defaults to the default options for each transform scheme.
 #' @param ... trailing args.
 #' @return A list containing the following:
@@ -50,7 +43,18 @@
 #' X <- data$X; Y <- data$Y
 #' model <- lol.project.lol(X=X, Y=Y, r=5)  # use lol to project into 5 dimensions
 #'
-#' model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='quadratic')  # use qoq to project into 5 dimensions
+#' # use lol to project into 5 dimensions, and produce an orthogonal basis for the projection matrix
+#' model <- lol.project.lol(X=X, Y=Y, r=5, orthogonalize=TRUE)
+#'
+#' # use LRQDA to estimate the second moment by performing PCA on each class
+#' model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='quadratic')
+#'
+#'
+#' # use PLS to estimate the second moment
+#' model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='pls')
+#'
+#' # use LRLDA to estimate the second moment, and apply a unit transformation (according to scale function) with no centering
+#' model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='linear', second.moment.xfm='unit', second.moment.xfm.opts=list(center=FALSE))
 #' @export
 lol.project.lol <- function(X, Y, r, second.moment.xfm=FALSE, second.moment.xfm.opts=list(),
                             first.moment='delta', second.moment='linear', orthogonalize=FALSE, ...) {
