@@ -367,12 +367,36 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2) {
 #' @author Eric Bridgeford
 #' @examples
 #' library(lolR)
-#' data <- lol.sims.cigar(n=200, d=30)  # 200 examples of 30 dimensions
+#' data <- lol.sims.cross(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #'
 #' @export
 lol.sims.cross <- function(n, d, rotate=FALSE, priors=NULL, a=1, b=.25, K=2) {
+  if (is.null(priors)) {
+    priors <- array(1/K, dim=c(K))
+  } else if (length(priors) != K) {
+    stop(sprintf("You have specified %d priors for %d classes.", length(priors), K))
+  } else if (sum(priors) != 1) {
+    stop(sprintf("You have passed invalid priors. The sum(priors) should be 1; yours is %.3f", sum(priors)))
+  }
+  mus <- array(0, dim=c(d, K))  # zero-vector for means
 
+  nd.perK <- floor(d/K)
+  S <- array(0, dim=c(d, d, K))
+  for (i in 1:K) {
+    diag(S[,,i]) <- b
+    diag(S[,,i])[((i-1)*nd.perK + 1):(i*nd.perK)] <- a
+  }
+
+  if (rotate) {
+    res <- lol.sims.random_rotate(mus, S)
+    mus <- res$mus
+    S <- res$S
+  }
+  # simulate from GMM
+  sim <- lol.sims.sim_gmm(mus, S, n, priors)
+  return(structure(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors, simtype="Cross",
+                        params=list(a=a, b=b, K=K)), class="simulation"))
 }
 
 #' Stacked Cigar

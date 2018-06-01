@@ -18,8 +18,8 @@ d <- 15
 ```
 
 ```{r}
-plot_sim <- function(X, Y, name) {
-  data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
+plot_sim <- function(X, Y, name, d1=1, d2=2) {
+  data <- data.frame(x1=X[,d1], x2=X[,d2], y=Y)
   data$y <- factor(data$y)
   ggplot(data, aes(x=x1, y=x2, color=y)) +
     geom_point() +
@@ -111,4 +111,13 @@ testdat <- lol.sims.fat_tails(n, d)
 X <- testdat$X
 Y <- testdat$Y
 print(plot_sim(X, Y, "Fat Tails"))
+```
+
+# Cross
+
+```{r, fig.width=5}
+testdat <- lol.sims.cross(n, d, a=4, b=.25)
+X <- testdat$X
+Y <- testdat$Y
+print(plot_sim(X, Y, "Cross", d1=7, d2=8))
 ```

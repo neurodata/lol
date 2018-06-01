@@ -15,16 +15,9 @@ lol.project.lol(X, Y, r, second.moment.xfm = FALSE,
 
 \item{r}{the rank of the projection. Note that \code{r >= K}, and \code{r < d}.}
 
-\item{second.moment.xfm}{whether to transform the variables before taking the SVD.
-\itemize{
-\item{\code{FALSE} apply no transform to the variables.}
-\item{\code{'unit'} unit transform the variables, defaulting to centering and scaling to mean 0, variance 1. See \link[base]{scale} for details and optional args.}
-\item{\code{'log'} log-transform the variables, for use-cases such as having high variance in larger values. Defaults to natural logarithm. See \link[base]{log} for details and optional args.}
-\item{\code{'rank'} rank-transform the variables. Defalts to breaking ties with the average rank of the tied values. See \link[base]{rank} for details and optional args.}
-\item{\code{c(opt1, opt2, etc.)} apply the transform specified in opt1, followed by opt2, etc.}
-}}
+\item{second.moment.xfm}{whether to use extraneous options in estimation of the second moment component. The transforms specified should be a numbered list of transforms you wish to apply, and will be applied in accordance with \code{second.moment}.}
 
-\item{second.moment.xfm.opts}{optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{second.moment.xfm.opts[[i]]} corresponds to the optional arguments for \code{second.moment.xfm[[i]]}.
+\item{second.moment.xfm.opts}{optional arguments to pass to the \code{second.moment.xfm} option specified. Should be a numbered list of lists, where \code{second.moment.xfm.opts[[i]]} corresponds to the optional arguments for \code{second.moment.xfm[[i]]}.
 Defaults to the default options for each transform scheme.}
 
 \item{first.moment}{the function to capture the first moment. Defaults to \code{'delta'}.
@@ -35,9 +28,9 @@ Defaults to the default options for each transform scheme.}
 
 \item{second.moment}{the function to capture the second moment. Defaults to \code{'linear'}.
 \itemize{
-\item{\code{'linear'} performs PCA on the class-conditional data to capture the second moment, retaining the vectors with the top singular values.}
-\item{\code{'quadratic'} performs PCA on the data for each class separately to capture the second moment, retaining the vectors with the top singular values from each class's PCA.}
-\item{\code{'pls'} performs PLS on the data to capture the second moment, retaining the vectors that maximize the correlation between the different classes.}
+\item{\code{'linear'} performs PCA on the class-conditional data to capture the second moment, retaining the vectors with the top singular values.   Transform options for \code{second.moment.xfm} and arguments in \code{second.moment.opts} should be in accordance with the trailing arguments for \link{lol.project.lrlda}.}
+\item{\code{'quadratic'} performs PCA on the data for each class separately to capture the second moment, retaining the vectors with the top singular values from each class's PCA. Transform options for \code{second.moment.xfm} and arguments in \code{second.moment.opts} should be in accordance with the trailing arguments for \link{lol.project.pca}.}
+\item{\code{'pls'} performs PLS on the data to capture the second moment, retaining the vectors that maximize the correlation between the different classes. Transform options for \code{second.moment.xfm} and arguments in \code{second.moment.opts} should be in accordance with the trailing arguments for \link{lol.project.pls}.}
 \item{\code{FALSE} do not capture the second moment.}
 }}
 
@@ -48,12 +41,13 @@ Defaults to the default options for each transform scheme.}
 \value{
 A list containing the following:
 \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
-\item{\code{d}}{the eigen values associated with the eigendecomposition.}
 \item{\code{ylabs}}{\code{[K]} vector containing the \code{K} unique, ordered class labels.}
 \item{\code{centroids}}{\code{[K, d]} centroid matrix of the \code{K} unique, ordered classes in native \code{d} dimensions.}
 \item{\code{priors}}{\code{[K]} vector containing the \code{K} prior probabilities for the unique, ordered classes.}
 \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
 \item{\code{cr}}{\code{[K, r]} the \code{K} centroids in reduced dimensionality \code{r}.}
+\item{\code{second.moment}}{the method used to estimate the second moment.}
+\item{\code{first.moment}}{the method used to estimate the first moment.}
 }
 \description{
 A function for implementing the Linear Optimal Low-Rank Projection (LOL) Algorithm. This algorithm allows users to find an optimal
@@ -71,7 +65,18 @@ data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
 model <- lol.project.lol(X=X, Y=Y, r=5)  # use lol to project into 5 dimensions
 
-model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='quadratic')  # use qoq to project into 5 dimensions
+# use lol to project into 5 dimensions, and produce an orthogonal basis for the projection matrix
+model <- lol.project.lol(X=X, Y=Y, r=5, orthogonalize=TRUE)
+
+# use LRQDA to estimate the second moment by performing PCA on each class
+model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='quadratic')
+
+
+# use PLS to estimate the second moment
+model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='pls')
+
+# use LRLDA to estimate the second moment, and apply a unit transformation (according to scale function) with no centering
+model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='linear', second.moment.xfm='unit', second.moment.xfm.opts=list(center=FALSE))
 }
 \author{
 Eric Bridgeford

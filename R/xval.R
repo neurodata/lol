@@ -355,12 +355,12 @@ lol.xval.check_xv_set <- function(sets, n) {
 #' @param rank whether to force the training set to low-rank. Defaults to \code{FALSE}.
 #' \itemize{
 #' \item{if \code{rank == FALSE}, uses default cross-validation method with standard \code{k}-fold validation. Training sets are \code{k-1} folds, and testing sets are \code{1} fold, where the fold held-out for testing is rotated to ensure no dependence of potential downstream inference in the cross-validated misclassification rates.}
-#' \item{if ]code{rank == TRUE}, users cross-validation method with \code{ntrain = min((k-1)/k*n, d)} sample training sets, where \code{d}  is the number of dimensions in \code{X}. This ensures that the training data is always low-rank, \code{ntrain < d + 1}. Note that the resulting training sets may have \code{ntrain < (k-1)/k*n}, but the resulting testing sets will always be properly rotated \code{ntest = n/k} to ensure no dependencies in fold-wise testing.}
+#' \item{if \code{rank == TRUE}, users cross-validation method with \code{ntrain = min((k-1)/k*n, d)} sample training sets, where \code{d}  is the number of dimensions in \code{X}. This ensures that the training data is always low-rank, \code{ntrain < d + 1}. Note that the resulting training sets may have \code{ntrain < (k-1)/k*n}, but the resulting testing sets will always be properly rotated \code{ntest = n/k} to ensure no dependencies in fold-wise testing.}
 #' }
 #' @param ... optional args.
 #' @return sets the cross-validation sets as an object of class \code{"XV"} containing the following:
 #' \item{\code{train}}{length \code{[ntrain]} vector indicating the indices of the training examples.}
-#' \item{\code{test}}{ length \codoe{[ntest]} vector indicating the indices of the testing examples.}
+#' \item{\code{test}}{ length \code{[ntest]} vector indicating the indices of the testing examples.}
 #' @author Eric Bridgeford
 #' @examples
 #' # prepare data for 10-fold validation
