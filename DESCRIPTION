@@ -21,7 +21,8 @@ Imports:
   abind,
   MASS,
   irlba,
-  pls
+  pls,
+  robust
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr

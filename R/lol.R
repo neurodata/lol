@@ -22,6 +22,7 @@
 #' @param second.moment.xfm whether to use extraneous options in estimation of the second moment component. The transforms specified should be a numbered list of transforms you wish to apply, and will be applied in accordance with \code{second.moment}.
 #' @param second.moment.xfm.opts optional arguments to pass to the \code{second.moment.xfm} option specified. Should be a numbered list of lists, where \code{second.moment.xfm.opts[[i]]} corresponds to the optional arguments for \code{second.moment.xfm[[i]]}.
 #' Defaults to the default options for each transform scheme.
+#' @param robust whether to perform PCA on a robust estimate of the covariance matrix or not. Defaults to \code{FALSE}.
 #' @param ... trailing args.
 #' @return A list containing the following:
 #' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
@@ -58,7 +59,8 @@
 #' model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='linear', second.moment.xfm='unit', second.moment.xfm.opts=list(center=FALSE))
 #' @export
 lol.project.lol <- function(X, Y, r, second.moment.xfm=FALSE, second.moment.xfm.opts=list(),
-                            first.moment='delta', second.moment='linear', orthogonalize=FALSE, ...) {
+                            first.moment='delta', second.moment='linear', orthogonalize=FALSE,
+                            robust=FALSE, ...) {
   # class data
   info <- lol.utils.info(X, Y)
   priors <- info$priors; centroids <- info$centroids
@@ -77,7 +79,7 @@ lol.project.lol <- function(X, Y, r, second.moment.xfm=FALSE, second.moment.xfm.
   nv <- r - dim(first.moment.proj)[2]
 
   if (second.moment == "linear" & nv > 0) {
-    lrlda <- lol.project.lrlda(X, Y, r=nv, xfm=second.moment.xfm, xfm.opts=second.moment.xfm.opts)
+    lrlda <- lol.project.lrlda(X, Y, r=nv, xfm=second.moment.xfm, xfm.opts=second.moment.xfm.opts, robust=robust)
     #d <- lrlda$d
     second.moment.proj <- lrlda$A
   } else if (second.moment == "quadratic" & nv > 0) {
@@ -85,7 +87,7 @@ lol.project.lol <- function(X, Y, r, second.moment.xfm=FALSE, second.moment.xfm.
     vclass <- c()  # the class-wise egvals
     for (ylab in ylabs) {
       Xclass = X[Y == ylab,]
-      obj <- lol.project.pca(Xclass, r=nv, xfm=second.moment.xfm, xfm.opts=second.moment.xfm.opts)
+      obj <- lol.project.pca(Xclass, r=nv, xfm=second.moment.xfm, xfm.opts=second.moment.xfm.opts, robust=robust)
       Aclass <- cbind(Aclass, obj$A)
       vclass <- c(vclass, obj$d[1:nv])
     }

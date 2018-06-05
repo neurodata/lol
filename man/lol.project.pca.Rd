@@ -4,7 +4,7 @@
 \alias{lol.project.pca}
 \title{Principal Component Analysis (PCA)}
 \usage{
-lol.project.pca(X, r, xfm = FALSE, xfm.opts = list(), ...)
+lol.project.pca(X, r, xfm = FALSE, xfm.opts = list(), robust = FALSE, ...)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
@@ -21,6 +21,8 @@ lol.project.pca(X, r, xfm = FALSE, xfm.opts = list(), ...)
 }}
 
 \item{xfm.opts}{optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.}
+
+\item{robust}{whether to perform PCA on a robust estimate of the covariance matrix or not. Defaults to \code{FALSE}.}
 
 \item{...}{trailing args.}
 }

@@ -1,0 +1,170 @@
+---
+title: "check outliers"
+author: "Eric Bridgeford"
+date: "June 5, 2018"
+output: html_document
+---
+
+```{r, message=FALSE}
+require(lolR)
+require(ggplot2)
+require(MASS)
+require(abind)
+n=1000
+d=30
+r=3
+#rot=-pi/4  # rotation in radians
+#R = rbind(c(cos(rot), -sin(rot), 0, 0, 0), c(sin(rot), cos(rot), 0, 0, 0),
+#          c(0,0,1,0,0), c(0,0,0,1,0), c(0,0,0,0,1))  # rotation matrix for rotation by 45 degrees in first 2 dimensions
+```
+
+# Generate Data
+
+```{r}
+data <- lol.sims.rtrunk(n, d)
+X = data$X; Y = data$Y
+
+# generate outliers
+data.outlier <- lolR:::lol.sims.sim_gmm(mus=data$mus,  Sigmas=10*data$Sigmas, n=n, priors=data$priors)
+# randomly reorder Y for "noise"
+X.o <- data.outlier$X; Y.o <- sample(data.outlier$Y)
+
+X <- rbind(X, X.o)
+Y <- c(Y, Y.o)
+# randomly reorder X and Y
+reord <- sample(1:length(Y))
+X <- X[reord,]; Y <- Y[reord]
+X.train <- X[1:(length(Y)/2),]; X.test <- X[(length(Y)/2 + 1):length(Y),]
+Y.train <- Y[1:(length(Y)/2)]; Y.test <- Y[(length(Y)/2 + 1):length(Y)]
+```
+
+```{r}
+data <- data.frame(x1=X.train[,1], x2=X.train[,2], y=Y.train)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, y=x2, color=y)) +
+  geom_point() +
+  xlab("x1") +
+  ylab("x2") +
+  ggtitle("Simulated Data")
+```
+
+# Regular LOL
+
+```{r}
+result <- lol.project.lol(X, Y, r)
+
+data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, y=x2, color=y)) +
+  geom_point(alpha=0.6) +
+  xlab("x1") +
+  ylab("x2") +
+  ggtitle("Projected Training Data using LOL")
+```
+
+```{r}
+newXr <- lol.embed(X.test, result$A)
+
+data <- data.frame(x1=newXr[,1], x2=newXr[,2], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, y=x2, color=y)) +
+  geom_point(alpha=0.6) +
+  xlab("x1") +
+  ylab("x2") +
+  ggtitle("Projected Testing Data using LOL")
+```
+
+```{r, fig.width=5}
+liney <- MASS::lda(result$Xr, Y)
+result <- predict(liney, newXr)
+lhat <- 1 - sum(result$class == Y)/length(Y)
+
+data <- data.frame(x1=result$x[,1], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, fill=y)) +
+  geom_density(adjust=1.5, alpha=0.6) +
+  xlab("$x_1$") +
+  ylab("Density") +
+  ggtitle(sprintf("LOL-LDA, L = %.2f", lhat))
+```
+
+# Robust LOL
+
+```{r}
+result <- lol.project.lol(X, Y, r, robust=TRUE)
+
+data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, y=x2, color=y)) +
+  geom_point(alpha=0.6) +
+  xlab("x1") +
+  ylab("x2") +
+  ggtitle("Projected Data using Robust LOL")
+```
+
+```{r}
+newXr <- lol.embed(X.test, result$A)
+
+data <- data.frame(x1=newXr[,1], x2=newXr[,2], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, y=x2, color=y)) +
+  geom_point(alpha=0.6) +
+  xlab("x1") +
+  ylab("x2") +
+  ggtitle("Projected Testing Data using Robust LOL")
+```
+
+```{r, fig.width=5}
+liney <- MASS::lda(result$Xr, Y)
+result <- predict(liney, newXr)
+lhat <- 1 - sum(result$class == Y)/length(Y)
+
+data <- data.frame(x1=result$x[,1], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, fill=y)) +
+  geom_density(adjust=1.5, alpha=0.6) +
+  xlab("$x_1$") +
+  ylab("Density") +
+  ggtitle(sprintf("RLOL-LDA, L = %.2f", lhat))
+```
+
+# PLS
+
+```{r}
+result <- lol.project.pls(X, Y, r)
+
+data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, y=x2, color=y)) +
+  geom_point(alpha=0.6) +
+  xlab("x1") +
+  ylab("x2") +
+  ggtitle("Projected Data using PLS")
+```
+
+```{r}
+newXr <- lol.embed(X.test, result$A)
+
+data <- data.frame(x1=newXr[,1], x2=newXr[,2], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, y=x2, color=y)) +
+  geom_point(alpha=0.6) +
+  xlab("x1") +
+  ylab("x2") +
+  ggtitle("Projected Testing Data using PLS")
+```
+
+```{r, fig.width=5}
+liney <- MASS::lda(result$Xr, Y)
+result <- predict(liney, newXr)
+lhat <- 1 - sum(result$class == Y)/length(Y)
+
+data <- data.frame(x1=result$x[,1], y=Y)
+data$y <- factor(data$y)
+ggplot(data, aes(x=x1, fill=y)) +
+  geom_density(adjust=1.5, alpha=0.6) +
+  xlab("$x_1$") +
+  ylab("Density") +
+  ggtitle(sprintf("PLS-LDA, L = %.2f", lhat))
+```
+

@@ -6,7 +6,7 @@
 \usage{
 lol.project.lol(X, Y, r, second.moment.xfm = FALSE,
   second.moment.xfm.opts = list(), first.moment = "delta",
-  second.moment = "linear", orthogonalize = FALSE, ...)
+  second.moment = "linear", orthogonalize = FALSE, robust = FALSE, ...)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
@@ -35,6 +35,8 @@ Defaults to the default options for each transform scheme.}
 }}
 
 \item{orthogonalize}{whether to orthogonalize the projection matrix. Defaults to \code{FALSE}.}
+
+\item{robust}{whether to perform PCA on a robust estimate of the covariance matrix or not. Defaults to \code{FALSE}.}
 
 \item{...}{trailing args.}
 }

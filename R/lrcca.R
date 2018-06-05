@@ -44,8 +44,8 @@ lol.project.lrcca <- function(X, Y, r, ...) {
   S_xi <- ginv(S_x); S_yi <- MASS::ginv(S_y)
   S_xy <- 1/n*t(Xc) %*% Yc
   # decompose Sxi*Sxy*Syi*Syx
-  svdX <- lol.utils.svd(S_xi %*% S_xy %*% S_yi %*% t(S_xy), nu=r)
+  X.decomp <- lol.utils.decomp(t(S_xi %*% S_xy %*% S_yi %*% t(S_xy)), ncomp=r)
 
-  return(list(A=svdX$u, d=svdX$d, centroids=centroids, priors=priors, ylabs=ylabs,
-              Xr=lol.embed(X, svdX$u), cr=lol.embed(centroids, svdX$u)))
+  return(list(A=X.decomp$comp, d=X.decomp$val, centroids=centroids, priors=priors, ylabs=ylabs,
+              Xr=lol.embed(X, X.decomp$comp), cr=lol.embed(centroids, X.decomp$comp)))
 }

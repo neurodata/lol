@@ -4,7 +4,8 @@
 \alias{lol.project.lrlda}
 \title{Low-Rank Linear Discriminant Analysis (LRLDA)}
 \usage{
-lol.project.lrlda(X, Y, r, xfm = FALSE, xfm.opts = list(), ...)
+lol.project.lrlda(X, Y, r, xfm = FALSE, xfm.opts = list(), robust = FALSE,
+  ...)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
@@ -23,6 +24,8 @@ lol.project.lrlda(X, Y, r, xfm = FALSE, xfm.opts = list(), ...)
 }}
 
 \item{xfm.opts}{optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.}
+
+\item{robust}{whether to use a robust estimate of the covariance matrix when taking PCA. Defaults to \code{FALSE}.}
 
 \item{...}{trailing args.}
 }
