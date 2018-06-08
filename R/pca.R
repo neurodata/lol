@@ -89,7 +89,7 @@ lol.utils.decomp <- function(X, xfm=FALSE, xfm.opts=list(), ncomp=0, t=.05, robu
   # take svd
   decomp <- list()
   if (robust) {
-    eigenX <- eigen(covRob(X, estim='mcd')$cov)
+    eigenX <- eigen(covRob(X, estim='weighted')$cov)
     decomp$comp <- eigenX$vectors[, 1:ncomp, drop=FALSE]
     decomp$val <- eigenX$values[1:ncomp]
   } else if (ncomp > t*d | ncomp >= d) {

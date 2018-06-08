@@ -33,7 +33,7 @@ A list of class \code{simulation} with the following:
 \item{params}{Any extraneous parameters the simulation was created with.}
 }
 \description{
-A simulation for the cross experiment.
+A simulation for the cross experiment, in which the two classes have orthogonal covariant dimensions and the same means.
 }
 \section{Details}{
 

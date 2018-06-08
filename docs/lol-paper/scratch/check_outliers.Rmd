@@ -10,9 +10,10 @@ require(lolR)
 require(ggplot2)
 require(MASS)
 require(abind)
-n=1000
-d=300
-r=10
+require(robust)
+n=100
+d=40
+r=7
 #rot=-pi/4  # rotation in radians
 #R = rbind(c(cos(rot), -sin(rot), 0, 0, 0), c(sin(rot), cos(rot), 0, 0, 0),
 #          c(0,0,1,0,0), c(0,0,0,1,0), c(0,0,0,0,1))  # rotation matrix for rotation by 45 degrees in first 2 dimensions
@@ -21,19 +22,74 @@ r=10
 # Generate Data
 
 ```{r}
-data <- lol.sims.cigar(n, d)
+data <- lol.sims.rev_rtrunk(n, d, b=1, maxvar=6)
+data.regular_trunk <- lol.sims.rtrunk(n, d)
 X = data$X; Y = data$Y
 
 # generate outliers
-Sigmas.outliers <- data$Sigmas
-for (i in 1:dim(data$Sigmas)[3]) {
-  for (j in 1:dim(data$Sigmas)[1]) {
-    for (k in 1:dim(data$Sigmas)[2]) {
-      Sigmas.outliers[j, k, i] <- data$Sigmas[(d+1)-j, (d+1)-k, i]
+Sigmas.outliers <- data.regular_trunk$Sigmas
+for (i in 1:dim(data.regular_trunk$Sigmas)[3]) {
+  for (j in 1:dim(data.regular_trunk$Sigmas)[1]) {
+    for (k in 1:dim(data.regular_trunk$Sigmas)[2]) {
+      Sigmas.outliers[j, k, i] <- data.regular_trunk$Sigmas[(d+1)-j, (d+1)-k, i]
     }
   }
 }
-data.outlier <- lolR:::lol.sims.sim_gmm(mus=data$mus,  Sigmas=10*Sigmas.outliers, n=.05*n, priors=data$priors)
+```
+
+## Average Per-Class Error as a function of Magnitude of the Noise
+
+```{r}
+result.robcov.performance <- data.frame(i=c(), class=c(), error=c(), method=c(), iter=c())
+niter <- 10
+mus.outliers <- array(0, dim=c(d, 2))
+for (i in 1:10) {
+  for (j in 1:niter) {
+    data.outlier <- lolR:::lol.sims.sim_gmm(mus=mus.outliers,  Sigmas=i*Sigmas.outliers, n=.2*n, priors=data$priors)
+    # randomly reorder Y for "noise"
+    X.o <- data.outlier$X; Y.o <- sample(data.outlier$Y)
+    
+    X <- rbind(X, X.o)
+    Y <- c(Y, Y.o)
+    # randomly reorder X and Y
+    reord <- sample(1:length(Y))
+    X <- X[reord,]; Y <- Y[reord]
+    for (c in 1:2) {
+      result.robcov.performance <- rbind(result.robcov.performance, data.frame(i=i, class=c,
+                                                                               error=norm(cov(X[Y == c,,drop=FALSE]) - data$Sigmas[,,c], "F"),
+                                                                               method="cov", iter=j))
+      result.robcov.performance <- rbind(result.robcov.performance, data.frame(i=i, class=c,
+                                                                               error=norm(covRob(X[Y == c,,drop=FALSE], estim="weighted")$cov - data$Sigmas[,,c], "F"),
+                                                                               method="robCov", iter=j))
+    }
+    
+  }
+}
+
+robcov.perf <- aggregate(error ~ i + method, data=result.robcov.performance, FUN=mean)
+ggplot(data=robcov.perf, aes(x=i, y=error, group=method, color=method)) +
+  geom_line() +
+  xlab("Variance Multiplier of Noise Points") +
+  ylab("Error of True Covariance Estimation") +
+  ggtitle("Comparison of Robust and non-robust Covariance Estimation")
+```
+
+```{r}
+data <- lol.sims.rev_rtrunk(n, d, b=1, maxvar=6)
+data.regular_trunk <- lol.sims.rtrunk(n, d)
+X = data$X; Y = data$Y
+
+# generate outliers
+Sigmas.outliers <- data.regular_trunk$Sigmas
+for (i in 1:dim(data.regular_trunk$Sigmas)[3]) {
+  for (j in 1:dim(data.regular_trunk$Sigmas)[1]) {
+    for (k in 1:dim(data.regular_trunk$Sigmas)[2]) {
+      Sigmas.outliers[j, k, i] <- data.regular_trunk$Sigmas[(d+1)-j, (d+1)-k, i]
+    }
+  }
+}
+mus.outliers <- array(0, dim=c(d, 2))
+data.outlier <- lolR:::lol.sims.sim_gmm(mus=mus.outliers,  Sigmas=10*Sigmas.outliers, n=.2*n, priors=data$priors)
 # randomly reorder Y for "noise"
 X.o <- data.outlier$X; Y.o <- sample(data.outlier$Y)
 

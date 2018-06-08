@@ -4,12 +4,14 @@
 \alias{lol.utils.info}
 \title{A function that performs basic utilities about the data.}
 \usage{
-lol.utils.info(X, Y, ...)
+lol.utils.info(X, Y, robust = FALSE, ...)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with n samples in d dimensions.}
 
 \item{Y}{\code{[n]} the labels of the samples.}
+
+\item{robust}{whether to perform PCA on a robust estimate of the covariance matrix or not. Defaults to \code{FALSE}.}
 
 \item{...}{optional args.}
 }

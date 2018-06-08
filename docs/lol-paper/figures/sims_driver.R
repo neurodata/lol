@@ -12,7 +12,6 @@ classifier.return <- "class"
 
 no_cores = detectCores() - 1
 
-
 n=100
 niter <- 200  # number of iterations per simulation
 rlen <- 20
@@ -86,4 +85,3 @@ results <- mclapply(simulations, function(sim) {
 #=================================#
 resultso <- do.call(rbind, results)
 saveRDS(resultso, file.path(opath, paste('lol_sims_', classifier.name, '.rds', sep="")))
-stopCluster(cl)

@@ -221,7 +221,9 @@ lol.sims.toep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0.5
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}
 #' \item{mus}{\code{[d, K]} the \code{K} class means in \code{d} dimensions.}
 #' \item{Sigmas}{\code{[d, d, K]} the \code{K} class covariance matrices in \code{d} dimensions.}
-#' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
+#' \item{priors}{\code{k
+#'
+#' A simulation for the reversed random trunk experiment, in which the maximal covariant directions are the same as the directions with the maximal mean diffe[K]} the priors for each of the \code{K} classes.}
 #' \item{simtype}{The name of the simulation.}
 #' \item{params}{Any extraneous parameters the simulation was created with.}
 #'
@@ -280,7 +282,7 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
 
 #' Random Trunk
 #'
-#' A simulation for the random trunk experiment.
+#' A simulation for the random trunk experiment, in which the maximal covariant dimensions are the reverse of the maximal mean differences.
 #' @importFrom abind abind
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
@@ -288,6 +290,7 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
 #' @param priors the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.
 #' @param b scalar for mu scaling. Default to \code{4}.
 #' @param K number of classes, should be <4. Defaults to \code{2}.
+#' @param maxvar the maximum covariance between the two classes. Defaults to \code{100}.
 #' @return A list of class \code{simulation} with the following:
 #' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}
@@ -307,7 +310,7 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2) {
+lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2, maxvar=100) {
   if (is.null(priors)) {
     priors <- array(1/K, dim=c(K))
   } else if (length(priors) != K) {
@@ -324,7 +327,70 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2) {
     mus <- abind(mu1, b/(seq(from=d, to=1, by=-1)), b/(seq(from=1, to=d, by=1)), -mu1, along=2)
   }
   S <- diag(d)
-  diag(S) <- 100/sqrt(seq(from=d, to=1, by=-1))
+  diag(S) <- maxvar/sqrt(seq(from=d, to=1, by=-1))
+
+  S <- array(unlist(replicate(K, S, simplify=FALSE)), dim=c(d, d, K))
+
+  if (rotate) {
+    res <- lol.sims.random_rotate(mus, S)
+    mus <- res$mus
+    S <- res$S
+  }
+  # simulate from GMM
+  sim <- lol.sims.sim_gmm(mus, S, n, priors)
+  return(structure(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors, simtype="Random Trunk",
+                        params=list(b=b, K=K)), class="simulation"))
+}
+
+
+#' Reverse Random Trunk
+#'
+#' A simulation for the reversed random trunk experiment, in which the maximal covariant directions are the same as the directions with the maximal mean difference.
+#' @importFrom abind abind
+#' @param n the number of samples of the simulated data.
+#' @param d the dimensionality of the simulated data.
+#' @param rotate whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.
+#' @param priors the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.
+#' @param b scalar for mu scaling. Default to \code{4}.
+#' @param K number of classes, should be <4. Defaults to \code{2}.
+#' @param maxvar the maximum covariance between the two classes. Defaults to \code{100}.
+#' @return A list of class \code{simulation} with the following:
+#' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
+#' \item{Y}{\code{[n]} the \code{n} labels as an array.}
+#' \item{mus}{\code{[d, K]} the \code{K} class means in \code{d} dimensions.}
+#' \item{Sigmas}{\code{[d, d, K]} the \code{K} class covariance matrices in \code{d} dimensions.}
+#' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
+#' \item{simtype}{The name of the simulation.}
+#' \item{params}{Any extraneous parameters the simulation was created with.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("sims", package = "lolR")}
+#'
+#' @author Eric Bridgeford
+#' @examples
+#' library(lolR)
+#' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+#' X <- data$X; Y <- data$Y
+#' @export
+lol.sims.rev_rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2, maxvar=100) {
+  if (is.null(priors)) {
+    priors <- array(1/K, dim=c(K))
+  } else if (length(priors) != K) {
+    stop(sprintf("You have specified %d priors for %d classes.", length(priors), K))
+  } else if (sum(priors) != 1) {
+    stop(sprintf("You have passed invalid priors. The sum(priors) should be 1; yours is %.3f", sum(priors)))
+  }
+  mu1 <- b/sqrt(0:(d-1)*2 + 1)
+  if (K == 2) {
+    mus <- abind(mu1, -mu1, along=2)
+  } else if (K == 3) {
+    mus <- abind(mu1, 0*mu1, -mu1, along=2)
+  } else if (K == 4) {
+    mus <- abind(mu1, b/(seq(from=d, to=1, by=-1)), b/(seq(from=1, to=d, by=1)), -mu1, along=2)
+  }
+  S <- diag(d)
+  diag(S) <- maxvar/sqrt(seq(from=1, to=d, by=1))
 
   S <- array(unlist(replicate(K, S, simplify=FALSE)), dim=c(d, d, K))
 
@@ -341,7 +407,7 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2) {
 
 #' Cross
 #'
-#' A simulation for the cross experiment.
+#' A simulation for the cross experiment, in which the two classes have orthogonal covariant dimensions and the same means.
 #'
 #' @importFrom abind  abind
 #' @param n the number of samples of simulated data.

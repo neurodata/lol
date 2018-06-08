@@ -28,7 +28,9 @@ A list of class \code{simulation} with the following:
 \item{Y}{\code{[n]} the \code{n} labels as an array.}
 \item{mus}{\code{[d, K]} the \code{K} class means in \code{d} dimensions.}
 \item{Sigmas}{\code{[d, d, K]} the \code{K} class covariance matrices in \code{d} dimensions.}
-\item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
+\item{priors}{\code{k
+
+A simulation for the reversed random trunk experiment, in which the maximal covariant directions are the same as the directions with the maximal mean diffe[K]} the priors for each of the \code{K} classes.}
 \item{simtype}{The name of the simulation.}
 \item{params}{Any extraneous parameters the simulation was created with.}
 }
