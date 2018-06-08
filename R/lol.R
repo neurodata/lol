@@ -62,7 +62,7 @@ lol.project.lol <- function(X, Y, r, second.moment.xfm=FALSE, second.moment.xfm.
                             first.moment='delta', second.moment='linear', orthogonalize=FALSE,
                             robust=FALSE, ...) {
   # class data
-  info <- lol.utils.info(X, Y)
+  info <- lol.utils.info(X, Y, robust=robust)
   priors <- info$priors; centroids <- info$centroids
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d
@@ -77,7 +77,6 @@ lol.project.lol <- function(X, Y, r, second.moment.xfm=FALSE, second.moment.xfm.
   }
 
   nv <- r - dim(first.moment.proj)[2]
-
   if (second.moment == "linear" & nv > 0) {
     lrlda <- lol.project.lrlda(X, Y, r=nv, xfm=second.moment.xfm, xfm.opts=second.moment.xfm.opts, robust=robust)
     #d <- lrlda$d

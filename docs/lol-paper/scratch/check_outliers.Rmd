@@ -11,8 +11,8 @@ require(ggplot2)
 require(MASS)
 require(abind)
 n=1000
-d=30
-r=3
+d=300
+r=10
 #rot=-pi/4  # rotation in radians
 #R = rbind(c(cos(rot), -sin(rot), 0, 0, 0), c(sin(rot), cos(rot), 0, 0, 0),
 #          c(0,0,1,0,0), c(0,0,0,1,0), c(0,0,0,0,1))  # rotation matrix for rotation by 45 degrees in first 2 dimensions
@@ -21,11 +21,19 @@ r=3
 # Generate Data
 
 ```{r}
-data <- lol.sims.rtrunk(n, d)
+data <- lol.sims.cigar(n, d)
 X = data$X; Y = data$Y
 
 # generate outliers
-data.outlier <- lolR:::lol.sims.sim_gmm(mus=data$mus,  Sigmas=10*data$Sigmas, n=n, priors=data$priors)
+Sigmas.outliers <- data$Sigmas
+for (i in 1:dim(data$Sigmas)[3]) {
+  for (j in 1:dim(data$Sigmas)[1]) {
+    for (k in 1:dim(data$Sigmas)[2]) {
+      Sigmas.outliers[j, k, i] <- data$Sigmas[(d+1)-j, (d+1)-k, i]
+    }
+  }
+}
+data.outlier <- lolR:::lol.sims.sim_gmm(mus=data$mus,  Sigmas=10*Sigmas.outliers, n=.05*n, priors=data$priors)
 # randomly reorder Y for "noise"
 X.o <- data.outlier$X; Y.o <- sample(data.outlier$Y)
 
@@ -39,7 +47,7 @@ Y.train <- Y[1:(length(Y)/2)]; Y.test <- Y[(length(Y)/2 + 1):length(Y)]
 ```
 
 ```{r}
-data <- data.frame(x1=X.train[,1], x2=X.train[,2], y=Y.train)
+data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point() +
@@ -51,9 +59,9 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 # Regular LOL
 
 ```{r}
-result <- lol.project.lol(X, Y, r)
+result <- lol.project.lol(X.train, Y.train, r)
 
-data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
+data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y.train)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point(alpha=0.6) +
@@ -65,7 +73,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 ```{r}
 newXr <- lol.embed(X.test, result$A)
 
-data <- data.frame(x1=newXr[,1], x2=newXr[,2], y=Y)
+data <- data.frame(x1=newXr[,1], x2=newXr[,2], y=Y.test)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point(alpha=0.6) +
@@ -75,11 +83,11 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 ```
 
 ```{r, fig.width=5}
-liney <- MASS::lda(result$Xr, Y)
+liney <- MASS::lda(result$Xr, Y.train)
 result <- predict(liney, newXr)
-lhat <- 1 - sum(result$class == Y)/length(Y)
+lhat <- 1 - sum(result$class == Y.test)/length(Y.test)
 
-data <- data.frame(x1=result$x[,1], y=Y)
+data <- data.frame(x1=result$x[,1], y=Y.test)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, fill=y)) +
   geom_density(adjust=1.5, alpha=0.6) +
@@ -91,9 +99,9 @@ ggplot(data, aes(x=x1, fill=y)) +
 # Robust LOL
 
 ```{r}
-result <- lol.project.lol(X, Y, r, robust=TRUE)
+result <- lol.project.lol(X.train, Y.train, r, robust=TRUE)
 
-data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
+data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y.train)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point(alpha=0.6) +
@@ -105,7 +113,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 ```{r}
 newXr <- lol.embed(X.test, result$A)
 
-data <- data.frame(x1=newXr[,1], x2=newXr[,2], y=Y)
+data <- data.frame(x1=newXr[,1], x2=newXr[,2], y=Y.test)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point(alpha=0.6) +
@@ -115,11 +123,11 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 ```
 
 ```{r, fig.width=5}
-liney <- MASS::lda(result$Xr, Y)
+liney <- MASS::lda(result$Xr, Y.train)
 result <- predict(liney, newXr)
-lhat <- 1 - sum(result$class == Y)/length(Y)
+lhat <- 1 - sum(result$class == Y.test)/length(Y.test)
 
-data <- data.frame(x1=result$x[,1], y=Y)
+data <- data.frame(x1=result$x[,1], y=Y.test)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, fill=y)) +
   geom_density(adjust=1.5, alpha=0.6) +
@@ -131,9 +139,9 @@ ggplot(data, aes(x=x1, fill=y)) +
 # PLS
 
 ```{r}
-result <- lol.project.pls(X, Y, r)
+result <- lol.project.pls(X.train, Y.train, r)
 
-data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y)
+data <- data.frame(x1=result$Xr[,1], x2=result$Xr[,2], y=Y.train)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point(alpha=0.6) +
@@ -145,7 +153,7 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 ```{r}
 newXr <- lol.embed(X.test, result$A)
 
-data <- data.frame(x1=newXr[,1], x2=newXr[,2], y=Y)
+data <- data.frame(x1=newXr[,1], x2=newXr[,2], y=Y.test)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point(alpha=0.6) +
@@ -155,11 +163,11 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 ```
 
 ```{r, fig.width=5}
-liney <- MASS::lda(result$Xr, Y)
+liney <- MASS::lda(result$Xr, Y.train)
 result <- predict(liney, newXr)
-lhat <- 1 - sum(result$class == Y)/length(Y)
+lhat <- 1 - sum(result$class == Y.test)/length(Y.test)
 
-data <- data.frame(x1=result$x[,1], y=Y)
+data <- data.frame(x1=result$x[,1], y=Y.test)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, fill=y)) +
   geom_density(adjust=1.5, alpha=0.6) +

@@ -22,7 +22,8 @@ Imports:
   MASS,
   irlba,
   pls,
-  robust
+  robust,
+  robustbase
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr

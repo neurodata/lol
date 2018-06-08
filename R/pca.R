@@ -3,6 +3,7 @@
 #' A function that performs PCA on data.
 #'
 #' @importFrom irlba irlba
+#' @importFrom robustbase colMedians
 #' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
 #' @param r the rank of the projection.
 #' @param xfm whether to transform the variables before taking the SVD.
@@ -39,7 +40,11 @@ lol.project.pca <- function(X, r, xfm=FALSE, xfm.opts=list(), robust=FALSE,...) 
     stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
   }
   # subtract means
-  Xc  <- sweep(X, 2, colMeans(X), '-')
+  if (!robust) {
+    Xc  <- sweep(X, 2, colMeans(X), '-')
+  } else {
+    Xc  <- sweep(X, 2, colMedians(X), '-')
+  }
   X.decomp <- lol.utils.decomp(Xc, xfm=xfm, xfm.opts=xfm.opts, ncomp=r, robust=robust)
 
   return(list(A=X.decomp$comp, d=X.decomp$val, Xr=lol.embed(X, X.decomp$comp)))
@@ -84,9 +89,9 @@ lol.utils.decomp <- function(X, xfm=FALSE, xfm.opts=list(), ncomp=0, t=.05, robu
   # take svd
   decomp <- list()
   if (robust) {
-    eigenX <- eigen(covRob(X, estim='weighted')$cov)
-    decomp$comp <- eigenX$vectors
-    decomp$val <- eigenX$values
+    eigenX <- eigen(covRob(X, estim='mcd')$cov)
+    decomp$comp <- eigenX$vectors[, 1:ncomp, drop=FALSE]
+    decomp$val <- eigenX$values[1:ncomp]
   } else if (ncomp > t*d | ncomp >= d) {
     svdX <- svd(X, nu=0, nv=ncomp)
     decomp$comp <- svdX$v
@@ -139,7 +144,7 @@ lol.utils.decomp <- function(X, xfm=FALSE, xfm.opts=list(), ncomp=0, t=.05, robu
 #' @export
 lol.project.lrlda <- function(X, Y, r, xfm=FALSE, xfm.opts=list(), robust=FALSE, ...) {
   # class data
-  classdat <- lol.utils.info(X, Y)
+  classdat <- lol.utils.info(X, Y, robust=robust)
   priors <- classdat$priors; centroids <- t(classdat$centroids)
   K <- classdat$K; ylabs <- classdat$ylabs
   n <- classdat$n; d <- classdat$d

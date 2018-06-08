@@ -1,26 +1,31 @@
 #' A function that performs basic utilities about the data.
-#' @import irlba
+#' @importFrom robustbase colMedians
 #' @param X \code{[n, d]} the data with n samples in d dimensions.
 #' @param Y \code{[n]} the labels of the samples.
+#' @param robust whether to perform PCA on a robust estimate of the covariance matrix or not. Defaults to \code{FALSE}.
 #' @param ... optional args.
 #' @return \code{n} the number of samples.
 #' @return \code{d} the number of dimensions.
 #' @return ylabs \code{[K]} vector containing the unique, ordered class labels.
 #' @return priors \code{[K]} vector containing prior probability for the unique, ordered classes.
 #' @author Eric Bridgeford
-lol.utils.info <- function(X, Y, ...) {
+lol.utils.info <- function(X, Y, robust=FALSE, ...) {
   ylabs <- as.vector(sort(unique(Y)))
   dimx <- dim(X)
   n <- dimx[1]; d <- dimx[2]
   K <- length(ylabs)
   # compute the fraction of each class for prior p
   priors = sapply(ylabs, function(y) sum(Y == y)/n)
-  centroids <- as.matrix(array(sapply(ylabs, function(y) colMeans(X[Y==y,,drop=FALSE])), dim=c(d, K)))
+  if (!robust) {
+    centroids <- as.matrix(array(sapply(ylabs, function(y) colMeans(X[Y==y,,drop=FALSE])), dim=c(d, K)))
+  } else {
+    # robust estimator of the mean is the median
+    centroids <- as.matrix(array(sapply(ylabs, function(y) colMedians(X[Y==y,,drop=FALSE])), dim=c(d, K)))
+  }
   return(list(n=n, d=d, ylabs=ylabs, priors=priors, centroids=centroids, K=K))
 }
 
 #' A function that performs a utility computation of information about the differences of the classes.
-#' @import irlba
 #' @param centroids \code{[d, K]} centroid matrix of the unique, ordered classes.
 #' @param priors \code{[K]} vector containing prior probability for the unique, ordered classes.
 #' @param ... optional args.
