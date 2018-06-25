@@ -11,9 +11,11 @@ require(ggplot2)
 require(MASS)
 require(abind)
 require(robust)
+require(e1071)
+require(reshape2)
 n=100
-d=40
-r=7
+d=30
+r=5
 #rot=-pi/4  # rotation in radians
 #R = rbind(c(cos(rot), -sin(rot), 0, 0, 0), c(sin(rot), cos(rot), 0, 0, 0),
 #          c(0,0,1,0,0), c(0,0,0,1,0), c(0,0,0,0,1))  # rotation matrix for rotation by 45 degrees in first 2 dimensions
@@ -28,13 +30,13 @@ X = data$X; Y = data$Y
 
 # generate outliers
 Sigmas.outliers <- data.regular_trunk$Sigmas
-for (i in 1:dim(data.regular_trunk$Sigmas)[3]) {
-  for (j in 1:dim(data.regular_trunk$Sigmas)[1]) {
-    for (k in 1:dim(data.regular_trunk$Sigmas)[2]) {
-      Sigmas.outliers[j, k, i] <- data.regular_trunk$Sigmas[(d+1)-j, (d+1)-k, i]
-    }
-  }
-}
+# for (i in 1:dim(data.regular_trunk$Sigmas)[3]) {
+#   for (j in 1:dim(data.regular_trunk$Sigmas)[1]) {
+#     for (k in 1:dim(data.regular_trunk$Sigmas)[2]) {
+#       Sigmas.outliers[j, k, i] <- data.regular_trunk$Sigmas[(d+1)-j, (d+1)-k, i]
+#     }
+#   }
+# }
 ```
 
 ## Average Per-Class Error as a function of Magnitude of the Noise
@@ -75,21 +77,53 @@ ggplot(data=robcov.perf, aes(x=i, y=error, group=method, color=method)) +
 ```
 
 ```{r}
-data <- lol.sims.rev_rtrunk(n, d, b=1, maxvar=6)
-data.regular_trunk <- lol.sims.rtrunk(n, d)
+data <- lol.sims.rtrunk(n, d, b=1, maxvar=6)
 X = data$X; Y = data$Y
 
+mus.plotdat <- melt(data$mus); colnames(mus.plotdat) <- c("Dimension", "Class", "Value")
+mus.plotdat$Class <- factor(mus.plotdat$Class)
+ggplot(mus.plotdat, aes(x=Dimension, y=Value, group=Class, color=Class)) +
+  geom_line() +
+  xlab("Dimension") +
+  ylab("Mean Value") +
+  theme_bw() +
+  ggtitle("Good Samples Means")
+
+sigmas.plotdat <- melt(data$Sigmas); colnames(sigmas.plotdat) <- c("x", "y", "Class", "Value")
+sigmas.plotdat <- aggregate(Value ~ x + y, data=sigmas.plotdat, FUN=mean)
+ggplot(sigmas.plotdat, aes(x=x, y=y, fill='purple', alpha=Value)) +
+  geom_tile() +
+  scale_alpha_continuous() +
+  xlab("Dimension 1") +
+  ylab("Dimension 2") +
+  theme_bw() +
+  ggtitle("Good Samples Variance")
+
+
 # generate outliers
+data.regular_trunk <- lol.sims.rev_rtrunk(n, d)
 Sigmas.outliers <- data.regular_trunk$Sigmas
-for (i in 1:dim(data.regular_trunk$Sigmas)[3]) {
-  for (j in 1:dim(data.regular_trunk$Sigmas)[1]) {
-    for (k in 1:dim(data.regular_trunk$Sigmas)[2]) {
-      Sigmas.outliers[j, k, i] <- data.regular_trunk$Sigmas[(d+1)-j, (d+1)-k, i]
-    }
-  }
-}
+# for (i in 1:dim(data.regular_trunk$Sigmas)[3]) {
+#   for (j in 1:dim(data.regular_trunk$Sigmas)[1]) {
+#     for (k in 1:dim(data.regular_trunk$Sigmas)[2]) {
+#       Sigmas.outliers[j, k, i] <- data.regular_trunk$Sigmas[(d+1)-j, (d+1)-k, i]
+#     }
+#   }
+# }
 mus.outliers <- array(0, dim=c(d, 2))
-data.outlier <- lolR:::lol.sims.sim_gmm(mus=mus.outliers,  Sigmas=10*Sigmas.outliers, n=.2*n, priors=data$priors)
+data.outlier <- lolR:::lol.sims.sim_gmm(mus=mus.outliers,  Sigmas=10*Sigmas.outliers, n=.4*n, priors=data$priors)
+
+
+sigmas.plotdat <- melt(10*Sigmas.outliers); colnames(sigmas.plotdat) <- c("x", "y", "Class", "Value")
+sigmas.plotdat <- aggregate(Value ~ x + y, data=sigmas.plotdat, FUN=mean)
+ggplot(sigmas.plotdat, aes(x=x, y=y, fill='purple', alpha=Value)) +
+  geom_tile() +
+  scale_alpha_continuous() +
+  xlab("Dimension 1") +
+  ylab("Dimension 2") +
+  theme_bw() +
+  ggtitle("Noise Samples Variance")
+
 # randomly reorder Y for "noise"
 X.o <- data.outlier$X; Y.o <- sample(data.outlier$Y)
 
@@ -97,13 +131,15 @@ X <- rbind(X, X.o)
 Y <- c(Y, Y.o)
 # randomly reorder X and Y
 reord <- sample(1:length(Y))
-X <- X[reord,]; Y <- Y[reord]
-X.train <- X[1:(length(Y)/2),]; X.test <- X[(length(Y)/2 + 1):length(Y),]
-Y.train <- Y[1:(length(Y)/2)]; Y.test <- Y[(length(Y)/2 + 1):length(Y)]
+X.train <- X[reord,]; Y.train <- Y[reord]
+
+
+data.test <- lol.sims.rev_rtrunk(n, d, b=1, maxvar=6)
+X.test <- data.test$X; Y.test <- data.test$Y
 ```
 
 ```{r}
-data <- data.frame(x1=X[,1], x2=X[,2], y=Y)
+data <- data.frame(x1=X.train[,1], x2=X.train[,2], y=Y.train)
 data$y <- factor(data$y)
 ggplot(data, aes(x=x1, y=x2, color=y)) +
   geom_point() +
@@ -139,17 +175,10 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 ```
 
 ```{r, fig.width=5}
-liney <- MASS::lda(result$Xr, Y.train)
-result <- predict(liney, newXr)
-lhat <- 1 - sum(result$class == Y.test)/length(Y.test)
-
-data <- data.frame(x1=result$x[,1], y=Y.test)
-data$y <- factor(data$y)
-ggplot(data, aes(x=x1, fill=y)) +
-  geom_density(adjust=1.5, alpha=0.6) +
-  xlab("$x_1$") +
-  ylab("Density") +
-  ggtitle(sprintf("LOL-LDA, L = %.2f", lhat))
+liney <- lda(result$Xr, as.factor(Y.train), kernel="linear")
+resultlda <- predict(liney, newXr)$class
+lhat <- 1 - sum(resultlda == Y.test)/length(Y.test)
+print(lhat)
 ```
 
 # Robust LOL
@@ -179,17 +208,10 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 ```
 
 ```{r, fig.width=5}
-liney <- MASS::lda(result$Xr, Y.train)
-result <- predict(liney, newXr)
-lhat <- 1 - sum(result$class == Y.test)/length(Y.test)
-
-data <- data.frame(x1=result$x[,1], y=Y.test)
-data$y <- factor(data$y)
-ggplot(data, aes(x=x1, fill=y)) +
-  geom_density(adjust=1.5, alpha=0.6) +
-  xlab("$x_1$") +
-  ylab("Density") +
-  ggtitle(sprintf("RLOL-LDA, L = %.2f", lhat))
+liney <- lda(result$Xr, as.factor(Y.train))
+resultlda <- predict(liney, newXr)$class
+lhat <- 1 - sum(resultlda == Y.test)/length(Y.test)
+print(lhat)
 ```
 
 # PLS
@@ -219,16 +241,9 @@ ggplot(data, aes(x=x1, y=x2, color=y)) +
 ```
 
 ```{r, fig.width=5}
-liney <- MASS::lda(result$Xr, Y.train)
-result <- predict(liney, newXr)
-lhat <- 1 - sum(result$class == Y.test)/length(Y.test)
-
-data <- data.frame(x1=result$x[,1], y=Y.test)
-data$y <- factor(data$y)
-ggplot(data, aes(x=x1, fill=y)) +
-  geom_density(adjust=1.5, alpha=0.6) +
-  xlab("$x_1$") +
-  ylab("Density") +
-  ggtitle(sprintf("PLS-LDA, L = %.2f", lhat))
+liney <- lda(result$Xr, as.factor(Y.train))
+resultlda <- predict(liney, newXr)$class
+lhat <- 1 - sum(resultlda == Y.test)/length(Y.test)
+print(lhat)
 ```
 
