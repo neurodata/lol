@@ -133,17 +133,17 @@ g_legend<-function(a.gplot){
 The below code will produce the required data, which runs LOL, cPCA, PCA, and LR-CCA at the desired simulation settings. Note that this function will multi-thread natively, and took approximately 7 hours to run on a 96 core machine with $\frac{7}{8}$ of the cores active.
 
 ```{r, eval=FALSE}
-source('./figure_3_driver.R')
+source('./sims_driver.R')
 ```
 
 Borrowing results from an earlier matlab implementation:
 
 ```{r}
-toep <- readMat('./data/fig3/toeplitz.mat')
-tr2 <- readMat('./data/fig3/rtrunk.mat')
-tr3 <- readMat('./data/fig3/3trunk.mat')
-ft <- readMat('./data/fig3/fat_tails.mat')
-qd <- readMat('./data/fig3/r2toeplitz.mat')
+toep <- readMat('./data/sims/toeplitz.mat')
+tr2 <- readMat('./data/sims/rtrunk.mat')
+tr3 <- readMat('./data/sims/3trunk.mat')
+ft <- readMat('./data/sims/fat_tails.mat')
+qd <- readMat('./data/sims/r2toeplitz.mat')
 
 maxr <- c(90, 30, 30, 30, 30)
 minr <- 0
@@ -181,12 +181,12 @@ First, we prepare the plots of subsets of the mean and covariance matrices:
 # run the simulations once to obtain some basic visualizations
 n=100
 # the simulations to call themselves
-sims <- list(lol.sims.rtrunk, lol.sims.toep, lol.sims.rtrunk, lol.sims.fat_tails, lol.sims.qdtoep)
+sims <- list(lol.sims.rtrunk, lol.sims.toep, lol.sims.rtrunk, lol.sims.fat_tails, lol.sims.cross)
 maxr <- c(30, 90, 30, 30, 30)
 ds <- c(100, 100, 100, 1000, 100)
 # additional arguments for each simulation scenario
 opt_args <- list(list(), list(), list(K=3), list(rotate=TRUE), list())
-sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "QDA")
+sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "Cross")
 sim_titles = c("(A)", "(B)", "(C)", "(D)", "(E)")
 ndim <- c(10, 10, 10, 10, 10)
 sim_min <- c(10, 30, 10, 10, 10)
@@ -209,10 +209,11 @@ Next, we aggregate over the respective iterations, and subset plots for each fun
 ```{r}
 # read the results in
 results <- readRDS(paste('./data/sims/lol_sims_', classifier.alg, '.rds', sep=""))
-results <- rbind(results[, colnames(results) != 'se'], resultsm)
 #results <- results$overall
 nan.mean <- function(x) mean(x, na.rm=TRUE)
+resultsm.means <- aggregate(lhat ~ sim + alg + r + lhat, data=resultsm, FUN=nan.mean)
 results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = nan.mean)
+results.means <- rbind(results.means, resultsm.means)
 algs <-  c("LOL", "QOL", "PLS", "CCA", "LDA", "PCA", "ROAD", "LASSO")
 acols <- c("#f41711", "#f41711", "#94d6c9", "#87c6cc", "#99b4c6", "#020202", "#666666", "#666666")
 linestyle <- c(1,3,3,1,3,1,1,3,1)
@@ -234,6 +235,10 @@ for (i in 1:length(sim_names)) {
     pt <- compute_cutoff(data_sub[data_sub$alg == alg,]$r, data_sub[data_sub$alg == alg,]$lhat)
     pt.dat <- rbind(pt.dat, data.frame(r=pt$r, lhat=pt$lhat, alg=alg))
   }
+  if (i != 5) {
+    pt.dat <- pt.dat[pt.dat$alg != "QOL",]
+    data_sub <- data_sub[data_sub$alg != "QOL",]
+  }
   sim_plots[[counter]] <- plot_sim_lhats(data_sub, acols, pt.dat, linestyle, ylab=paste(sim_titles[i], sim),
                                          from=sim_min[i], by=by[i])
   counter <- counter + 1
@@ -245,11 +250,12 @@ We merge and combine the plots:
 ```{r, fig.show='hide'}
 nsim <- length(sim_names)
 fsize=12
-sim_leg.plot <- ggplot(data=results.means, aes(x=r, y=lhat, color=alg, linetype=alg)) +
+sim_leg.plot <- ggplot(data=subset(results.means, alg != "RP"), aes(x=r, y=lhat, color=alg, linetype=alg)) +
   geom_line(size=1.2) +
   scale_color_manual(values=acols, guide=guide_legend(nrow=3, byrow=TRUE), name="Algorithm") +
   scale_linetype_manual(values=linestyle, guide=guide_legend(nrow=3, byrow=TRUE), name="Algorithm") +
-  theme(legend.position="bottom", axis.title.y=element_text(size=fsize))
+  theme(legend.position="bottom", axis.title.y=element_text(size=fsize)) +
+  theme_bw()
 
 sim_leg <- g_legend(sim_leg.plot)
 cov_leg <- g_legend(cov_plots[[1]])
