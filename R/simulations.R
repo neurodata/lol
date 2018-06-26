@@ -47,7 +47,6 @@ lol.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, t=0.8, 
   }
   mu0 <- array(0, dim=c(d, 1))
   mu1 <- c(array(1, dim=c(s0)), array(0, dim=c(d - s0)))
-  Q <- lol.sims.rotation(d)
   mus <- abind(mu0, mu1, along=2)
 
   S <- array(rho, dim=c(d, d))
@@ -70,7 +69,6 @@ lol.sims.fat_tails <- function(n, d, rotate=FALSE, f=15, s0=10, rho=0.2, t=0.8, 
   return(structure(list(X=X, Y=Y, mus=mus, Sigmas=S, priors=sim$priors, simtype="Fat Tails",
                         params=list(f=f, s0=s0, rho=rho, t=t)), class="simulation"))
 }
-
 #' Mean Difference Simulation
 #'
 #' A function for simulating data in which a difference in the means is present only in a subset of dimensions, and equal covariance.
@@ -291,6 +289,7 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
 #' @param b scalar for mu scaling. Default to \code{4}.
 #' @param K number of classes, should be <4. Defaults to \code{2}.
 #' @param maxvar the maximum covariance between the two classes. Defaults to \code{100}.
+#' @param maxvar.outlier the maximum covariance for the outlier points. Defaults to \code{maxvar*5}.
 #' @return A list of class \code{simulation} with the following:
 #' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}
@@ -299,6 +298,7 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
 #' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 #' \item{simtype}{The name of the simulation.}
 #' \item{params}{Any extraneous parameters the simulation was created with.}
+#' \item{robust}{If robust is not false, a list containing \code{inlier} a boolean array indicating which points are inliers, \code{s.outlier} the covariance structure of outliers, and \code{mu.outlier} the means of the outliers.}
 #'
 #' @section Details:
 #' For more details see the help vignette:
@@ -326,22 +326,22 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2, maxvar=10
   } else if (K == 4) {
     mus <- abind(mu1, b/(seq(from=d, to=1, by=-1)), b/(seq(from=1, to=d, by=1)), -mu1, along=2)
   }
-  S <- diag(d)
-  diag(S) <- maxvar/sqrt(seq(from=d, to=1, by=-1))
+  s <- diag(d)
+  diag(s) <- maxvar/sqrt(seq(from=d, to=1, by=-1))
 
-  S <- array(unlist(replicate(K, S, simplify=FALSE)), dim=c(d, d, K))
+  S <- array(unlist(replicate(K, s, simplify=FALSE)), dim=c(d, d, K))
 
   if (rotate) {
     res <- lol.sims.random_rotate(mus, S)
     mus <- res$mus
     S <- res$S
   }
+
   # simulate from GMM
   sim <- lol.sims.sim_gmm(mus, S, n, priors)
-  return(structure(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors, simtype="Random Trunk",
-                        params=list(b=b, K=K)), class="simulation"))
+  structure(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors, simtype="Random Trunk",
+                 params=list(b=b, K=K)), class="simulation")
 }
-
 
 #' Reverse Random Trunk
 #'
@@ -349,6 +349,7 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2, maxvar=10
 #' @importFrom abind abind
 #' @param n the number of samples of the simulated data.
 #' @param d the dimensionality of the simulated data.
+#' @param robust the number of outlier points to add, where outliers have opposite covariance of inliers. Defaults to \code{FALSE}, which will not add any outliers.
 #' @param rotate whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.
 #' @param priors the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.
 #' @param b scalar for mu scaling. Default to \code{4}.
@@ -362,6 +363,7 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2, maxvar=10
 #' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 #' \item{simtype}{The name of the simulation.}
 #' \item{params}{Any extraneous parameters the simulation was created with.}
+#' \item{robust}{If robust is not false, a list containing \code{inlier} a boolean array indicating which points are inliers, \code{s.outlier} the covariance structure of outliers, and \code{mu.outlier} the means of the outliers.}
 #'
 #' @section Details:
 #' For more details see the help vignette:
@@ -373,7 +375,7 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2, maxvar=10
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-lol.sims.rev_rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2, maxvar=100) {
+lol.sims.rev_rtrunk <- function(n, d, robust=FALSE, rotate=FALSE, priors=NULL, b=4, K=2, maxvar=b^3, maxvar.outlier=maxvar^3) {
   if (is.null(priors)) {
     priors <- array(1/K, dim=c(K))
   } else if (length(priors) != K) {
@@ -389,6 +391,9 @@ lol.sims.rev_rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2, maxva
   } else if (K == 4) {
     mus <- abind(mu1, b/(seq(from=d, to=1, by=-1)), b/(seq(from=1, to=d, by=1)), -mu1, along=2)
   }
+  if (!identical(robust, FALSE)) {
+    mus[(d/2):d,] <- 0
+  }
   S <- diag(d)
   diag(S) <- maxvar/sqrt(seq(from=1, to=d, by=1))
 
@@ -401,8 +406,28 @@ lol.sims.rev_rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2, maxva
   }
   # simulate from GMM
   sim <- lol.sims.sim_gmm(mus, S, n, priors)
-  return(structure(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors, simtype="Random Trunk",
-                        params=list(b=b, K=K)), class="simulation"))
+  return.list <- list(mus=mus, Sigmas=S, priors=sim$priors, simtype="Reverse Random Trunk",
+                      params=list(b=b, K=K))
+  if (identical(robust, FALSE)) {
+    inlier <- !logical(n)
+    return.list$X <- sim$X; return.list$Y <- sim$Y
+  } else {
+    s.outlier <- diag(d)
+    diag(s.outlier) <- maxvar.outlier/sqrt(seq(from=d, to=1, by=-1))
+    s.outlier <- array(unlist(replicate(K, s.outlier, simplify=FALSE)), dim=c(d, d, K))
+    mu.outlier <- -mus
+    sim.outlier <- lol.sims.sim_gmm(mu.outlier, s.outlier, robust, priors)
+
+    X <- rbind(sim$X, sim.outlier$X)
+    Y <- c(sim$Y, sim.outlier$Y)
+    inlier <- c(!logical(n), logical(robust))
+    # randomly reorder X and Y
+    reord <- sample(1:length(Y))
+    return.list$X <- X[reord,]; return.list$Y <- Y[reord]; return.list$robust <- list()
+    return.list$robust$inlier <- inlier[reord]
+    return.list$robust$sigma.outlier <- s.outlier; return.list$robust$mu.outlier <- mu.outlier
+  }
+  return(structure(return.list, class="simulation"))
 }
 
 #' Cross
