@@ -61,8 +61,8 @@ sim_cov_plot <- function(Sigmas, mus, priors, title="", yl="Dimension", xl="Dime
                          #guide=guide_colorbar(title.position="top", title.hjust = .5, barheight=.75))
 }
 
-mcols <- c("#bdbdbd", "#737373", "#252525")
-names(mcols) <- c(1,2,3)
+mcols <- c("#808080", "#f41711", "#0e3ec1", "#8B4513")
+names(mcols) <- c("outlier", "1", "2", "3")
 sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndim=10, nbreaks=4) {
   dat <- data.frame(mus[1:ndim,])
   dat <- cbind(data.frame(1:ndim), dat)
@@ -88,7 +88,6 @@ sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndi
     theme(plot.margin = unit(c(h,w,h,h), "cm")) +
     scale_color_manual(values=mcols)#, guide=guide_legend(title.position="top", title.hjust = .5))
 }
-
 
 plot_sim_lhats <- function(data, cols, pt.dat, linestyle, title="", by=10, from=10, ylab=TeX("$\\hat{L}$"),
                            xlab="Embedded Dimensions", fsize=12) {
@@ -119,6 +118,89 @@ plot_sim_lhats <- function(data, cols, pt.dat, linestyle, title="", by=10, from=
     scale_x_continuous(limits=xlims, breaks=xbreaks) +
     theme(plot.margin = unit(c(h,w,h,h), "cm")) +
     theme(legend.position="bottom", axis.title.y=element_text(size=fsize))
+  return(plot_sims)
+}
+
+sim_twod_scatter <- function(X, Y, title="", ylab="Dimension 1", xlab="Dimension 2", ndim=10, nbreaks=4) {
+  reorder <- c()
+  for (ylab in unique(Y)) {
+    reorder <- c(reorder, sample(1:dim(X[Y == ylab,])[1], size=dim(X[Y==ylab,])[1], replace=FALSE))
+  }
+  xmax <- max(abs(X[,1])); xmin <- -xmax
+  ymax <- max(abs(X[,2])); ymin <- -ymax
+  X <- X[reorder,]; Y <- Y[reorder]
+  df.dat <- data.frame(d1=X[, 1], d2=X[, 2], class=as.factor(Y))
+  plot_sims <- ggplot(df.dat, aes(x=d1, y=d2, color=class)) +
+    geom_point(alpha=0.5) +
+    xlab(xlab) +
+    ylab(ylab) +
+    ggtitle(title) +
+    theme_bw() +
+    xlim(xmin, xmax) +
+    ylim(ymin, ymax) +
+    theme(legend.position="bottom") +
+    theme(plot.margin = unit(c(h,w,h,h), "cm")) +
+    scale_color_manual(values=mcols)#, guide=guide_legend(title.position="top", title.hjust = .5))
+  return(plot_sims)
+}
+
+sim_nd_scatter <- function(X, Y, title="", ylab="Magnitude", xlab="Dimension", ndim=10, nbreaks=4) {
+  reorder <- c()
+  for (ylab in unique(Y)) {
+    reorder <- c(reorder, sample(1:dim(X[Y == ylab,])[1], size=dim(X[Y==ylab,])[1]/4, replace=FALSE))
+  }
+  X <- X[reorder,]; Y <- Y[reorder]
+  xmax <- max(abs(X)); xmin <- -xmax
+  df.dat <- melt(X)
+  names(df.dat) <- c("Point", "Dimension", "Magnitude")
+  df.dat$class <- as.factor(Y[df.dat$Point])
+  plot_sims <- ggplot(df.dat, aes(x=Dimension, y=Magnitude, color=class)) +
+    geom_point(alpha=0.5) +
+    xlab(xlab) +
+    ylab(ylab) +
+    ylim(xmin, xmax) +
+    ggtitle(title) +
+    theme_bw() +
+    theme(legend.position="bottom") +
+    theme(plot.margin = unit(c(h,w,h,h), "cm")) +
+    scale_color_manual(values=mcols)#, guide=guide_legend(title.position="top", title.hjust = .5))
+  return(plot_sims)
+}
+
+
+sim_d_fill <- function(mus, Sigmas, outlier=NULL, title="", ylab="Magnitude", xlab="Dimension", ndim=10, nbreaks=4) {
+  mu.dat <- melt(mus)
+  d <- dim(mus)[1]
+  names(mu.dat) <- c("Dimension", "Class", "Magnitude")
+  mu.dat$std <- NaN
+  for (i in 1:dim(mus)[2]) {
+    mu.dat$std[mu.dat$Class == i] = sqrt(diag(Sigmas[,,i]))[mu.dat[mu.dat$Class == i,]$Dimension]
+  }
+  if (!is.null(outlier)) {
+    outlier.dat <- data.frame(Dimension=c(), Class=c(), Magnitude=c(), std=c())
+    for (i in 1:dim(outlier$mu.outlier)[2]) {
+      outlier.dat <- rbind(outlier.dat, data.frame(Dimension=1:d, Class="outlier", Magnitude=outlier$mu.outlier[,i],
+                                        std=sqrt(diag(outlier$sigma.outlier[,,i]))))
+    }
+    outlier.dat$Magnitude = 0
+    mu.dat <- rbind(mu.dat, outlier.dat)
+  }
+  mu.dat$Class <- factor(mu.dat$Class, names(mcols))
+  rescale <- max(abs(mu.dat$Magnitude) + mu.dat$std)
+  mu.dat$Magnitude <- mu.dat$Magnitude/rescale
+  mu.dat$std <- mu.dat$std/rescale
+  plot_sims <- ggplot(mu.dat, aes(x=Dimension, y=Magnitude)) +
+    geom_ribbon(alpha=0.3, aes(fill=Class, ymin=Magnitude + std, ymax=Magnitude - std)) +
+    geom_line(aes(color=Class), size=1.5, alpha=0.9) +
+    xlab(xlab) +
+    ylab(ylab) +
+    ggtitle(title) +
+    theme_bw() +
+    theme(legend.position="bottom") +
+    scale_y_continuous(breaks=c(-1, 0, 1)) +
+    theme(plot.margin = unit(c(h,w,h,h), "cm")) +
+    scale_color_manual(values=mcols) +#, guide=guide_legend(title.position="top", title.hjust = .5))
+    scale_fill_manual(values=mcols)#, guide=guide_legend(title.position="top", title.hjust = .5))
   return(plot_sims)
 }
 
@@ -181,25 +263,30 @@ First, we prepare the plots of subsets of the mean and covariance matrices:
 # run the simulations once to obtain some basic visualizations
 n=100
 # the simulations to call themselves
-sims <- list(lol.sims.rtrunk, lol.sims.toep, lol.sims.rtrunk, lol.sims.fat_tails, lol.sims.rev_rtrunk, lol.sims.cross)
-maxr <- c(30, 90, 30, 30, 30, 30)
-ds <- c(100, 100, 100, 1000, 100, 100)
+sims <- list(lol.sims.rtrunk, lol.sims.rev_rtrunk, lol.sims.cross)
+maxr <- c(30, 30, 30)
+ds <- c(100, 100, 100)
 # additional arguments for each simulation scenario
-opt_args <- list(list(), list(), list(K=3), list(rotate=TRUE), list(robust=n*.2), list())
-sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "Robust", "Cross")
-sim_titles = c("(A)", "(B)", "(C)", "(D)", "(E)", "(F)")
+opt_args <- list(list(K=3), list(robust=n*.4, maxvar.outlier=1000), list())
+#sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "Robust", "Cross")
+#sim_titles = c("(A)", "(B)", "(C)", "(D)", "(E)", "(F)")
+sim_names = c("Trunk-3", "Robust", "Cross")
+sim_titles = c("(A)", "(B)", "(C)")
 ndim <- c(10, 10, 10, 10, 10, 10)
-sim_min <- c(10, 30, 10, 10, 10, 10)
-by <- c(10, 30, 10, 10, 10, 10)
+sim_min <- c(10, 10, 10)
+by <- c(10, 10, 10)
 
 cov_plots <- list()
 mean_plots <- list()
+two.scatter <- list()
+sim.fill <- list()
 counter <- 1
 
 for (i in 1:length(sims)) {
   simn <- do.call(sims[[i]], c(list(n, ds[i]), opt_args[[i]]))
   cov_plots[[counter]] <- sim_cov_plot(simn$Sigmas, simn$mus, simn$priors, title=sim_names[i])
   mean_plots[[counter]] <- sim_mean_plot(simn$mus, title=sim_names[i], ndim=ndim[i])
+  sim.fill[[counter]] <- sim_d_fill(simn$mus, simn$Sigmas, outlier=simn$robust, title=sim_names[i])
   counter <- counter + 1
 }
 ```
@@ -236,11 +323,10 @@ for (i in 1:length(sim_names)) {
     pt <- compute_cutoff(data_sub[data_sub$alg == alg,]$r, data_sub[data_sub$alg == alg,]$lhat)
     pt.dat <- rbind(pt.dat, data.frame(r=pt$r, lhat=pt$lhat, alg=alg))
   }
-  if (i == 5) {
+  if (i == 2) {
     pt.dat <- pt.dat[pt.dat$alg != "QOQ",]
-    data_sub <- data_sub[pt.dat$alg != "QOQ",]
-    
-  } else if (i == 6) {
+    data_sub <- data_sub[data_sub$alg != "QOQ",]
+  } else if (i == 3) {
     pt.dat <- pt.dat[pt.dat$alg != "RLOL",]
     data_sub <- data_sub[data_sub$alg != "RLOL",]
   } else {
@@ -269,12 +355,23 @@ sim_leg <- g_legend(sim_leg.plot)
 cov_leg <- g_legend(cov_plots[[1]])
 mean_leg <- g_legend(mean_plots[[3]])
 
+dummydat <- data.frame(Class=sample(names(mcols), size=50, replace=TRUE), Dimension=1:50, Magnitude=0, std=2)
+simfill_leg.plot <- ggplot(dummydat, aes(x=Dimension, y=Magnitude, color=Class, fill=Class)) +
+  geom_line(size=1.5) +
+  geom_ribbon(aes(ymin=Magnitude -std, ymax=Magnitude + std), alpha=0.3) +
+  scale_color_manual(values=mcols, guide=guide_legend(nrow=1, byrow=TRUE)) +
+  scale_fill_manual(values=mcols, guide=guide_legend(nrow=1, byrow=TRUE))
+
+simfill_leg <- g_legend(simfill_leg.plot)
+
 # remove the legends from the plots
 sim_plots <- sapply(1:length(sim_plots), function(j) {
     resp <- sim_plots[[j]] + ggtitle("") +theme(legend.position=NaN)
     # remove the ylabel of only the non-left most columns
     if (j != 1) {
-      resp <- resp + xlab("")
+      resp <- resp + xlab("") +
+        theme(axis.text.x=element_text(color="#FFFFFF"),
+              axis.text.y=element_text(color="#FFFFFF"))
     }
     return(resp)
   }, simplify=FALSE)
@@ -296,17 +393,31 @@ cov_plots <- sapply(1:length(cov_plots), function(j) {
     return(resp)
   }, simplify=FALSE)
 
+sim.fill <- sapply(1:length(sim.fill), function(j) {
+    resp <- sim.fill[[j]] + ggtitle("") + theme(legend.position=NaN)
+    # remove the ylabel of only the non-left most columns
+    if (j != 1) {
+      resp <- resp + xlab("") + ylab("") +
+        theme(axis.text.x=element_text(color="#FFFFFF"),
+              axis.text.y=element_text(color="#FFFFFF"))
+    }
+    return(resp)
+  }, simplify=FALSE)
+
 tfonts = 14
 grid_sim <- grid.arrange(grid.arrange(grobs=sim_plots, nrow=nsim), sim_leg, nrow=2, heights=c(.95, .07),
-                         top=textGrob("Misclassification Rate\n(D=100, n=100)", gp=gpar(fontsize=tfonts, face="bold")))
+                         top=textGrob("Misclassification Rate\n(n=100)", gp=gpar(fontsize=tfonts, face="bold")))
 grid_mean <- grid.arrange(grid.arrange(grobs=mean_plots, nrow=nsim), mean_leg, nrow=2, heights=c(.95, .07),
                          top=textGrob("Means\n(First 10 Dimensions)", gp=gpar(fontsize=tfonts, face="bold")))
 grid_cov <- grid.arrange(grid.arrange(grobs=cov_plots, nrow=nsim), cov_leg, nrow=2, heights=c(.95, .07),
                          top=textGrob("Covariances\n(First 10 Dimensions)", gp=gpar(fontsize=tfonts, face="bold")))
+grid_simfill <- grid.arrange(grid.arrange(grobs=sim.fill, nrow=nsim), simfill_leg, nrow=2, heights=c(.95, .07),
+                         top=textGrob("Generative Model\n(p=100)", gp=gpar(fontsize=tfonts, face="bold")))
+
 ```
 
 We combine and plot:
 
 ```{r, fig.height=11, fig.width=10}
-grid.arrange(grid_sim, grid_mean, grid_cov, ncol=3, widths=c(0.35, 0.25, 0.2))
+grid.arrange(grid_sim, grid_simfill, ncol=2, widths=c(0.35, 0.35))
 ```
