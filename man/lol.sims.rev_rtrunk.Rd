@@ -4,13 +4,15 @@
 \alias{lol.sims.rev_rtrunk}
 \title{Reverse Random Trunk}
 \usage{
-lol.sims.rev_rtrunk(n, d, rotate = FALSE, priors = NULL, b = 4, K = 2,
-  maxvar = 100)
+lol.sims.rev_rtrunk(n, d, robust = FALSE, rotate = FALSE, priors = NULL,
+  b = 4, K = 2, maxvar = b^3, maxvar.outlier = maxvar^3)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
 
 \item{d}{the dimensionality of the simulated data.}
+
+\item{robust}{the number of outlier points to add, where outliers have opposite covariance of inliers. Defaults to \code{FALSE}, which will not add any outliers.}
 
 \item{rotate}{whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.}
 
@@ -31,6 +33,7 @@ A list of class \code{simulation} with the following:
 \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 \item{simtype}{The name of the simulation.}
 \item{params}{Any extraneous parameters the simulation was created with.}
+\item{robust}{If robust is not false, a list containing \code{inlier} a boolean array indicating which points are inliers, \code{s.outlier} the covariance structure of outliers, and \code{mu.outlier} the means of the outliers.}
 }
 \description{
 A simulation for the reversed random trunk experiment, in which the maximal covariant directions are the same as the directions with the maximal mean difference.

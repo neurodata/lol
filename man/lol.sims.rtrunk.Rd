@@ -21,6 +21,8 @@ lol.sims.rtrunk(n, d, rotate = FALSE, priors = NULL, b = 4, K = 2,
 \item{K}{number of classes, should be <4. Defaults to \code{2}.}
 
 \item{maxvar}{the maximum covariance between the two classes. Defaults to \code{100}.}
+
+\item{maxvar.outlier}{the maximum covariance for the outlier points. Defaults to \code{maxvar*5}.}
 }
 \value{
 A list of class \code{simulation} with the following:
@@ -31,6 +33,7 @@ A list of class \code{simulation} with the following:
 \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 \item{simtype}{The name of the simulation.}
 \item{params}{Any extraneous parameters the simulation was created with.}
+\item{robust}{If robust is not false, a list containing \code{inlier} a boolean array indicating which points are inliers, \code{s.outlier} the covariance structure of outliers, and \code{mu.outlier} the means of the outliers.}
 }
 \description{
 A simulation for the random trunk experiment, in which the maximal covariant dimensions are the reverse of the maximal mean differences.
