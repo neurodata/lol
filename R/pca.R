@@ -54,8 +54,7 @@ lol.project.pca <- function(X, r, xfm=FALSE, xfm.opts=list(), robust=FALSE,...) 
 #' @importFrom irlba irlba
 #' @importFrom robust covRob
 #' @param X the data to compute the svd of.
-#' @param nu the number of left singular vectors to retain.
-#' @param nv the number of right singular vectors to retain.
+#' @param ncomp the number of left singular vectors to retain.
 #' @param t the threshold of percent of singular vals/vecs to use irlba.
 #' @param xfm whether to transform the variables before taking the SVD.
 #' \itemize{

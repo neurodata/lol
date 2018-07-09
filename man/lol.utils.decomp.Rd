@@ -21,13 +21,11 @@ lol.utils.decomp(X, xfm = FALSE, xfm.opts = list(), ncomp = 0, t = 0.05,
 
 \item{xfm.opts}{optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.}
 
+\item{ncomp}{the number of left singular vectors to retain.}
+
 \item{t}{the threshold of percent of singular vals/vecs to use irlba.}
 
 \item{robust}{whether to use a robust estimate of the covariance matrix when taking PCA. Defaults to \code{FALSE}.}
-
-\item{nu}{the number of left singular vectors to retain.}
-
-\item{nv}{the number of right singular vectors to retain.}
 }
 \value{
 the svd of X.
