@@ -307,13 +307,13 @@ grid.arrange(arrangeGrob(grobs=plots.scatters, nrow=floor(sqrt(length(plots.scat
 
 # Quadrant Plot
 
-For algorithm $a$ and problem $j$, the normalized embedding dimension:
+For algorithm $a$ and problem $j$, the relative embedding dimension:
 
 \begin{align*}
   \left|\left|r^*_{a, j}\right|\right| = \frac{r^*_{LOL, j} - r^*_{a, j}}{p}
 \end{align*}
 
-with normalized misclassification rate per-dataset:
+with relative misclassification rate per-dataset:
 
 \begin{align*}
   \left|\left|\bar{L}_{a, j}(r)\right|\right| = \textrm{mean}_{i \in [1, ..., k]}\left\{\frac{\bar{L}_{a, j, i}\left(r^*_{LOL, j}\right) - \bar{L}_{a, j, i}\left(r^*_{a, j}\right)}{\bar{L}_{chance, j, i}}\right\}
@@ -329,9 +329,18 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
                     y=c(min(ylims), min(ylims), mean(ylims), mean(ylims)))
   data.medians <- aggregate(list(lhat.norm=data$lhat.norm, rstar.norm=data$rstar.norm), by=list(alg=data$alg), FUN=median)
   data.medians <- rbind(data.medians, data.frame(lhat.norm=0, rstar.norm=0, alg="LOL"))  # add dot for LOL
+  # table results
+  tab <- data.frame(alg=c(), q1=c(), q2=c(), q3=c(), q4=c())
+  for (alg in levels(data$alg)) {
+    ss <- data[data$alg == alg,]
+    tab <- rbind(tab, data.frame(alg=alg, q1=sum(ss$rstar.norm >= 0 & ss$lhat.norm >= 0),
+                                 q2 = sum(ss$rstar.norm <= 0 & ss$lhat.norm >= 0),
+                                 q3 = sum(ss$rstar.norm <= 0 & ss$lhat.norm <= 0),
+                                 q4 = sum(ss$rstar.norm >= 0 & ss$lhat.norm <= 0)))
+  }
   center <- ggplot(data, aes(x=rstar.norm, y=lhat.norm)) +
     geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
-    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, color=alg, fill=alg), alpha=0.4, size=1.2) +
+    geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, color=alg, fill=alg), alpha=0.5, size=1.2) +
     geom_point(data=data.medians, aes(x=rstar.norm, y=lhat.norm, shape=alg, color=alg, fill=alg), alpha=1.0, size=2.5) +
     scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
     scale_color_manual(values=acols, guide=legend.style, name=leg.title) +
@@ -399,7 +408,7 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
 
 grid.arrange(make_marginal_2d(subset(results.exp.optimalr, !(alg %in% c("LOL"))), 
                               c(-1, 1), c(-.1, .1), plot.title="Performance Across HDLSS Benchmarks", leg.title="Algorithm",
-                              xl="Normalized Embedding Dimension", yl="Normalized Misclassification Rate"))
+                              xl="Relative Embedding Dimension", yl="Relative Misclassification Rate"))
 ```
 
 ```{r}

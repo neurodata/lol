@@ -19,9 +19,15 @@ rlen <- 30
 
 # Setup Algorithms
 #==========================#
-algs <- list(lol.project.pca, lol.project.lrlda, lol.project.lrcca, lol.project.rp, lol.project.pls,
-             lol.project.lol)
-names(algs) <- c("PCA", "LRLDA", "CCA", "RP", "PLS", "LOL")
+# algs <- list(lol.project.pca, lol.project.lrlda, lol.project.lrcca, lol.project.rp, lol.project.pls,
+#              lol.project.lol)
+# names(algs) <- c("PCA", "LRLDA", "CCA", "RP", "PLS", "LOL")
+# alg.opts=list(list(), list(), list(), list(), list(), list(), list(second.moment="quadratic"))
+# names(alg.opts) <- c("PCA", "LRLDA", "CCA", "RP", "PLS", "LOL", "QOL")
+algs <- list(lol.project.pca, lol.project.lrlda, lol.project.lol)
+names(algs) <- c("RPCA", "RLRLDA", "RLOL")
+alg.opts=list(list(robust=TRUE), list(robust=TRUE), list(robust=TRUE))
+names(alg.opts) <- c("RPCA", "RLRLDA", "RLOL")
 experiments <- list()
 counter <- 1
 
@@ -127,7 +133,7 @@ results <- mclapply(fold_rep, function(fold) {
 resultso <- do.call(rbind, results)
 # filter out bad rows
 resultso <- resultso[complete.cases(resultso$lhat) & !(is.infinite(resultso$lhat)) & complete.cases(resultso),]
-saveRDS(resultso, file.path(opath, paste(classifier.name, '_rorb_results.rds', sep="")))
+saveRDS(resultso, file.path(opath, paste(classifier.name, '_robust_results.rds', sep="")))
 
 require(stringr)
 
@@ -145,4 +151,4 @@ for (fname in fnames) {
   dat$fold <- as.integer(foldid)
   results <- rbind(results, dat)
 }
-saveRDS(results, file.path(path, paste(classifier.name, '_results.rds', sep="")))
+saveRDS(results, file.path(path, paste(classifier.name, '_robust_results.rds', sep="")))

@@ -17,18 +17,18 @@ niter <- 200  # number of iterations per simulation
 rlen <- 20
 # the simulations to call themselves
 sims <- list(lol.sims.rtrunk, lol.sims.toep, lol.sims.rtrunk, lol.sims.fat_tails, lol.sims.qdtoep,
-             lol.sims.cross)
-maxr <- c(30, 90, 30, 30, 30, 30)
-ds <- c(100, 100, 100, 1000, 100, 100)
+             lol.sims.cross, lol.sims.rev_rtrunk)
+maxr <- c(30, 90, 30, 30, 30, 30, 30)
+ds <- c(100, 100, 100, 1000, 100, 100, 100)
 # additional arguments for each simulation scenario
-opt_args <- list(list(), list(), list(K=3), list(rotate=TRUE), list(), list())
+opt_args <- list(list(), list(), list(K=3), list(rotate=TRUE), list(), list(), list(robust=0.4))
 sim_names = c("Trunk-2", "Toeplitz", "Trunk-3", "Fat-Tails (D=1000)", "QDTOEP", "Cross")
 
 algs <- list(lol.project.pca, lol.project.lrlda, lol.project.lrcca, lol.project.rp, lol.project.pls,
-             lol.project.lol, lol.project.lol)
+             lol.project.lol, lol.project.lol, lol.project.lol)
 names(algs) <- c("PCA", "LRLDA", "CCA", "RP", "PLS", "LOL", "QOL")
-alg.opts=list(list(), list(), list(), list(), list(), list(), list(second.moment="quadratic"))
-names(alg.opts) <- c("PCA", "LRLDA", "CCA", "RP", "PLS", "LOL", "QOL")
+alg.opts=list(list(), list(), list(), list(), list(), list(), list(second.moment="quadratic"), list(robust=TRUE))
+names(alg.opts) <- c("PCA", "LRLDA", "CCA", "RP", "PLS", "LOL", "QOL", "RLOL")
 
 simulations <- list()
 counter <- 1
