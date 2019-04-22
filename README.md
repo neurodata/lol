@@ -93,7 +93,7 @@ Users should install the following packages prior to installing `lolR`, from an 
 install.packages(c('ggplot2', 'abind', 'irlba', 'knitr', 'rmarkdown', 'latex2exp', 'MASS', 'randomForest'))
 ```
 
-which will install in about 30 seconds on a recommended machine.
+which will install in about 30 seconds on a machine with the recommended specs.
 
 The `lolR` package functions with all packages in their latest versions as they appear on `CRAN` on December 13, 2017. Users can check [CRAN snapshot](https://mran.microsoft.com/timemachine/) for details. The versions of software are, specifically:
 ```
