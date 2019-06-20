@@ -4,8 +4,8 @@
 \alias{lol.utils.decomp}
 \title{A utility to use irlba when necessary}
 \usage{
-lol.utils.decomp(X, xfm = FALSE, xfm.opts = list(), ncomp = 0, t = 0.05,
-  robust = FALSE)
+lol.utils.decomp(X, xfm = FALSE, xfm.opts = list(), ncomp = 0,
+  t = 0.05, robust = FALSE)
 }
 \arguments{
 \item{X}{the data to compute the svd of.}

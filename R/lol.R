@@ -55,8 +55,10 @@
 #' # use PLS to estimate the second moment
 #' model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='pls')
 #'
-#' # use LRLDA to estimate the second moment, and apply a unit transformation (according to scale function) with no centering
-#' model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='linear', second.moment.xfm='unit', second.moment.xfm.opts=list(center=FALSE))
+#' # use LRLDA to estimate the second moment, and apply a unit transformation
+#' # (according to scale function) with no centering
+#' model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='linear', second.moment.xfm='unit',
+#'                          second.moment.xfm.opts=list(center=FALSE))
 #' @export
 lol.project.lol <- function(X, Y, r, second.moment.xfm=FALSE, second.moment.xfm.opts=list(),
                             first.moment='delta', second.moment='linear', orthogonalize=FALSE,

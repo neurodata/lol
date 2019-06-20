@@ -1,5 +1,6 @@
 context("Random Classifier")
 
+suppressWarnings(RNGversion("3.5.0"))
 set.seed(1234567)
 
 test_that("Random Classifier Approximates Limit Error", {
