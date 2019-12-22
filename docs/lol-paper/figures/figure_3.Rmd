@@ -61,7 +61,7 @@ sim_cov_plot <- function(Sigmas, mus, priors, title="", yl="Dimension", xl="Dime
                          #guide=guide_colorbar(title.position="top", title.hjust = .5, barheight=.75))
 }
 
-mcols <- c("#808080", "#f41711", "#0e3ec1", "#8B4513")
+mcols <- c("#808080", "#EE7600", "#0e3ec1","#469990") #"#8B4513")
 names(mcols) <- c("outlier", "1", "2", "3")
 sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndim=10, nbreaks=4) {
   dat <- data.frame(mus[1:ndim,])
@@ -90,7 +90,7 @@ sim_mean_plot <- function(mus, title="", ylab="Magnitude", xlab="Dimension", ndi
 }
 
 plot_sim_lhats <- function(data, cols, pt.dat, linestyle, title="", by=10, from=10, ylab="Misclassification Rate",
-                           xlab="Embedded Dimensions", fsize=12) {
+                           xlab="# Embedded Dimensions", fsize=12) {
   lims <- c(floor(10*min(data$lhat))/10, ceiling(10*max(data$lhat))/10)
   if (unique(data$sim)[1] == "Toeplitz") {
     length.out=4
@@ -121,7 +121,7 @@ plot_sim_lhats <- function(data, cols, pt.dat, linestyle, title="", by=10, from=
   return(plot_sims)
 }
 
-sim_twod_scatter <- function(X, Y, title="", number="", nbreaks=4, outlier=NULL, d=c(1, 2)) {
+sim_twod_scatter <- function(X, Y, title="", xlab="", ylab="", nbreaks=4, outlier=NULL, d=c(1, 2)) {
   reorder <- c()
   for (ylab in unique(Y)) {
     reorder <- c(reorder, sample(1:dim(X[Y == ylab,])[1], size=dim(X[Y==ylab,])[1], replace=FALSE))
@@ -139,8 +139,8 @@ sim_twod_scatter <- function(X, Y, title="", number="", nbreaks=4, outlier=NULL,
     geom_point(alpha=0.5) +
     #xlab(paste("Dimension", d[1])) +
     #ylab(paste("Dimension", d[2])) +
-    xlab("") +
-    ylab(paste(number, title, sep=" ")) +
+    xlab(xlab) +
+    ylab(ylab) +
     ggtitle(title) +
     theme_bw() +
     xlim(xmin, xmax) +
@@ -297,7 +297,7 @@ for (i in 1:length(sims)) {
   mean_plots[[counter]] <- sim_mean_plot(simn$mus, title=sim_names[i], ndim=ndim[i])
   sim.fill[[counter]] <- sim_d_fill(simn$mus, simn$Sigmas, outlier=simn$robust, title=sim_names[i], number=sim_titles[i])
   d <- dims[[i]]
-  sim.dims[[counter]] <- sim_twod_scatter(simn$X, simn$Y, title=sim_names[i], number=sim_titles[i], outlier=simn$robust, d=d)
+  sim.dims[[counter]] <- sim_twod_scatter(simn$X, simn$Y, title=paste(sim_titles[i], sim_names[i]), outlier=simn$robust, d=d)
   counter <- counter + 1
 }
 ```
@@ -312,7 +312,7 @@ nan.mean <- function(x) mean(x, na.rm=TRUE)
 resultsm.means <- aggregate(lhat ~ sim + alg + r + lhat, data=resultsm, FUN=nan.mean)
 results.means <- aggregate(lhat ~ sim + alg + r + lhat, data = results, FUN = nan.mean)
 results.means <- rbind(results.means, resultsm.means)
-algs <-  c("LOL/Q", "RLOL", "QOQ", "PLS", "CCA", "LDA", "PCA", "RP", "ROAD", "LASSO")
+algs <-  c("LOL", "RLOL", "QOQ", "PLS", "CCA", "LDA", "PCA", "RP", "ROAD", "LASSO")
 acols <- c("#f41711", "#f41711", "#f41711", "#94d6c9", "#87c6cc", "#99b4c6", "#020202", "#666666", "#666666", "#666666")
 linestyle <- c(1,3,3,1,3,1,1,3,1)
 linestyle <- c("solid", "dotted", "dashed", "dotted", "solid", "dotted", "solid", "solid", "solid", "dotted")
@@ -322,7 +322,8 @@ sim_plots <- list()
 results.means$alg <- revalue(results.means$alg, c("cPCA"="LDA"))
 results.means$alg <- revalue(results.means$alg, c("LRLDA"="LDA"))
 results.means$alg <- revalue(results.means$alg, c("QOL"="QOQ"))
-results.means$alg <- revalue(results.means$alg, c("LOL"="LOL/Q"))
+results.means$alg <- revalue(results.means$alg, c("LOL"="LOL"))
+results.means$alg <- revalue(results.means$alg, c("LDA"="LDA"))
 
 
 counter <- 1
@@ -354,6 +355,95 @@ for (i in 1:length(sim_names)) {
 We merge and combine the plots:
 
 ```{r, fig.show='hide'}
+nsim <- length(sim_names)
+fsize=12
+sim_leg.plot <- ggplot(data=subset(results.means, !(alg  %in% c("ROAD", "LASSO"))), aes(x=r, y=lhat, color=alg, linetype=alg)) +
+  geom_line(size=1.2) +
+  scale_color_manual(values=acols, guide=guide_legend(ncol=2, byrow=FALSE), name="Algorithm") +
+  scale_linetype_manual(values=linestyle, guide=guide_legend(ncol=2, byrow=FALSE), name="Algorithm") +
+  theme(legend.position="bottom", axis.title.y=element_text(size=fsize)) +
+  theme_bw()
+
+sim_leg <- g_legend(sim_leg.plot)
+cov_leg <- g_legend(cov_plots[[1]])
+mean_leg <- g_legend(mean_plots[[3]])
+
+dummydat <- data.frame(Class=sample(names(mcols), size=50, replace=TRUE), Dimension=1:50, Magnitude=0, std=2)
+simfill_leg.plot <- ggplot(dummydat, aes(x=Dimension, y=Magnitude, color=Class, fill=Class)) +
+  geom_line(size=1.5) +
+  geom_ribbon(aes(ymin=Magnitude -std, ymax=Magnitude + std), alpha=0.3) +
+  scale_color_manual(values=mcols, guide=guide_legend(nrow=4, byrow=TRUE)) +
+  scale_fill_manual(values=mcols, guide=guide_legend(nrow=4, byrow=TRUE))
+
+simfill_leg <- g_legend(simfill_leg.plot)
+
+# remove the legends from the plots
+sim_plots <- sapply(1:length(sim_plots), function(j) {
+    resp <- sim_plots[[j]] + ggtitle("") +theme(legend.position=NaN)
+    # remove the ylabel of only the non-left most columns
+    if (j != 1) {
+      resp <- resp + xlab("") + ylab("") +
+        theme(axis.text.x=element_text(color="#FFFFFF"))
+    } else {
+      resp <- resp + ylab("Error")
+    }
+    return(resp)
+  }, simplify=FALSE)
+
+mean_plots <- sapply(1:length(mean_plots), function(j) {
+    resp <- mean_plots[[j]] + ggtitle("") + theme(legend.position=NaN)
+    # remove the ylabel of only the non-left most columns
+    if (j != 1) {
+      resp <- resp + xlab("") + ylab("")
+    }
+    return(resp)
+  }, simplify=FALSE)
+
+cov_plots <- sapply(1:length(cov_plots), function(j) {
+    resp <- cov_plots[[j]] + ggtitle("") + theme(legend.position=NaN)
+    # remove the ylabel of only the non-left most columns
+    if (j != 1) {
+      resp <- resp + xlab("") + ylab("")
+    }
+    return(resp)
+  }, simplify=FALSE)
+
+sim.fill <- sapply(1:length(sim.fill), function(j) {
+    resp <- sim.fill[[j]] + ggtitle("") + theme(legend.position=NaN)
+    # remove the ylabel of only the non-left most columns
+    if (j != 1) {
+      resp <- resp + xlab("") +# ylab("") +
+        theme(axis.text.x=element_text(color="#FFFFFF"),
+              axis.text.y=element_text(color="#FFFFFF"))
+    }
+    return(resp)
+  }, simplify=FALSE)
+
+sim.dims <- sapply(1:length(sim.dims), function(j) {
+    resp <- sim.dims[[j]] + theme(legend.position=NaN)
+    # remove the ylabel of only the non-left most columns
+    if (j != 0) {
+      resp <- resp + xlab("") + ylab("")
+    } else {
+      resp <- resp + xlab("") + ylab("")
+    }
+    return(resp)
+  }, simplify=FALSE)
+
+tfonts = 14
+grid_sim <- grid.arrange(grid.arrange(grobs=sim_plots, ncol=nsim), sim_leg, nrow=1, widths=c(.95, .18)
+                         )
+grid_mean <- grid.arrange(grid.arrange(grobs=mean_plots, ncol=nsim), mean_leg, nrow=2, heights=c(.95, .09),
+                         top=textGrob("Means\n(First 10 Dimensions)", gp=gpar(fontsize=tfonts, face="bold")))
+grid_cov <- grid.arrange(grid.arrange(grobs=cov_plots, ncol=nsim), cov_leg, nrow=2, heights=c(.95, .09),
+                         top=textGrob("Covariances\n(First 10 Dimensions)", gp=gpar(fontsize=tfonts, face="bold")))
+grid_simfill <- grid.arrange(grid.arrange(grobs=sim.fill, ncol=nsim), simfill_leg, nrow=2, heights=c(.95, .09),
+                         top=textGrob("Generative Model\n(p=100)", gp=gpar(fontsize=tfonts, face="bold")))
+grid_simdim <- grid.arrange(grid.arrange(grobs=sim.dims, ncol=nsim), simfill_leg, nrow=1, widths=c(.95, .18)
+                            )
+```
+
+```{r, eval=FALSE, fig.show='hide'}
 nsim <- length(sim_names)
 fsize=12
 sim_leg.plot <- ggplot(data=subset(results.means, !(alg  %in% c("ROAD", "LASSO"))), aes(x=r, y=lhat, color=alg, linetype=alg)) +
@@ -443,5 +533,5 @@ grid_simdim <- grid.arrange(grid.arrange(grobs=sim.dims, nrow=nsim), simfill_leg
 We combine and plot:
 
 ```{r, fig.height=11, fig.width=10}
-grid.arrange(grid_simdim, grid_sim, ncol=2, widths=c(0.35, 0.35))
+grid.arrange(grid_simdim, grid_sim, nrow=2, heights=c(0.35, 0.35))
 ```

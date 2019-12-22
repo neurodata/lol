@@ -31,6 +31,28 @@ classifier.name <- "lda"
 opath <- './data/real_data'
 repo.name <- "uci"
 
+cmp.alg="LOL"
+cmp.algname="lol"
+
+algs <-  c("LOL", "PLS", "CCA", "LRLDA", "PCA", "RP")
+acols <- c("#f41711", "#94d6c9", "#87c6cc", "#99b4c6", "#020202", "#5f8793")
+linestyle <- c("solid", "dotted", "solid","dotted", "solid", "solid")
+names(linestyle) <- algs
+names(algs) <- acols
+names(acols) <- algs
+#shapes <- c(21, 24, 21, 24, 23, 23, 21, 24, 23)
+shapes <- c(21, 24, 21, 22, 21, 23)
+names(shapes) <- algs
+# algs <-  c("RLOL", "RLRLDA", "RPCA")
+# acols <- c("#f41711", "#99b4c6", "#020202")
+# linestyle <- c("solid", "dotted", "solid")
+# names(linestyle) <- algs
+# names(algs) <- acols
+# names(acols) <- algs
+# #shapes <- c(21, 24, 21, 24, 23, 23, 21, 24, 23)
+# shapes <- c(21, 22, 21)
+# names(shapes) <- algs
+
 # compute the cutoff for the particular trial to get an approximate elbow
 # by computing the smallest r with an associated lhat within 5%
 # of the global minimum lhat
@@ -142,6 +164,7 @@ results.mrn <- parse_mrn()
 ```{r, message=FALSE}
 results <- readRDS(file.path(opath, paste(classifier.name, "_results.rds", sep="")))
 results <- rbind(results, results.mrn)
+exp_names <- unique(as.character(results$exp))
 # filter out bad rows
 results <- results[complete.cases(results$lhat) & !(is.infinite(results$lhat)) & complete.cases(results[colnames(results) != "r"]),]
 exp_names <- unique(as.character(results$exp))
@@ -161,19 +184,6 @@ results <- results[!(results$exp %in% c("splice", "promoters", "molecular-biolog
 nan.mean <- function(x) {mean(x[!is.infinite(x)], na.rm=TRUE)}
 results.means <- aggregate(lhat ~ exp + alg + r + d + n + ntrain + K, data = results, FUN = nan.mean)
 random.results <- aggregate(lhat ~ exp + alg, data=subset(results, alg == "RandomGuess"), FUN=mean)
-#algs <-  c("LOL", "QOQ", "PLS", "PLSOL", "PLSOLK", "CCA", "LDA", "PCA", "RP")
-#acols <- c("#00FF00", "#00FF00", "#990000", "#990000", "#990000", "#AAAA55", "#000099", "#000099", "#000099")
-#linestyle <- c("solid", "dashed", "solid", "dashed", "dotted", "solid", "solid", "dashed", "dotted")
-algs <-  c("LOL", "PLS", "CCA", "LRLDA", "PCA", "RP")
-acols <- c("#f41711", "#94d6c9", "#87c6cc", "#99b4c6", "#020202", "#5f8793")
-linestyle <- c("solid", "dotted", "solid","dotted", "solid", "solid")
-names(linestyle) <- algs
-names(algs) <- acols
-names(acols) <- algs
-#shapes <- c(21, 24, 21, 24, 23, 23, 21, 24, 23)
-shapes <- c(21, 24, 21, 22, 21, 23)
-names(shapes) <- algs
-exp_names <- unique(as.character(results$exp))
 ```
 
 # Analysis
@@ -203,13 +213,13 @@ for (i in 1:length(exp_names)) {
       min.result <- compute_cutoff(rs, lhats)
       r.star <- min.result$r
       ss.optimalr <- results[results$exp == exp_names[i] & results$alg == algs[j] & results$r == r.star,]
-      if (alg == 'LOL') {
+      if (alg == cmp.alg) {
         r.lol <- r.star
         lol.ss <- ss
-        colnames(lol.ss)[colnames(lol.ss) == "lhat"] = "lhat.lol"
+        colnames(lol.ss)[colnames(lol.ss) == "lhat"] = sprintf("lhat.%s", cmp.algname)
         lol.optimalr <- ss.optimalr
-        colnames(lol.optimalr)[colnames(lol.optimalr) == "lhat"] = "lhat.lol"
-        colnames(lol.optimalr)[colnames(lol.optimalr) == "rstar.norm"] = "rstar.norm.lol"
+        colnames(lol.optimalr)[colnames(lol.optimalr) == "lhat"] = sprintf("lhat.%s", cmp.algname)
+        colnames(lol.optimalr)[colnames(lol.optimalr) == "rstar.norm"] = sprintf("rstar.norm.%s", cmp.algname)
       }
       colnames(ss)[colnames(ss) == "lhat"] = "lhat.alg"
       colnames(ss.optimalr)[colnames(ss.optimalr) == "lhat"] = "lhat.alg"
@@ -221,18 +231,18 @@ for (i in 1:length(exp_names)) {
       
       colnames(ss.merged)[colnames(ss.merged) == "r.x"] = "r.alg"
       colnames(ss.optimalr)[colnames(ss.optimalr) == "r.x"] = "r.alg"
-      colnames(ss.merged)[colnames(ss.merged) == "r.y"] = "r.lol"
-      colnames(ss.optimalr)[colnames(ss.optimalr) == "r.y"] = "r.lol"
+      colnames(ss.merged)[colnames(ss.merged) == "r.y"] = sprintf("r.%s", cmp.algname)
+      colnames(ss.optimalr)[colnames(ss.optimalr) == "r.y"] = sprintf("r.%s", cmp.algname)
       colnames(ss.merged)[colnames(ss.merged) == "alg"] <- "chance"
       colnames(ss.merged)[colnames(ss.merged) == "alg.x"] <- "alg"
       colnames(ss.optimalr)[colnames(ss.optimalr) == "alg"] <- "chance"
       colnames(ss.optimalr)[colnames(ss.optimalr) == "alg.x"] <- "alg"
 
-      ss.merged$lhat.norm <- (ss.merged$lhat.lol - ss.merged$lhat.alg)/ss.merged$lhat.chance
+      ss.merged$lhat.norm <- (ss.merged[[sprintf("lhat.%s", cmp.algname)]] - ss.merged$lhat.alg)/ss.merged$lhat.chance
       ss.merged$r.max <- r.max
       
-      ss.optimalr$lhat.norm <- (ss.optimalr$lhat.lol - ss.optimalr$lhat.alg)/ss.optimalr$lhat.chance
-      ss.optimalr$rstar.norm <- (ss.optimalr$r.lol - ss.optimalr$r.alg)/r.max
+      ss.optimalr$lhat.norm <- (ss.optimalr[[sprintf("lhat.%s", cmp.algname)]] - ss.optimalr$lhat.alg)/ss.optimalr$lhat.chance
+      ss.optimalr$rstar.norm <- (ss.optimalr[[sprintf("r.%s", cmp.algname)]] - ss.optimalr$r.alg)/r.max
       ss.optimalr$r.max <- r.max
       results.overall <- rbind(results.overall, ss.merged)
       results.optimalr <- rbind(results.optimalr, ss.optimalr)
@@ -243,14 +253,16 @@ results.overall <- results.overall[complete.cases(results.overall),]
 results.optimalr <- results.optimalr[complete.cases(results.optimalr),]
 
 results.exp.overall <- aggregate(list(lhat.norm=results.overall$lhat.norm, lhat.alg=results.overall$lhat.alg,
-                                       lhat.lol=results.overall$lhat.lol, lhat.chance=results.overall$lhat.chance, r.max=results.overall$r.max),
+                                       lhat.lol=results.overall[[sprintf("lhat.%s", cmp.algname)]],
+                                      lhat.chance=results.overall$lhat.chance, r.max=results.overall$r.max),
                                   by=list(exp=results.overall$exp, n=results.overall$n, K=results.overall$K,
                                           ntrain=results.overall$ntrain, d=results.overall$d,
                                           repo=results.overall$repo, r.alg=results.overall$r.alg,
                                           alg=results.overall$alg), FUN=nan.mean)
 
 results.exp.optimalr <- aggregate(list(lhat.norm=results.optimalr$lhat.norm, lhat.alg=results.optimalr$lhat.alg,
-                                       lhat.lol=results.optimalr$lhat.lol, lhat.chance=results.optimalr$lhat.chance,
+                                       lhat.lol=results.optimalr[[sprintf("lhat.%s", cmp.algname)]],
+                                       lhat.chance=results.optimalr$lhat.chance,
                                        rstar.norm=results.optimalr$rstar.norm, r.max=results.optimalr$r.max),
                                   by=list(exp=results.optimalr$exp, n=results.optimalr$n, K=results.optimalr$K,
                                           ntrain=results.optimalr$ntrain, d=results.optimalr$d,
@@ -327,6 +339,8 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
   data$exp <- factor(data$exp)
   box <- data.frame(x=c(min(xlims), mean(xlims), mean(xlims), min(xlims)),
                     y=c(min(ylims), min(ylims), mean(ylims), mean(ylims)))
+  box2 <- data.frame(x=c(max(xlims), mean(xlims), mean(xlims), max(xlims)),
+                    y=c(max(ylims), max(ylims), mean(ylims), mean(ylims)))
   data.medians <- aggregate(list(lhat.norm=data$lhat.norm, rstar.norm=data$rstar.norm), by=list(alg=data$alg), FUN=median)
   data.medians <- rbind(data.medians, data.frame(lhat.norm=0, rstar.norm=0, alg="LOL"))  # add dot for LOL
   # table results
@@ -338,8 +352,15 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
                                  q3 = sum(ss$rstar.norm <= 0 & ss$lhat.norm <= 0),
                                  q4 = sum(ss$rstar.norm >= 0 & ss$lhat.norm <= 0)))
   }
+  tab <- rbind(tab, data.frame(alg="overall", q1=sum(data$rstar.norm >= 0 & data$lhat.norm >= 0),
+                               q2 = sum(data$rstar.norm <= 0 & data$lhat.norm >= 0),
+                               q3 = sum(data$rstar.norm <= 0 & data$lhat.norm <= 0),
+                               q4 = sum(data$rstar.norm >= 0 & data$lhat.norm <= 0)))
+  tab[,2:dim(tab)[2]] <- tab[,2:dim(tab)[2]]/apply(tab[,2:dim(tab)[2]], c(1), sum)
+  print(tab)
   center <- ggplot(data, aes(x=rstar.norm, y=lhat.norm)) +
-    geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
+    geom_polygon(data=box, aes(x=x, y=y), fill='green', alpha=0.15) +
+    geom_polygon(data=box2, aes(x=x, y=y), fill='red', alpha=0.15) +
     geom_point(aes(x=rstar.norm, y=lhat.norm, shape=alg, color=alg, fill=alg), alpha=0.5, size=1.2) +
     geom_point(data=data.medians, aes(x=rstar.norm, y=lhat.norm, shape=alg, color=alg, fill=alg), alpha=1.0, size=2.5) +
     scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
@@ -351,7 +372,19 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
     ggtitle("") +
     scale_y_continuous(limits=ylims) +
     scale_x_continuous(limits=xlims) +
-    theme_bw()
+    theme_bw() +
+    annotate("text", size=4, label="LOL Better", x=-.5, y=.1, color="green4") +
+    annotate("text", size=4, label="LOL Better", x=1.0, y=-.05, angle=-90, color="green4") +
+    annotate("text", size=4, label="LOL Worse", x=.5, y=.1, color="red") +
+    annotate("text", size=4, label="LOL Worse", x=1.0, y=.05, angle=-90, color="red")
+    # annotate("text", size=4, label=TeX("Q1"), x=.5, y=.055) +
+    # annotate("text", size=4, label=TeX(sprintf("$r^* \\geq r^*_{%s}$", cmp.alg)), x=-.5, y=.1) +
+    # annotate("text", size=4, label=TeX("Q2"), x=-.5, y=.055) +
+    # annotate("text", size=4, label=TeX(sprintf("$L^* \\geq L^*_{%s}$", cmp.alg)), x=1.0, y=-.05, angle=-90) +
+    # annotate("text", size=4, label=TeX("Q3"), x=-.5, y=-.05) +
+    # annotate("text", size=4, label=TeX(sprintf("$r^* \\leq r^*_{%s}$", cmp.alg)), x=.5, y=.1) +
+    # annotate("text", size=4, label=TeX("Q4"), x=.5, y=-.05) +
+    # annotate("text", size=4, label=TeX(sprintf("$L^* \\leq L^*_{%s}$", cmp.alg)), x=1.0, y=.05, angle=-90)
   center_leg <- ggplot(data, aes(x=rstar.norm, y=lhat.norm)) +
     geom_polygon(data=box, aes(x=x, y=y), fill='red', alpha=0.15) +
     geom_line(aes(x=rstar.norm, y=lhat.norm, linetype=alg, color=alg), alpha=1.0, size=1.0) +
@@ -405,10 +438,14 @@ make_marginal_2d <- function(data, xlims, ylims, plot.title="", xl="", yl="", le
         axis.ticks.x=element_blank())
   return(arrangeGrob(top, leg, center + theme(legend.position=NaN), right, ncol=2, nrow=2, widths=c(4,1.5), heights=c(2,4)))
 }
-
-grid.arrange(make_marginal_2d(subset(results.exp.optimalr, !(alg %in% c("LOL"))), 
-                              c(-1, 1), c(-.1, .1), plot.title="Performance Across HDLSS Benchmarks", leg.title="Algorithm",
-                              xl="Relative Embedding Dimension", yl="Relative Misclassification Rate"))
+rn <- c("LOL", "PLS", "CCA","LDA", "PCA", "RP")
+names(acols) <-rn
+names(shapes) <- rn
+names(linestyle) <- rn
+results.exp.optimalr$alg <- revalue(results.exp.optimalr$alg, c("LRLDA"= "LDA"))
+grid.arrange(make_marginal_2d(subset(results.exp.optimalr, !(alg %in% c(cmp.alg))), 
+                              c(-1, 1), c(-.1, .1), plot.title="(A) Performance Across HDLSS Benchmarks", leg.title="Algorithm",
+                              xl="Relative # Embedding Dimensions", yl="Relative Accuracy"))
 ```
 
 ```{r}
