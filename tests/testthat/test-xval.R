@@ -1,5 +1,6 @@
 context("Cross Validation")
 
+suppressWarnings(RNGversion("3.5.0"))
 set.seed(123456)
 n <- 100
 d <- 20

@@ -219,9 +219,7 @@ lol.sims.toep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0.5
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}
 #' \item{mus}{\code{[d, K]} the \code{K} class means in \code{d} dimensions.}
 #' \item{Sigmas}{\code{[d, d, K]} the \code{K} class covariance matrices in \code{d} dimensions.}
-#' \item{priors}{\code{k
-#'
-#' A simulation for the reversed random trunk experiment, in which the maximal covariant directions are the same as the directions with the maximal mean diffe[K]} the priors for each of the \code{K} classes.}
+#' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 #' \item{simtype}{The name of the simulation.}
 #' \item{params}{Any extraneous parameters the simulation was created with.}
 #'
@@ -289,7 +287,6 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
 #' @param b scalar for mu scaling. Default to \code{4}.
 #' @param K number of classes, should be <4. Defaults to \code{2}.
 #' @param maxvar the maximum covariance between the two classes. Defaults to \code{100}.
-#' @param maxvar.outlier the maximum covariance for the outlier points. Defaults to \code{maxvar*5}.
 #' @return A list of class \code{simulation} with the following:
 #' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}
@@ -355,6 +352,7 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2, maxvar=10
 #' @param b scalar for mu scaling. Default to \code{4}.
 #' @param K number of classes, should be <4. Defaults to \code{2}.
 #' @param maxvar the maximum covariance between the two classes. Defaults to \code{100}.
+#' @param maxvar.outlier the maximum covariance for the outlier points. Defaults to \code{maxvar*5}.
 #' @return A list of class \code{simulation} with the following:
 #' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}

@@ -21,8 +21,6 @@ lol.sims.rtrunk(n, d, rotate = FALSE, priors = NULL, b = 4, K = 2,
 \item{K}{number of classes, should be <4. Defaults to \code{2}.}
 
 \item{maxvar}{the maximum covariance between the two classes. Defaults to \code{100}.}
-
-\item{maxvar.outlier}{the maximum covariance for the outlier points. Defaults to \code{maxvar*5}.}
 }
 \value{
 A list of class \code{simulation} with the following:

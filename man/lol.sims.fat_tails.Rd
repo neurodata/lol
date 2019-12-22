@@ -4,8 +4,8 @@
 \alias{lol.sims.fat_tails}
 \title{Fat Tails Simulation}
 \usage{
-lol.sims.fat_tails(n, d, rotate = FALSE, f = 15, s0 = 10, rho = 0.2,
-  t = 0.8, priors = NULL)
+lol.sims.fat_tails(n, d, rotate = FALSE, f = 15, s0 = 10,
+  rho = 0.2, t = 0.8, priors = NULL)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}

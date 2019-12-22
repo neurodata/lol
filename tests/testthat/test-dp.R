@@ -35,6 +35,7 @@ run_data_test <- function(data, alg, r=NULL, sep=TRUE, piled=FALSE, p=.05){
   return(result)
 }
 
+suppressWarnings(RNGversion("3.5.0"))
 set.seed(123456)
 alg=lol.project.dp
 # Full-Rank Cases
