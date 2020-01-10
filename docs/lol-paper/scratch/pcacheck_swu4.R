@@ -1,0 +1,10 @@
+require(oro.nifti)
+require(ramify)
+fnames <- list.files('./')
+mask <- readNIfTI("../MNI152_T1-1mm_brain_mask.nii.gz")
+D <- sapply(1:length(fnames), function(i) {
+  print(i)
+  img <- readNIfTI(fname[i])
+  X <- apply(img, MARGIN=c(4), function(x) {x[mask > 0]})
+  X.fl <- c(X)
+})
