@@ -1,37 +1,8 @@
-#' Principal Component Analysis (PCA)
-#'
-#' A function that performs PCA on data.
-#'
-#' @importFrom irlba irlba
-#' @importFrom robustbase colMedians
-#' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
-#' @param r the rank of the projection.
-#' @param xfm whether to transform the variables before taking the SVD.
-#' \itemize{
-#' \item{FALSE}{apply no transform to the variables.}
-#' \item{'unit'}{unit transform the variables, defaulting to centering and scaling to mean 0, variance 1. See \link[base]{scale} for details and optional arguments to be passed with \code{xfm.opts}.}
-#' \item{'log'}{log-transform the variables, for use-cases such as having high variance in larger values. Defaults to natural logarithm. See \link[base]{log} for details and optional arguments to be passed with \code{xfm.opts}.}
-#' \item{'rank'}{rank-transform the variables. Defalts to breaking ties with the average rank of the tied values. See \link[base]{rank} for details and optional arguments to be passed with \code{xfm.opts}.}
-#' \item{c(opt1, opt2, etc.)}{apply the transform specified in opt1, followed by opt2, etc.}
-#' }
-#' @param xfm.opts optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.
-#' @param robust whether to perform PCA on a robust estimate of the covariance matrix or not. Defaults to \code{FALSE}.
-#' @param ... trailing args.
-#' @return A list containing the following:
-#' \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
-#' \item{\code{d}}{the eigen values associated with the eigendecomposition.}
-#'
-#' @section Details:
-#' For more details see the help vignette:
-#' \code{vignette("pca", package = "lolR")}
-#'
-#' @author Eric Bridgeford
-#' @examples
-#' library(lolR)
-#' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
-#' X <- data$X; Y <- data$Y
-#' model <- lol.project.pca(X=X, r=2)  # use pca to project into 2 dimensions
-#' @export
+require(lolR)
+require(FlashR)
+require(abind)
+require(dplyr)
+
 flashx.pca <- function(X, r, ...) {
   # mean center by the column mean
   d <- dim(X)[2]
@@ -49,75 +20,27 @@ flashx.embed <- function(X, A) {
   return(as.matrix(X %*% A))
 }
 
-#' A utility to use irlba when necessary
-#' @importFrom irlba irlba
-#' @importFrom robust covRob
-#' @param X the data to compute the svd of.
-#' @param ncomp the number of left singular vectors to retain.
-#' @param t the threshold of percent of singular vals/vecs to use irlba.
-#' @param xfm whether to transform the variables before taking the SVD.
-#' \itemize{
-#' \item{FALSE}{apply no transform to the variables.}
-#' \item{'unit'}{unit transform the variables, defaulting to centering and scaling to mean 0, variance 1. See \link[base]{scale} for details and optional args.}
-#' \item{'log'}{log-transform the variables, for use-cases such as having high variance in larger values. Defaults to natural logarithm. See \link[base]{log} for details and optional args.}
-#' \item{'rank'}{rank-transform the variables. Defalts to breaking ties with the average rank of the tied values. See \link[base]{rank} for details and optional args.}
-#' \item{c(opt1, opt2, etc.)}{apply the transform specified in opt1, followed by opt2, etc.}
-#' }
-#' @param xfm.opts optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.
-#' @param robust whether to use a robust estimate of the covariance matrix when taking PCA. Defaults to \code{FALSE}.
-#' @return the svd of X.
-#' @author Eric Bridgeford
 flashx.decomp <- function(X, ncomp=0) {
   svdX <- fm.svd(X, nu=0, nv=ncomp)
   decomp=list(comp=svdX$v, val=svdX$d)
   return(decomp)
 }
 
-#' Low-Rank Linear Discriminant Analysis (LRLDA)
-#'
-#' A function that performs LRLDA on the class-centered data. Same as class-conditional PCA.
-#'
-#' @param X \code{[n, d]} the data with \code{n} samples in \code{d} dimensions.
-#' @param Y \code{[n]} the labels of the samples with \code{K} unique labels.
-#' @param r the rank of the projection.
-#' @param xfm whether to transform the variables before taking the SVD.
-#' \itemize{
-#' \item{FALSE}{apply no transform to the variables.}
-#' \item{'unit'}{unit transform the variables, defaulting to centering and scaling to mean 0, variance 1. See \link[base]{scale} for details and optional args.}
-#' \item{'log'}{log-transform the variables, for use-cases such as having high variance in larger values. Defaults to natural logarithm. See \link[base]{log} for details and optional args.}
-#' \item{'rank'}{rank-transform the variables. Defalts to breaking ties with the average rank of the tied values. See \link[base]{rank} for details and optional args.}
-#' \item{c(opt1, opt2, etc.)}{apply the transform specified in opt1, followed by opt2, etc.}
-#' }
-#' @param xfm.opts optional arguments to pass to the \code{xfm} option specified. Should be a numbered list of lists, where \code{xfm.opts[[i]]} corresponds to the optional arguments for \code{xfm[i]}. Defaults to the default options for each transform scheme.
-#' @param robust whether to use a robust estimate of the covariance matrix when taking PCA. Defaults to \code{FALSE}.
-#' @param ... trailing args.
-#' @return A list containing the following:
-#' \item{\code{d}}{the eigen values associated with the eigendecomposition.}
-#' \item{\code{Xr}}{\code{[n, r]} the \code{n} data points in reduced dimensionality \code{r}.}
-#'
-#' @section Details:
-#' For more details see the help vignette:
-#' \code{vignette("lrlda", package = "lolR")}
-#'
-#' @author Eric Bridgeford
-#' @examples
-#' library(lolR)
-#' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
-#' X <- data$X; Y <- data$Y
-#' model <- lol.project.lrlda(X=X, Y=Y, r=2)  # use cpca to project into 2 dimensions
-#' @export
 flashx.lrlda <- function(X, Y, r, ...) {
   # class data
+  if (min(Y) > 0) {
+    Y <- Y - min(Y)
+  }
   n <- length(Y); d <- ncol(X)
-  classdat <- Y %>%
-    table()
-  K = length(classdat); ylabs <- unique(Y)
+  counts <- as.data.frame(table(fm.conv.FM2R(Y)))
+  K <- length(counts$Freq); ylabs <- unique(counts$Var1)
+  priors <- counts$Freq/n
 
   centroids <- fm.mapply.col(
     # compute the group-wise sums
-    fm.groupby(X, 2, fm.as.factor(Y, K), fm.bo.add),
+    fm.groupby(X, 2, fm.as.factor(fm.as.vector(Y), K), fm.bo.add),
     # normalize each column by the class mean for that column
-    classdat, fm.bo.div)
+    counts$Freq, fm.bo.div)
 
   if (r > d) {
     stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
@@ -137,33 +60,69 @@ flashx.deltas <- function(centroids, priors) {
   d <- nrow(centroids); K <- length(priors)
   # compute the rank-K difference space as deltas(i) = mus(i) - mus(0) where the mus are ordered
   # by decreasing prior
-  deltas <- array(0, dim=c(d, K))
-  srt_prior <- sort(priors, decreasing=TRUE, index.return=TRUE)$ix
-  gr_mix <- srt_prior[1]
-  deltas[[1]] <- fm.get.cols(centroids, str_prior[1])
+  deltas <- list()
+  str_prior <- sort(priors, decreasing=TRUE, index.return=TRUE)$ix
   for (i in 2:K) {
-    deltas[[i]] <- fm.get.cols(centroids, str_prior[i]) - deltas[[1]]
+    deltas[[i-1]] <- fm.get.cols(centroids, str_prior[1]) - fm.get.cols(centroids, str_prior[i])
   }
-  deltas <- fm.cbind.list(deltas)
+  if (length(deltas) > 1) {
+    deltas <- fm.cbind.list(deltas)
+  } else {
+    deltas <- deltas[[1]]
+  }
   return(deltas)
 }
 
 flashx.mdiff <- function(X, Y, ...) {
   # class data
+  if (min(Y) > 0) {
+    Y <- Y - min(Y)
+  }
   n <- length(Y); d <- ncol(X)
-  classdat <- Y %>%
-    table()
-  K = length(classdat); ylabs <- unique(Y)
-  priors <- classdat/n
+  counts <- as.data.frame(table(fm.conv.FM2R(Y)))
+  K <- length(counts$Freq); ylabs <- unique(counts$Var1)
+  priors <- counts$Freq/n
 
   centroids <- fm.mapply.col(
     # compute the group-wise sums
-    fm.groupby(X, 2, fm.as.factor(Y, K), fm.bo.add),
+    fm.groupby(X, 2, fm.as.factor(fm.as.vector(Y), K), fm.bo.add),
     # normalize each column by the class mean for that column
     classdat, fm.bo.div)
 
   deltas <- flashx.deltas(centroids, priors)
-  return(list(Xr=flashx.embed(X, deltas), A=A))
+  return(list(Xr=flashx.embed(X, deltas), A=deltas))
+}
+
+flashx.lol <- function(X, Y, r, ...) {
+  # class data
+  if (min(Y) > 0) {
+    Y <- Y - min(Y)
+  }
+  n <- length(Y); d <- ncol(X)
+  counts <- as.data.frame(table(fm.conv.FM2R(Y)))
+  K <- length(counts$Freq); ylabs <- unique(counts$Var1)
+  priors <- counts$Freq/n
+
+  centroids <- fm.mapply.col(
+    # compute the group-wise sums
+    fm.groupby(X, 2, fm.as.factor(fm.as.vector(Y), K), fm.bo.add),
+    # normalize each column by the class mean for that column
+    counts$Freq, fm.bo.div)
+
+  deltas <- flashx.deltas(centroids, priors)
+  A <- deltas
+  nd <- ncol(deltas)
+  nv <- r - nd
+  if (nv > 0) {
+    # compute the lrlda with r - nd dimensions
+    lrlda <- flashx.lrlda(X, Y, r=nv)
+    A <- cbind(A, lrlda$A)
+  } else if (nv < 0) {
+    # retried the first r differences in the means
+    A <- fm.get.cols(A, 1:r)
+  }
+  # otherwise nv = 0 and we exactly want the deltas
+  return(list(Xr=flashx.embed(X, A), A=A))
 }
 
 flashx.rp <- function(X, r, ...) {
