@@ -56,7 +56,7 @@ docker run -ti --entrypoint /bin/bash -v /home/ubuntu/Documents/lol:/lol -v /mnt
 7. Start memory logging:
 
 ```
-cd ~/Documents/lol/docs/lol-paper/scratch
+cd /lol/docs/lol-paper/scratch
 nohup ./memlog.sh > mem.txt &
 ```
 
