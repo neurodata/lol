@@ -1,0 +1,68 @@
+---
+title: "Checking FlashLOL"
+author: "Eric Bridgeford"
+date: "January 16, 2020"
+output: html_document
+---
+
+```{r, message=FALSE}
+require(lolR)
+require(tidyverse)
+require(ggplot2)
+sim.results <- readRDS('./flashx_sims.rds')
+```
+
+# Stacked Cigars
+
+## Simulation
+
+```{r}
+
+```
+
+## PCA
+
+## LOL
+
+## LRLDA
+
+## CCA
+
+## RP
+
+# Horizontal Cigars
+
+## Simulation
+
+```{r}
+
+```
+
+## PCA
+
+## LOL
+
+## LRLDA
+
+## CCA
+
+## RP
+
+
+# Low-Rank Case
+
+## Simulation
+
+```{r}
+
+```
+
+## PCA
+
+## LOL
+
+## LRLDA
+
+## CCA
+
+## RP

@@ -4,6 +4,7 @@ require(abind)
 require(dplyr)
 
 flashx.pca <- function(X, r, ...) {
+  X <- fm.as.matrix(X); Y <- as.vector(Y)
   # mean center by the column mean
   d <- dim(X)[2]
   if (r > d) {
@@ -27,6 +28,7 @@ flashx.decomp <- function(X, ncomp=0) {
 }
 
 flashx.lrlda <- function(X, Y, r, ...) {
+  X <- fm.as.matrix(X); Y <- as.vector(Y)
   # class data
   if (min(Y) > 0) {
     Y <- Y - min(Y)
@@ -57,23 +59,25 @@ flashx.lrlda <- function(X, Y, r, ...) {
 }
 
 flashx.deltas <- function(centroids, priors) {
+  X <- fm.as.matrix(X); Y <- as.vector(Y)
   d <- nrow(centroids); K <- length(priors)
   # compute the rank-K difference space as deltas(i) = mus(i) - mus(0) where the mus are ordered
   # by decreasing prior
   deltas <- list()
   str_prior <- sort(priors, decreasing=TRUE, index.return=TRUE)$ix
   for (i in 2:K) {
-    deltas[[i-1]] <- fm.get.cols(centroids, str_prior[1]) - fm.get.cols(centroids, str_prior[i])
+    deltas[[i-1]] <- fm.get.rows(centroids, str_prior[1]) - fm.get.rows(centroids, str_prior[i])
   }
   if (length(deltas) > 1) {
     deltas <- fm.cbind.list(deltas)
   } else {
     deltas <- deltas[[1]]
   }
-  return(deltas)
+  return(t(deltas))
 }
 
 flashx.mdiff <- function(X, Y, ...) {
+  X <- fm.as.matrix(X); Y <- as.vector(Y)
   # class data
   if (min(Y) > 0) {
     Y <- Y - min(Y)
@@ -94,6 +98,7 @@ flashx.mdiff <- function(X, Y, ...) {
 }
 
 flashx.lol <- function(X, Y, r, ...) {
+  X <- fm.as.matrix(X); Y <- as.vector(Y)
   # class data
   if (min(Y) > 0) {
     Y <- Y - min(Y)
@@ -126,24 +131,24 @@ flashx.lol <- function(X, Y, r, ...) {
 }
 
 flashx.rp <- function(X, r, ...) {
+  X <- fm.as.matrix(X); Y <- as.vector(Y)
   n <- nrow(X); d <- ncol(X)
   A <- 1/r*fm.rnorm.matrix(d, r, 0, 1, in.mem=TRUE)
   return(list(Xr=flashx.embed(X, A), A=A))
 }
 
 flashx.lrcca <- function(X, Y, r, ...) {
-  n <- lrngth(Y); d=ncol(X)
+  X <- fm.as.matrix(X); Y <- as.vector(Y)
+  n <- length(Y); d=ncol(X)
   if (r > d) {
     stop(sprintf("The number of embedding dimensions, r=%d, must be lower than the number of native dimensions, d=%d", r, d))
   }
-  Yh <- lolR::lol.utils.ohe(Y)
+  Yh <- lolR:::lol.utils.ohe(Y)
   S_y <- cov(Yh)
   S_yinv <- MASS::ginv(S_y)
   # covariance matrices cov(X)
-  #Xc <- X - outer(rep(1, n), colMeans(X))
   if (nrow(X) < ncol(X)) {
     Xc <- sweep(X, 2, colMeans(X), "-")
-    #S_x <- 1/(n-1)*t(Xc) %*% Xc;
     X_cov_mul <- function(vec, extra) 1/(n-1) * t(Xc) %*% (Xc %*% vec)
     res <- fm.eigen(X_cov_mul, k=nrow(X), n=ncol(X), which="LM", sym=TRUE)
   } else {
@@ -154,14 +159,10 @@ flashx.lrcca <- function(X, Y, r, ...) {
   U <- res$vectors[,1:length(sigma)]
 
   # inverse covariance matrices are ginverse in the low-rank case
-  # S_xi <- U %*% diag(1/sigma) %*% t(U)
-  # S_xi <- MASS::ginv(S_x);
-  # S_xy <- 1/(n-1)*t(Xc) %*% Yc
   S_xy <- cov(X, fm.as.matrix(Yh))
 
   # decompose Sxi*Sxy*Syi*Syx
-  # A <- lol.utils.pca(S_xi %*% S_xy %*% S_yi %*% t(S_xy), r, trans=FALSE)
-  Z <- (t(U) %*% S_xy) %*% (S_yi %*% t(S_xy))
+  Z <- (t(U) %*% S_xy) %*% (S_yinv %*% t(S_xy))
   Z <- t(Z)
   U <- U %*% diag(1/sigma)
   A <- tcrossprod_pca(U, Z, r)
