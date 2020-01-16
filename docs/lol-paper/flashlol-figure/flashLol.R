@@ -167,7 +167,7 @@ flashx.lrcca <- function(X, Y, r, ...) {
   U <- U %*% diag(1/sigma)
   A <- tcrossprod_pca(U, Z, r)
 
-  return(list(Xr=lol.embed(X, A), A=A))
+  return(list(Xr=flashx.embed(X, A), A=A))
 }
 
 tcrossprod_pca <- function(V, U, r) {

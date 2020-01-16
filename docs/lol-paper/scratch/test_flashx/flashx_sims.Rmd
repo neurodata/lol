@@ -2,7 +2,9 @@
 title: "Checking FlashLOL"
 author: "Eric Bridgeford"
 date: "January 16, 2020"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r, message=FALSE}
@@ -16,53 +18,203 @@ sim.results <- readRDS('./flashx_sims.rds')
 
 ## Simulation
 
-```{r}
-
+```{r, fig.height=3, fig.width=6}
+dat <- sim.results$cig$sim
+data.frame(x1=dat$X[,1], x2=dat$X[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Stacked Cigars") +
+    theme_bw()
 ```
 
 ## PCA
 
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$cig$pca
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Stacked Cigars -- PCA") +
+    theme_bw()
+```
+
 ## LOL
+
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$cig$lol
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Stacked Cigars -- LOL") +
+    theme_bw()
+```
 
 ## LRLDA
 
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$cig$lrlda
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Stacked Cigars -- LRLDA") +
+    theme_bw()
+```
+
 ## CCA
 
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$cig$cca
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Stacked Cigars -- CCA") +
+    theme_bw()
+```
+
 ## RP
+
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$cig$rp
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Stacked Cigars -- RP") +
+    theme_bw()
+```
 
 # Horizontal Cigars
 
 ## Simulation
 
-```{r}
-
+```{r, fig.height=3, fig.width=6}
+dat <- sim.results$hcig$sim
+data.frame(x1=dat$X[,1], x2=dat$X[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Horizontal Cigars") +
+    theme_bw()
 ```
 
 ## PCA
 
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$hcig$pca
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Horizontal Cigars -- PCA") +
+    theme_bw()
+```
+
 ## LOL
+
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$hcig$lol
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Horizontal Cigars -- LOL") +
+    theme_bw()
+```
 
 ## LRLDA
 
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$hcig$lrlda
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Horizontal Cigars -- LRLDA") +
+    theme_bw()
+```
+
 ## CCA
 
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$hcig$cca
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Horizontal Cigars -- CCA") +
+    theme_bw()
+```
+
 ## RP
+
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$hcig$rp
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Horizontal Cigars -- RP") +
+    theme_bw()
+```
 
 
 # Low-Rank Case
 
 ## Simulation
 
-```{r}
-
+```{r, fig.height=3, fig.width=6}
+dat <- sim.results$lowrank$sim
+data.frame(x1=dat$X[,1], x2=dat$X[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Low Rank") +
+    theme_bw()
 ```
 
 ## PCA
 
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$lowrank$pca
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Low Rank -- PCA") +
+    theme_bw()
+```
+
 ## LOL
+
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$lowrank$lol
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Low Rank -- LOL") +
+    theme_bw()
+```
 
 ## LRLDA
 
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$lowrank$lrlda
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Low Rank -- LRLDA") +
+    theme_bw()
+```
+
 ## CCA
 
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$lowrank$cca
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Low Rank -- CCA") +
+    theme_bw()
+```
+
 ## RP
+
+```{r, fig.height=3, fig.width=6}
+res <- sim.results$lowrank$rp
+data.frame(x1=res$Xr[,1], x2=res$Xr[,2], y=dat$Y) %>%
+  ggplot(aes(x=x1, y=x2, color=as.factor(y))) +
+    geom_point() +
+    ggtitle("Low Rank -- RP") +
+    theme_bw()
+```

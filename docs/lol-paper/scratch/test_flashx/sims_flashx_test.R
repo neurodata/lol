@@ -12,7 +12,7 @@ cig.lol <- flashx.lol(X=X.cig, Y=Y.cig, r=2)
 cig.lrlda <- flashx.lrlda(X=X.cig, Y=Y.cig, r=2)
 cig.cca <- flashx.lrcca(X=X.cig, Y=Y.cig, r=2)
 cig.rp <- flashx.rp(X=X.hcig, Y=Y.hcig, r=2)
-cig.out <- list(sim=list(X=X.cig, Y=Y.cig), pca=cig.pca, lol=cig.lol,
+cig.out <- list(sim=list(X=as.matrix(X.cig), Y=Y.cig), pca=cig.pca, lol=cig.lol,
                  lrlda=cig.lrlda, cca=cig.cca, rp=cig.rp)
 
 # Horizontally stacked cigars breaks PCA
@@ -51,7 +51,7 @@ hcig.lol <- flashx.lol(X=X.hcig, Y=Y.hcig, r=2)
 hcig.lrlda <- flashx.lrlda(X=X.hcig, Y=Y.hcig, r=2)
 hcig.cca <- flashx.lrcca(X=X.hcig, Y=Y.hcig, r=2)
 hcig.rp <- flashx.rp(X=X.hcig, Y=Y.hcig, r=2)
-hcig.out <- list(sim=list(X=X.hcig, Y=Y.hcig), pca=hcig.pca, lol=hcig.lol,
+hcig.out <- list(sim=list(X=as.matrix(X.hcig), Y=Y.hcig), pca=hcig.pca, lol=hcig.lol,
                  lrlda=hcig.lrlda, cca=hcig.cca, rp=hcig.rp)
 
 # CCA Maximally Piles when d > n
@@ -62,7 +62,7 @@ rt.lol <- flashx.lol(X=X.rt, Y=Y.rt, r=2)
 rt.lrlda <- flashx.lrlda(X=X.rt, Y=Y.rt, r=2)
 rt.cca <- flashx.lrcca(X=X.rt, Y=Y.rt, r=2)
 rt.rp <- flashx.rp(X=X.rt, Y=Y.rt, r=2)
-rt.out <- list(sim=list(X=X.rt, Y=Y.rt), pca=rt.pca, lol=rt.lol,
+rt.out <- list(sim=list(X=as.matrix(X.rt), Y=Y.rt), pca=rt.pca, lol=rt.lol,
                  lrlda=rt.lrlda, cca=rt.cca, rp=rt.rp)
 
 saveRDS(list(cig=cig.out, hcig=hcig.out, lowrank=rt.out), './flashx_sims.rds')
