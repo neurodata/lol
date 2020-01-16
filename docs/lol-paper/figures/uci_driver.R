@@ -55,8 +55,6 @@ for (i in 1:length(dset.names)) {
 classifier.algs <- c(lol.classify.randomGuess, MASS::lda, randomForest::randomForest)
 names(classifier.algs) <- c("RandomGuess", "LDA", "RF")
 
-# Setup Algorithms
-#=========================#
 opath <- './data/'
 dir.create(opath)
 opath <- './data/real_data/'

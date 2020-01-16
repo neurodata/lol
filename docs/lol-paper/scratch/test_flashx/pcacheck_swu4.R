@@ -1,3 +1,5 @@
+## Projection Analysis
+
 require(oro.nifti)
 require(ramify)
 require(parallel)
@@ -73,3 +75,36 @@ names(res) <- names(algs)
 
 saveRDS(list(result=res, Y.train=Y.train, Y.test=Y.test), '/brains/swu4_mini.rds')
 
+
+## Classification
+require(randomForest)
+require(lolR)
+require(parallel)
+require(FlashR)
+require(MASS)
+
+classifier.algs <- list(RF=randomForest, LDA=lda)
+results <- readRDS('/brains/swu4_mini.rds')
+lapply(names(results), function(alg.name) {
+  xv.alg <- results[[alg.name]]
+  lapply(xv.alg, function(xv.alg.r) {
+    if (!is.null(xv.alg.r)) {
+      d <- ncol(xv.alg.r$X.train)
+      return(lapply(names(classifier.algs), function(class.name) {
+        class.alg <- classifier.algs[[class.name]]
+        trained.classifier <- do.call(class.alg, list(xv.alg.r$X.train, as.factor(xv.alg$Y.train)))
+        Y.hat <- predict(trained.classifier, xv.alg$Y.test)
+        if (class.name == "LDA") {
+          Y.hat <- Y.hat$class
+        }
+        acc <- mean(Y.hat == xv.alg$Y.test)
+        return(data.frame(Algorithm=alg.name, Classifier=class.name, Accuracy=acc, r=d))
+      }) %>%
+        bind_rows())
+    } else {
+      return(NULL)
+    }
+  }) %>%
+    bind_rows()
+}) %>%
+  bind_rows()
