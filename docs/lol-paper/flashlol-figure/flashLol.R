@@ -59,7 +59,6 @@ flashx.lrlda <- function(X, Y, r, ...) {
 }
 
 flashx.deltas <- function(centroids, priors) {
-  X <- fm.as.matrix(X); Y <- as.vector(Y)
   d <- nrow(centroids); K <- length(priors)
   # compute the rank-K difference space as deltas(i) = mus(i) - mus(0) where the mus are ordered
   # by decreasing prior
