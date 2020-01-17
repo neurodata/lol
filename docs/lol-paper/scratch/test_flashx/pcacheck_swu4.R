@@ -43,7 +43,7 @@ res <- mclapply(1:length(fnames), function(i) {
   gc()
   return(c(X))
 }, mc.cores=mc.cores/2)
-
+toc <- Sys.time()
 runtime.mtx <- toc - tic
 gc()
 D <- fm.as.matrix(do.call(rbind, res))
@@ -57,54 +57,33 @@ Y.train <- Y[train.idx]; Y.test <- Y[test.idx]
 
 algs <- list(pca=flashx.pca, lol=flashx.lol, lrlda=flashx.lrlda, cca=flashx.lrcca, rp=flashx.rp)
 
-res <- lapply(1:length(algs), function(i) {
+res <- mclapply(1:length(algs), function(i) {
   print(i)
   alg <- algs[[i]]
   tic <- Sys.time()
-  res <- do.call(alg, list(X=D.train, Y=Y.train, r=91))
-  toc <- Sys.time()
-  res.in <- lapply(c(10, 30, 50, 70, 90), function(r) {
+  res <- do.call(alg, list(X=D.train, Y=Y.train, r=90))
+
+  op <- (list(X.train=res$Xr, X.test=flashx.embed(D.test, res$A)))
+  xv.res <- lapply(seq(c(10, 30, 50, 70, 90)), function(r) {
     tryCatch({
-      return(list(X.train=flashx.embed(D.train, fm.get.cols(res$A, 1:r)),
-                  X.test=flashx.embed(D.test, fm.get.cols(res$A, 1:r))))
-    }, error=function(e) {return(NULL)})
-  })
-  return(list(xv=res.in, time=toc - tic))
-})
-names(res) <- names(algs)
-
-saveRDS(list(result=res, Y.train=Y.train, Y.test=Y.test), '/brains/swu4_mini.rds')
-
-
-## Classification
-require(randomForest)
-require(lolR)
-require(parallel)
-require(FlashR)
-require(MASS)
-
-classifier.algs <- list(RF=randomForest, LDA=lda)
-results <- readRDS('/brains/swu4_mini.rds')
-lapply(names(results), function(alg.name) {
-  xv.alg <- results[[alg.name]]
-  lapply(xv.alg, function(xv.alg.r) {
-    if (!is.null(xv.alg.r)) {
-      d <- ncol(xv.alg.r$X.train)
+      X.train <- op$X.train[,1:r]; X.test <- op$X.test[,1:r]
       return(lapply(names(classifier.algs), function(class.name) {
         class.alg <- classifier.algs[[class.name]]
-        trained.classifier <- do.call(class.alg, list(xv.alg.r$X.train, as.factor(xv.alg$Y.train)))
-        Y.hat <- predict(trained.classifier, xv.alg$Y.test)
+        trained.classifier <- do.call(class.alg, list(X.train, as.factor(Y.train)))
+        Y.hat <- predict(trained.classifier, Y.test)
         if (class.name == "LDA") {
           Y.hat <- Y.hat$class
         }
-        acc <- mean(Y.hat == xv.alg$Y.test)
-        return(data.frame(Algorithm=alg.name, Classifier=class.name, Accuracy=acc, r=d))
+        acc <- mean(Y.hat == Y.test)
+        return(data.frame(Algorithm=names(algs)[i], Classifier=class.name, Accuracy=acc, r=r))
       }) %>%
         bind_rows())
-    } else {
-      return(NULL)
-    }
+    }, error=function(e) {return(NULL)})
   }) %>%
     bind_rows()
-}) %>%
-  bind_rows()
+  toc <- Sys.time()
+  saveRDS(list(xv=op, xv=xv.res, time=toc - tic), paste0('/brains/swu4_mini_', names(algs)[i], '.rds'))
+}, mc.cores=length(algs))
+names(res) <- names(algs)
+
+saveRDS(list(result=res, Y.train=Y.train, Y.test=Y.test), '/brains/swu4_mini.rds')
