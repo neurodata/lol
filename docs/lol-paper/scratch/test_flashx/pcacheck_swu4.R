@@ -1,11 +1,12 @@
 ## Projection Analysis
-
 require(oro.nifti)
 require(ramify)
 require(parallel)
-require(tidyverse)
 require(profmem)
 require(FlashR)
+require(MASS)
+require(dplyr)
+source('flashLol.R')
 
 mc.cores <- detectCores()
 fnames <- list.files('/brains/brains')
@@ -55,35 +56,37 @@ test.idx <- (1:length(Y))[-train.idx]
 D.train <- fm.get.rows(D, train.idx); D.test <- fm.get.rows(D, test.idx)
 Y.train <- Y[train.idx]; Y.test <- Y[test.idx]
 
-algs <- list(pca=flashx.pca, lol=flashx.lol, lrlda=flashx.lrlda, cca=flashx.lrcca, rp=flashx.rp)
+proj.algs <- list(PCA=flashx.pca, LOL=flashx.lol, LDA=flashx.lrlda, RP=flashx.rp, CCA=flashx.lrcca)
+classifier.algs <- list(LDA=lda, RF=randomForest)
 
-res <- mclapply(1:length(algs), function(i) {
-  print(i)
-  alg <- algs[[i]]
+res <- lapply(names(proj.algs), function(proj.name) {
+  proj.alg <- proj.algs[[proj.name]]
   tic <- Sys.time()
-  res <- do.call(alg, list(X=D.train, Y=Y.train, r=90))
+  res <- do.call(proj.alg, list(X=D.train, Y=Y.train, r=90))
 
   op <- (list(X.train=res$Xr, X.test=flashx.embed(D.test, res$A)))
-  xv.res <- lapply(seq(c(10, 30, 50, 70, 90)), function(r) {
-    tryCatch({
-      X.train <- op$X.train[,1:r]; X.test <- op$X.test[,1:r]
-      return(lapply(names(classifier.algs), function(class.name) {
+  xv.res <- lapply(c(10, 30, 50, 70, 90), function(r) {
+    X.train <- op$X.train[,1:r]; X.test <- op$X.test[,1:r]
+    return(lapply(names(classifier.algs), function(class.name) {
+      tryCatch({
         class.alg <- classifier.algs[[class.name]]
         trained.classifier <- do.call(class.alg, list(X.train, as.factor(Y.train)))
-        Y.hat <- predict(trained.classifier, Y.test)
+        Y.hat <- predict(trained.classifier, X.test)
         if (class.name == "LDA") {
           Y.hat <- Y.hat$class
         }
         acc <- mean(Y.hat == Y.test)
-        return(data.frame(Algorithm=names(algs)[i], Classifier=class.name, Accuracy=acc, r=r))
-      }) %>%
-        bind_rows())
-    }, error=function(e) {return(NULL)})
+        return(data.frame(Dataset=dataset, Algorithm=proj.name, Classifier=class.name,
+                          Accuracy=acc, Misclassification=1-acc, r=r))},
+        error=function(e) {return(NULL)})
+    }) %>%
+      bind_rows())
   }) %>%
     bind_rows()
   toc <- Sys.time()
-  saveRDS(list(xv=op, xv=xv.res, time=toc - tic), paste0('/brains/swu4_mini_', names(algs)[i], '.rds'))
-}, mc.cores=length(algs))
-names(res) <- names(algs)
+  saveRDS(list(xv=xv.res, time=toc - tic), sprintf('/brains/%s_flashlol_%s.rds', dataset, proj.name))
+})
+names(res) <- names(proj.algs)
 
-saveRDS(list(result=res, Y.train=Y.train, Y.test=Y.test), '/brains/swu4_mini.rds')
+saveRDS(list(result=res, Y.train=Y.train, Y.test=Y.test), sprintf('/brains/%s_flashlol.rds'))
+

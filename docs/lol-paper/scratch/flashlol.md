@@ -13,6 +13,7 @@ ssh -i /path/to/pemkey ubuntu@<ip>
 2. Download FlashLOL docker:
 
 ```
+Dataset="SWU4"
 docker pull ericw95/flashlol:0.0.1
 ```
 
@@ -21,22 +22,22 @@ docker pull ericw95/flashlol:0.0.1
 ```
 # format drives
 sudo mkfs.ext3 /dev/xvdb
-sudo mkfs.ext3 /dev/xvdc
 
 # mount drives
 sudo mkdir -p /mnt/ssd1
-sudo mkdir -p /mnt/ssd2
 
 sudo mount /dev/xvdb /mnt/ssd1
-sudo mount /dev/xvdc /mnt/ssd2
+
+sudo mkdir -p /mnt/ssd1/dwi
 ```
 
-4. Download SWU4 data and make available:
+4. Download Data data and make available:
 
 ```
 screen -R
-sudo aws s3 cp --no-sign-request --recursive s3://mrneurodata/data/SWU4/ndmg_0-0-48/reg_dti/ /mnt/ssd1
-chmod -R 777 /mnt/ssd1
+sudo aws s3 cp --no-sign-request --recursive s3://mrneurodata/data/$Dataset/ndmg_0-0-48/reg_dti/ /mnt/ssd1/dwi
+sudo aws s3 cp --no-sign-request --recursive s3://mrneurodata/data/$Dataset/ndmg_0-0-48/reg_dti/ /mnt/ssd1/
+sudo chmod -R 777 /mnt/ssd1
 ```
 
 5. Clone repo:
@@ -51,13 +52,6 @@ git clone https://github.com/neurodata/lol.git
 
 ```
 docker run -ti --entrypoint /bin/bash -v /home/ubuntu/Documents/lol:/lol -v /mnt/ssd1:/brains ericw95/flashlol:0.0.1
-```
-
-7. Start memory logging:
-
-```
-cd /lol/docs/lol-paper/scratch
-nohup ./memlog.sh > mem.txt &
 ```
 
 8. Run scripts:

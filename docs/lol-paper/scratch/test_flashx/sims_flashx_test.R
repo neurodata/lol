@@ -11,7 +11,7 @@ cig.pca <- flashx.pca(X=X.cig, Y=Y.cig, r=2)
 cig.lol <- flashx.lol(X=X.cig, Y=Y.cig, r=2)
 cig.lrlda <- flashx.lrlda(X=X.cig, Y=Y.cig, r=2)
 cig.cca <- flashx.lrcca(X=X.cig, Y=Y.cig, r=2)
-cig.rp <- flashx.rp(X=X.hcig, Y=Y.hcig, r=2)
+cig.rp <- flashx.rp(X=X.cig, Y=Y.cig, r=2)
 cig.out <- list(sim=list(X=as.matrix(X.cig), Y=Y.cig), pca=cig.pca, lol=cig.lol,
                  lrlda=cig.lrlda, cca=cig.cca, rp=cig.rp)
 
