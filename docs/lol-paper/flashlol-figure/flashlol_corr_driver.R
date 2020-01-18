@@ -10,26 +10,37 @@ require(profmem)
 require(FlashR)
 require(MASS)
 require(dplyr)
+require(plyr)
+require(randomForest)
 source('flashLol.R')
 
 #----------------------
 ## Prepare Data
 #----------------------
-dataset <- "SWU4"
+dataset <- "Templeton114"
 n.folds <- 10
 mc.cores <- detectCores()
 fnames <- list.files('/brains/dwi')
 fnames <- fnames[fnames != "lost+found"]
 
 # strip the subject ids from the file names
-subids <- as.integer(sapply(strsplit(fnames, "-|_"), function(r) r[2]))
+subids <- sapply(strsplit(fnames, "-|_"), function(r) r[2])
+if (dataset == "Templeton114") {
+  subids <- as.character(subids)
+} else {
+  subids <- as.numeric(subids)
+}
 
 # read the phenotypic data
 pheno.dat <- read.csv(sprintf('/brains/%s.csv', dataset))
-pheno.dat$AGE_AT_SCAN_1 <- as.numeric(as.character(pheno.dat$AGE_AT_SCAN_1))
+if (dataset == "Templeton114") {
+  pheno.dat <- pheno.dat %>%
+    rename(c("URSI"="SUBID", "Sex"="SEX"))
+}
 # remove duplicate rows which contain invalid entries
-pheno.dat <- pheno.dat[!duplicated(pheno.dat$SUBID),]
-pheno.dat <- pheno.dat[, c("SUBID", "SEX")]
+pheno.dat <- pheno.dat %>%
+  filter(!duplicated(pheno.dat$SUBID)) %>%
+  select(SUBID, SEX)
 
 # compute the subject ids that have a phenotypic label in case
 # there are subjects lacking phenotypic information
@@ -50,7 +61,7 @@ if (length(retain.idx) > 0) {
   fnames <- fnames[-retain.idx]
 }
 # response of interest is sex
-Y <- pheno.dat$SEX[matched.idx]
+Y <- pheno.dat$SEX[as.numeric(unlist(matched.idx))]
 
 mask <- readNIfTI("/data/MNI152_T1_1mm_brain_mask.nii.gz")
 ndim <- prod(dim(mask))
@@ -91,10 +102,10 @@ xv.res <- lapply(1:n.folds, function(j) {
     proj.alg <- proj.algs[[proj.name]]
 
     # project using strategy proj.name
-    proj.res <- do.call(proj.alg, list(X=D.train, Y=Y.train, r=100))
+    proj.res <- do.call(proj.alg, list(X=D.train, Y=Y.train, r=min(length(Y.train), 100)))
     # store the training and testing projections
     op <- (list(X.train=as.matrix(proj.res$Xr), X.test=flashx.embed(D.test, proj.res$A)))
-    lapply(seq(1, 100, 10), function(r) {
+    lapply(seq(1, min(length(Y.train), 100), 10), function(r) {
       # grab the top r columns
       X.train <- op$X.train[,1:r, drop=FALSE]; X.test <- op$X.test[,1:r, drop=FALSE]
       lapply(names(classifier.algs), function(class.name) {
@@ -125,7 +136,7 @@ xv.res <- lapply(1:n.folds, function(j) {
 }) %>%
   bind_rows()
 
-saveRDS(list(result=xv.res, k.folds=k.folds, Y=Y), sprintf('/brains/%s_flashlol.rds', dataset))
+saveRDS(list(result=xv.res, k.folds=k.folds, Y=Y), sprintf('/brains/Dataset-%s_flashlol.rds', dataset))
 
 proj.algs <- list(CCA=flashx.lrcca)
 #----------------------
@@ -141,10 +152,10 @@ xv.res2 <- lapply(1:n.folds, function(j) {
     proj.alg <- proj.algs[[proj.name]]
 
     # project using strategy proj.name
-    proj.res <- do.call(proj.alg, list(X=D.train, Y=Y.train, r=100))
+    proj.res <- do.call(proj.alg, list(X=D.train, Y=Y.train, r=min(length(Y.train), 100)))
     # store the training and testing projections
-    op <- (list(X.train=proj.res$Xr, X.test=flashx.embed(D.test, proj.res$A)))
-    lapply(seq(1, 100, 10), function(r) {
+    op <- (list(X.train=as.matrix(proj.res$Xr), X.test=flashx.embed(D.test, proj.res$A)))
+    lapply(seq(1, min(length(Y.train), 100), 10), function(r) {
       # grab the top r columns
       X.train <- op$X.train[,1:r, drop=FALSE]; X.test <- op$X.test[,1:r, drop=FALSE]
       lapply(names(classifier.algs), function(class.name) {
@@ -168,10 +179,10 @@ xv.res2 <- lapply(1:n.folds, function(j) {
       bind_rows()
   }) %>%
     bind_rows()
-  saveRDS(list(xv=xv.res.fold), sprintf('/brains/Dataset-%s_flashlol_fold-%s.rds', dataset, j))
+  saveRDS(list(xv=xv.res.fold), sprintf('/brains/Dataset-%s_flashlol_fold-%s_cca.rds', dataset, j))
   return(xv.res.fold)
 }) %>%
   bind_rows()
 
-saveRDS(list(result=xv.res, k.folds=k.folds, Y=Y), sprintf('/brains/%s_flashlol2.rds', dataset))
+saveRDS(list(result=xv.res, k.folds=k.folds, Y=Y), sprintf('/brains/%s_flashlol_cca.rds', dataset))
 
