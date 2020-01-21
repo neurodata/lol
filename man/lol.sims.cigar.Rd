@@ -4,8 +4,7 @@
 \alias{lol.sims.cigar}
 \title{Stacked Cigar}
 \usage{
-lol.sims.cigar(n, d, rotate = FALSE, priors = NULL, a = 0.15,
-  b = 4)
+lol.sims.cigar(n, d, rotate = FALSE, priors = NULL, a = 0.15, b = 4)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}

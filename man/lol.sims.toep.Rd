@@ -4,8 +4,7 @@
 \alias{lol.sims.toep}
 \title{Toeplitz Simulation}
 \usage{
-lol.sims.toep(n, d, rotate = FALSE, priors = NULL, D1 = 10,
-  b = 0.4, rho = 0.5)
+lol.sims.toep(n, d, rotate = FALSE, priors = NULL, D1 = 10, b = 0.4, rho = 0.5)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}

@@ -533,7 +533,7 @@ lol.sims.cigar <- function(n, d, rotate=FALSE, priors=NULL, a=0.15, b=4) {
   S <- diag(d)
   S[2,2] <- b
 
-  S <- abind(diag(d), S, along=3)
+  S <- abind(S, S, along=3)
 
   if (rotate) {
     res <- lol.sims.random_rotate(mus, S)

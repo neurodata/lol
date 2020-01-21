@@ -73,7 +73,7 @@ lol.project.lol <- function(X, Y, r, second.moment.xfm=FALSE, second.moment.xfm.
   }
 
   if (first.moment == "delta") {
-    first.moment.proj <- lol.utils.deltas(centroids, priors)[, 2:K, drop=FALSE]
+    first.moment.proj <- lol.utils.deltas(centroids, priors)
   } else {
     first.moment.proj <- array(0, dim=c(d, 0))
   }

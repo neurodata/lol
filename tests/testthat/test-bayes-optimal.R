@@ -13,8 +13,8 @@ run_data_test <- function(data, alg, r=NULL, sep=TRUE, piled=FALSE, p=.05){
       classifier.return = "class"
     }
     # run cross-validation with 10-fold validation
-    class <- do.call(classifier.alg, list(embed$Xr, dat$Y))
-    pred <- predict(class, embed$Xr)
+    class <- do.call(classifier.alg, list(embed$Xr[,1,drop=FALSE], dat$Y))
+    pred <- predict(class, embed$Xr[,1,drop=FALSE])
     lhat <- sum(pred$class != dat$Y)/length(dat$Y)
     if (!isTRUE(piled)) {
       # check that the embedding works

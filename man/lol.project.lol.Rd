@@ -4,10 +4,18 @@
 \alias{lol.project.lol}
 \title{Linear Optimal Low-Rank Projection (LOL)}
 \usage{
-lol.project.lol(X, Y, r, second.moment.xfm = FALSE,
-  second.moment.xfm.opts = list(), first.moment = "delta",
-  second.moment = "linear", orthogonalize = FALSE, robust = FALSE,
-  ...)
+lol.project.lol(
+  X,
+  Y,
+  r,
+  second.moment.xfm = FALSE,
+  second.moment.xfm.opts = list(),
+  first.moment = "delta",
+  second.moment = "linear",
+  orthogonalize = FALSE,
+  robust = FALSE,
+  ...
+)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}

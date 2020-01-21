@@ -4,8 +4,7 @@
 \alias{lol.sims.cross}
 \title{Cross}
 \usage{
-lol.sims.cross(n, d, rotate = FALSE, priors = NULL, a = 1,
-  b = 0.25, K = 2)
+lol.sims.cross(n, d, rotate = FALSE, priors = NULL, a = 1, b = 0.25, K = 2)
 }
 \arguments{
 \item{n}{the number of samples of simulated data.}

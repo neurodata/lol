@@ -4,8 +4,7 @@
 \alias{lol.project.pca}
 \title{Principal Component Analysis (PCA)}
 \usage{
-lol.project.pca(X, r, xfm = FALSE, xfm.opts = list(), robust = FALSE,
-  ...)
+lol.project.pca(X, r, xfm = FALSE, xfm.opts = list(), robust = FALSE, ...)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}

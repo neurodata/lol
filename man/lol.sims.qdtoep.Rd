@@ -4,8 +4,15 @@
 \alias{lol.sims.qdtoep}
 \title{Quadratic Discriminant Toeplitz Simulation}
 \usage{
-lol.sims.qdtoep(n, d, rotate = FALSE, priors = NULL, D1 = 10,
-  b = 0.4, rho = 0.5)
+lol.sims.qdtoep(
+  n,
+  d,
+  rotate = FALSE,
+  priors = NULL,
+  D1 = 10,
+  b = 0.4,
+  rho = 0.5
+)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}

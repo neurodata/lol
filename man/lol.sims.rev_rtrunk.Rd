@@ -4,9 +4,17 @@
 \alias{lol.sims.rev_rtrunk}
 \title{Reverse Random Trunk}
 \usage{
-lol.sims.rev_rtrunk(n, d, robust = FALSE, rotate = FALSE,
-  priors = NULL, b = 4, K = 2, maxvar = b^3,
-  maxvar.outlier = maxvar^3)
+lol.sims.rev_rtrunk(
+  n,
+  d,
+  robust = FALSE,
+  rotate = FALSE,
+  priors = NULL,
+  b = 4,
+  K = 2,
+  maxvar = b^3,
+  maxvar.outlier = maxvar^3
+)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}

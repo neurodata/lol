@@ -4,8 +4,7 @@
 \alias{lol.project.lrlda}
 \title{Low-Rank Linear Discriminant Analysis (LRLDA)}
 \usage{
-lol.project.lrlda(X, Y, r, xfm = FALSE, xfm.opts = list(),
-  robust = FALSE, ...)
+lol.project.lrlda(X, Y, r, xfm = FALSE, xfm.opts = list(), robust = FALSE, ...)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}

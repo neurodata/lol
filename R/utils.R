@@ -37,12 +37,11 @@ lol.utils.deltas <- function(centroids, priors, ...) {
   # by decreasing prior
   deltas <- array(0, dim=c(d, K))
   srt_prior <- sort(priors, decreasing=TRUE, index.return=TRUE)$ix
-  gr_mix <- srt_prior[1]
-  deltas[,1] <- centroids[,gr_mix]
+  deltas[,1] <- centroids[,srt_prior[1]]
   for (i in 2:K) {
-    deltas[,(i)] <- centroids[,srt_prior[i]] - deltas[,1]
+    deltas[,i] <- deltas[,1] - centroids[,srt_prior[2]]
   }
-  return(deltas)
+  return(deltas[,2:K,drop=FALSE])
 }
 
 #' A function for one-hot encoding categorical respose vectors.

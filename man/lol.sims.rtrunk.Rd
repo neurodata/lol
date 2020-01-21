@@ -4,8 +4,15 @@
 \alias{lol.sims.rtrunk}
 \title{Random Trunk}
 \usage{
-lol.sims.rtrunk(n, d, rotate = FALSE, priors = NULL, b = 4, K = 2,
-  maxvar = 100)
+lol.sims.rtrunk(
+  n,
+  d,
+  rotate = FALSE,
+  priors = NULL,
+  b = 4,
+  K = 2,
+  maxvar = 100
+)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}

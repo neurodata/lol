@@ -41,7 +41,7 @@ lol.project.dp <- function(X, Y, ...) {
 
   Q <- diag(d) - Xcc %*% ginv(Xcc)
 
-  A <- qr.Q(qr(Q %*% (deltas[, 2:dim(deltas)[2], drop=FALSE])))
+  A <- qr.Q(qr(Q %*% (deltas)))
   return(list(A=A, centroids=centroids, priors=priors, ylabs=ylabs,
               Xr=lol.embed(X, A), cr=lol.embed(centroids, A)))
 }

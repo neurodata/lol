@@ -4,10 +4,23 @@
 \alias{lol.xval.optimal_dimselect}
 \title{Optimal Cross-Validated Number of Embedding Dimensions}
 \usage{
-lol.xval.optimal_dimselect(X, Y, rs, alg, sets = NULL,
-  alg.dimname = "r", alg.opts = list(), alg.embedding = "A",
-  alg.structured = TRUE, classifier = lda, classifier.opts = list(),
-  classifier.return = "class", k = "loo", rank.low = FALSE, ...)
+lol.xval.optimal_dimselect(
+  X,
+  Y,
+  rs,
+  alg,
+  sets = NULL,
+  alg.dimname = "r",
+  alg.opts = list(),
+  alg.embedding = "A",
+  alg.structured = TRUE,
+  classifier = lda,
+  classifier.opts = list(),
+  classifier.return = "class",
+  k = "loo",
+  rank.low = FALSE,
+  ...
+)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}

@@ -4,8 +4,17 @@
 \alias{lol.sims.mean_diff}
 \title{Mean Difference Simulation}
 \usage{
-lol.sims.mean_diff(n, d, rotate = FALSE, priors = NULL, K = 2,
-  md = 1, subset = c(1), offdiag = 0, s = 1)
+lol.sims.mean_diff(
+  n,
+  d,
+  rotate = FALSE,
+  priors = NULL,
+  K = 2,
+  md = 1,
+  subset = c(1),
+  offdiag = 0,
+  s = 1
+)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}

@@ -4,10 +4,22 @@
 \alias{lol.xval.eval}
 \title{Embedding Cross Validation}
 \usage{
-lol.xval.eval(X, Y, r, alg, sets = NULL, alg.dimname = "r",
-  alg.opts = list(), alg.embedding = "A", classifier = lda,
-  classifier.opts = list(), classifier.return = "class", k = "loo",
-  rank.low = FALSE, ...)
+lol.xval.eval(
+  X,
+  Y,
+  r,
+  alg,
+  sets = NULL,
+  alg.dimname = "r",
+  alg.opts = list(),
+  alg.embedding = "A",
+  classifier = lda,
+  classifier.opts = list(),
+  classifier.return = "class",
+  k = "loo",
+  rank.low = FALSE,
+  ...
+)
 }
 \arguments{
 \item{X}{\code{[n, d]} the data with \code{n} samples in \code{d} dimensions.}
