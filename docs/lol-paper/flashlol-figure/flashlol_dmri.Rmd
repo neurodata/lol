@@ -1,0 +1,140 @@
+---
+title: "FlashLOL dMRI Dataset"
+author: "Eric Bridgeford"
+date: "January 19, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, messages=FALSE}
+require(tidyverse)
+require(ggplot2)
+require(tie)
+require(janitor)
+
+compute_cutoff <- function(rs, lhats, t=0) {
+  rs <- rs[complete.cases(lhats) & complete.cases(rs)]; lhats <- lhats[complete.cases(lhats) & complete.cases(rs)]
+  sr.ix <- sort(rs, decreasing=FALSE, index.return=TRUE)$ix
+  # compute minimum value
+  min.lhat <- min(lhats)
+  # compute minimum value + 5%
+  lhat.thresh <- (1 + t)*min.lhat
+  # find which indices are all below this
+  lhat.below <- which(lhats <= lhat.thresh)
+  rs.below <- rs[lhat.below]; lhats.below <- lhats[lhat.below]
+  tmin.ix <- min(rs.below, index.return=TRUE)
+  return(list(r.star=rs.below[tmin.ix], Er.Rt.Star=lhats.below[tmin.ix]))
+}
+```
+
+# Data Loading
+
+```{r}
+flashlol.dat <- readRDS('../data/flashlol/flashlol.rds') %>%
+  dplyr::rename(Er.Rt=Misclassification) %>%
+  dplyr::filter(Classifier == "LDA")
+flashlol.rc <- readRDS('../data/flashlol/chance.rds')
+# compute rstar and Lhatstar as the minimal dimension within
+# 5% of the minimum misclassification rate
+flashlol.dat.star <- flashlol.dat %>%
+  dplyr::group_by(Algorithm, Classifier, Fold, Dataset, n) %>%
+  bow(tie(r.star, Er.Rt.star) := compute_cutoff(r, Er.Rt, t=.05))
+
+# horizontally merge the rstar, Lhatstar from LOL
+# and the misclassification rate from random chance
+flashlol.dat.prep <- flashlol.dat.star %>%
+  dplyr::inner_join(flashlol.dat.star %>%
+                      dplyr::filter(Algorithm == "LOL") %>%
+                      ungroup() %>%
+                      dplyr::rename(LOL.r.star=r.star, LOL.Er.Rt.star=Er.Rt.star) %>%
+                      dplyr::select(-c(Algorithm,Classifier)),
+                    by=c("Fold", "Dataset", "n")) %>%
+  dplyr::inner_join(flashlol.rc %>%
+                      dplyr::rename(RC.Er.Rt=Er.Rt) %>%
+                      dplyr::select(-c(Classifier, Accuracy, n)),
+                    by=c("Fold", "Dataset")) %>%
+  # normalize
+  mutate(r.star.norm=(LOL.r.star-r.star)/pmin(n, 100), 
+         Lhat.star.norm=(LOL.Er.Rt.star-Er.Rt.star)/RC.Er.Rt) %>%
+  # for each (Algorithm, Dataset) compute the mean normalized rstar, error rate
+  # over folds
+  dplyr::group_by(Algorithm, Dataset, n) %>%
+  dplyr::summarize(r.star=mean(r.star.norm), Er.Rt.star=mean(Lhat.star.norm))
+```
+
+```{r}
+algs <-  c("LOL", "PLS", "CCA", "LDA", "PCA", "RP")
+acols <- c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628")
+linestyle <- c("solid", "dotted", "solid","dotted", "solid", "solid")
+names(linestyle) <- algs
+names(algs) <- acols
+names(acols) <- algs
+#shapes <- c(21, 24, 21, 24, 23, 23, 21, 24, 23)
+shapes <- c(21, 24, 21, 22, 21, 23)
+names(shapes) <- algs
+
+# flashlol.dat.prep <- flashlol.dat.prep %>%
+#   mutate(Algorithm=recode_factor(Algorithm, "LDA"="LRLDA"))
+
+realdat.scatter <- function(data, xlims=c(-1, 1), ylims=c(-.35, .35), plot.title="(A) Performance on Neuroimaging Datasets, p>100m", 
+                             xl="Relative # Embedding Dimensions", yl="Relative Error", leg.title="Algorithm",
+                             legend.style=guide_legend(ncol=2, byrow=TRUE)) {
+  data <- data %>% mutate(Dataset=factor(Dataset), Algorithm=factor(Algorithm))
+  box <- data.frame(x=c(min(xlims), mean(xlims), mean(xlims), min(xlims)),
+                    y=c(min(ylims), min(ylims), mean(ylims), mean(ylims)))
+  data.medians <- data %>%
+    dplyr::group_by(Algorithm) %>%
+    dplyr::summarize(r.star=median(r.star), Er.Rt.star=median(Er.Rt.star))
+  # table results
+  tab <- data %>%
+    dplyr::filter(Algorithm != "LOL") %>%
+    dplyr::group_by(Algorithm) %>%
+    dplyr::summarize(Q1=sum(r.star > 0 & Er.Rt.star > 0, na.rm=TRUE) + 
+                       0.5*sum((r.star > 0 & Er.Rt.star == 0 | Er.Rt.star > 0 & r.star == 0), na.rm=TRUE) + 
+                       .25*sum(r.star == 0 & Er.Rt.star == 0, na.rm=TRUE),
+              Q2=sum(r.star < 0 & Er.Rt.star > 0, na.rm=TRUE) + 
+                0.5*sum((r.star < 0 & Er.Rt.star == 0 | Er.Rt.star > 0 & r.star == 0), na.rm=TRUE) + 
+                .25*sum(r.star == 0 & Er.Rt.star == 0, na.rm=TRUE), 
+              Q3=sum(r.star < 0 & Er.Rt.star < 0, na.rm=TRUE) + 
+                0.5*sum((r.star < 0 & Er.Rt.star == 0 | Er.Rt.star < 0 & r.star == 0), na.rm=TRUE) + 
+                .25*sum(r.star == 0 & Er.Rt.star == 0, na.rm=TRUE),
+              Q4=sum(r.star > 0 & Er.Rt.star < 0, na.rm=TRUE) + 
+                0.5*sum((r.star > 0 & Er.Rt.star == 0 | Er.Rt.star < 0 & r.star == 0), na.rm=TRUE)+ 
+                .25*sum(r.star == 0 & Er.Rt.star == 0, na.rm=TRUE),
+              `Q3+Q4`=Q3+Q4,
+              `n`=sum(Q1 + Q2 + Q3 + Q4)) %>%
+    adorn_totals("row")
+  print(tab)
+  per.tab <- tab %>%
+    dplyr::mutate_if(is.numeric, funs(./n)) %>%
+    dplyr::select(-n)
+  print(per.tab)
+    
+  center <- ggplot(data, aes(x=r.star, y=Er.Rt.star)) +
+    geom_polygon(data=box, aes(x=x, y=y), fill='green', alpha=0.15) +
+    geom_polygon(data=box, aes(x=-x, y=-y), fill='red', alpha=0.15) +
+    geom_point(aes(x=r.star, y=Er.Rt.star, shape=Algorithm, color=Algorithm, fill=Algorithm), alpha=0.5, size=1.2) +
+    geom_point(data=data.medians, aes(x=r.star, y=Er.Rt.star, shape=Algorithm, color=Algorithm, fill=Algorithm), alpha=1.0, size=2.5) +
+    scale_fill_manual(values=acols, guide=legend.style, name=leg.title) +
+    scale_color_manual(values=acols, guide=legend.style, name=leg.title) +
+    scale_shape_manual(values=shapes, guide=legend.style, name=leg.title) +
+    ylab(yl) +
+    xlab(xl) +
+    labs(shape="Simulation", color="Algorithm") +
+    ggtitle(plot.title) +
+    scale_y_continuous(limits=ylims) +
+    scale_x_continuous(limits=xlims) +
+    theme_bw() +
+    annotate("text", size=4, label="LOL better", color="darkgreen", x=-.5, y=.35) +
+    annotate("text", size=4, label="LOL better", color="darkgreen", x=1.0, y=-.2, angle=-90) +
+    annotate("text", size=4, label="LOL worse", color="red", x=.5, y=.35) +
+    annotate("text", size=4, label="LOL worse", color="red", x=1.0, y=.2, angle=-90)
+  return(center)
+}
+
+realdat.scatter(flashlol.dat.prep)
+
+```

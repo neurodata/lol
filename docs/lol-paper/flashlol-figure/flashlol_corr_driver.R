@@ -17,7 +17,7 @@ source('flashLol.R')
 #----------------------
 ## Prepare Data
 #----------------------
-dataset <- "Templeton114"
+dataset <- "SWU4"
 n.folds <- 10
 mc.cores <- detectCores()
 fnames <- list.files('/brains/dwi')
@@ -25,7 +25,7 @@ fnames <- fnames[fnames != "lost+found"]
 
 # strip the subject ids from the file names
 subids <- sapply(strsplit(fnames, "-|_"), function(r) r[2])
-if (dataset == "Templeton114") {
+if (dataset == "Templeton114" | dataset == "Templeton255" | dataset == "MRN114") {
   subids <- as.character(subids)
 } else {
   subids <- as.numeric(subids)
@@ -33,9 +33,16 @@ if (dataset == "Templeton114") {
 
 # read the phenotypic data
 pheno.dat <- read.csv(sprintf('/brains/%s.csv', dataset))
-if (dataset == "Templeton114") {
+if (dataset == "Templeton114" | dataset == "MRN114") {
   pheno.dat <- pheno.dat %>%
     rename(c("URSI"="SUBID", "Sex"="SEX"))
+} else if (dataset == "KKI2009") {
+  pheno.dat <- pheno.dat %>%
+    rename(c("SubjectID"="SUBID", "Sex"="SEX")) %>%
+    mutate(SEX=recode_factor(SEX, `F`=0, `M`=1))
+} else if (dataset == "Templeton255") {
+  pheno.dat <- pheno.dat %>%
+    rename(c("ursi"="SUBID", ""))
 }
 # remove duplicate rows which contain invalid entries
 pheno.dat <- pheno.dat %>%
@@ -57,6 +64,7 @@ retain.idx <- which(sapply(matched.idx, is.null))
 # remove them if necessary
 if (length(retain.idx) > 0) {
   print("Removing Subjects without a match...")
+  print(retain.idx)
   matched.idx <- matched.idx[-retain.idx]
   fnames <- fnames[-retain.idx]
 }
@@ -137,52 +145,3 @@ xv.res <- lapply(1:n.folds, function(j) {
   bind_rows()
 
 saveRDS(list(result=xv.res, k.folds=k.folds, Y=Y), sprintf('/brains/Dataset-%s_flashlol.rds', dataset))
-
-proj.algs <- list(CCA=flashx.lrcca)
-#----------------------
-## Algorithm Execution
-#----------------------
-xv.res2 <- lapply(1:n.folds, function(j) {
-  # obtain training and testing folds
-  test.idx <- k.folds[[j]]; train.idx <- (1:length(Y))[!(1:length(Y) %in% k.folds[[j]])]
-  D.train <- fm.get.rows(D, train.idx); D.test <- fm.get.rows(D, test.idx)
-  Y.train <- as.integer(Y[train.idx]); Y.test <- as.integer(Y[test.idx])
-  # loop over projection strategies
-  xv.res.fold <- lapply(names(proj.algs), function(proj.name) {
-    proj.alg <- proj.algs[[proj.name]]
-
-    # project using strategy proj.name
-    proj.res <- do.call(proj.alg, list(X=D.train, Y=Y.train, r=min(length(Y.train), 100)))
-    # store the training and testing projections
-    op <- (list(X.train=as.matrix(proj.res$Xr), X.test=flashx.embed(D.test, proj.res$A)))
-    lapply(seq(1, min(length(Y.train), 100), 10), function(r) {
-      # grab the top r columns
-      X.train <- op$X.train[,1:r, drop=FALSE]; X.test <- op$X.test[,1:r, drop=FALSE]
-      lapply(names(classifier.algs), function(class.name) {
-        tryCatch({
-          class.alg <- classifier.algs[[class.name]]
-          # train classifier of interest
-          trained.classifier <- do.call(class.alg, list(X.train, as.factor(Y.train)))
-          Y.hat <- predict(trained.classifier, X.test)  # make predictions
-          if (class.name == "LDA") {
-            Y.hat <- Y.hat$class  # MASS::lda puts the class labels in this attribute
-          }
-          # compute accuracy
-          acc <- mean(Y.hat == Y.test)
-          # return as a data frame
-          return(data.frame(Dataset=dataset, Algorithm=proj.name, Classifier=class.name,
-                            Accuracy=acc, Misclassification=1-acc, r=r, Fold=j))},
-          error=function(e) {print(e); return(NULL)})
-      }) %>%
-        bind_rows()
-    }) %>%
-      bind_rows()
-  }) %>%
-    bind_rows()
-  saveRDS(list(xv=xv.res.fold), sprintf('/brains/Dataset-%s_flashlol_fold-%s_cca.rds', dataset, j))
-  return(xv.res.fold)
-}) %>%
-  bind_rows()
-
-saveRDS(list(result=xv.res, k.folds=k.folds, Y=Y), sprintf('/brains/%s_flashlol_cca.rds', dataset))
-
