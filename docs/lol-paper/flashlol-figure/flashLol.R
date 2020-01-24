@@ -68,7 +68,7 @@ flashx.deltas <- function(centroids, priors) {
     deltas[[i-1]] <- fm.get.rows(centroids, str_prior[1]) - fm.get.rows(centroids, str_prior[i])
   }
   if (length(deltas) > 1) {
-    deltas <- fm.cbind.list(deltas)
+    deltas <- fm.rbind.list(deltas)
   } else {
     deltas <- deltas[[1]]
   }
