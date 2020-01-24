@@ -52,8 +52,7 @@ for (i in 1:length(dset.names)) {
   }, error = function(e) NaN)
 }
 
-classifier.algs <- c(lol.classify.randomGuess, MASS::lda, randomForest::randomForest)
-names(classifier.algs) <- c("RandomGuess", "LDA", "RF")
+classifier.algs <- list(RC=lol.classify.randomChance, LDA=MASS::lda, RF=randomForest::randomForest)
 
 # Setup Algorithms
 #=========================#
@@ -63,13 +62,8 @@ opath <- './data/real_data/'
 dir.create(opath)
 opath <- paste('./data/real_data/', classifier.name, '/', sep="")
 dir.create(opath)
-clusterExport(cl, "data"); clusterExport(cl, "rlen")
-clusterExport(cl, "experiments"); clusterExport(cl, "opath")
-clusterExport(cl, "classifier.alg"); clusterExport(cl, "classifier.return")
-clusterExport(cl, "classifier.name"); clusterExport(cl, "algs")
-clusterExport(cl, "classifier.algs")
-results <- parLapply(cl, data, function(dat) {
-  require(lolR)
+
+results <- mclapply(data, function(dat) {
   log.seq <- function(from=0, to=30, length=rlen) {
     round(exp(seq(from=log(from), to=log(to), length.out=length)))
   }
@@ -83,7 +77,7 @@ results <- parLapply(cl, data, function(dat) {
 
   for (i in 1:length(algs)) {
     classifier.ret <- classifier.return
-    if (classifier.name == "lda") {
+    if (classifier.name == "LDA") {
       classifier.ret = "class"
       classifier.alg = MASS::lda
       if (names(algs)[i] == "QOQ") {
@@ -122,10 +116,9 @@ results <- parLapply(cl, data, function(dat) {
 
   saveRDS(results, file=paste(opath, dat$exp, '.rds', sep=""))
   return(results)
-})
+}, mc.cores=no_cores)
 resultso <- do.call(rbind, results)
 saveRDS(resultso, file.path(opath, paste(classifier.name, '_uci_results.rds', sep="")))
-stopCluster(cl)
 
 
 classifier.name <- "lda"
