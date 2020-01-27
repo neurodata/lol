@@ -38,7 +38,7 @@ lol.dat <- readRDS('../data/flashlol/flashlol.rds') %>%
 lol.rc <- readRDS('../data/flashlol/chance.rds')
 
 lol.dat <- lol.dat %>%
-  dplyr::mutate(Algorithm=factor(Algorithm, ordered=TRUE, levels=c("CCA", "RP", "LDA", "PLS", "PCA", "LOL")))
+  dplyr::mutate(Algorithm=factor(Algorithm, ordered=TRUE, levels=c("LDA", "RP", "PCA", "LOL")))
 
 # horizontally merge the rstar, Lhatstar from LOL
 # and the misclassification rate from random chance
@@ -54,13 +54,13 @@ lol.dat.prep <- lol.dat %>%
                       dplyr::select(Dataset, Fold, RC.Er.Rt),
                     by=c("Fold", "Dataset")) %>%
   # normalize
-  mutate(Kappa=(Er.Rt - RC.Er.Rt)/(1 - RC.Er.Rt), Kappa.REF=(REF.Er.Rt - RC.Er.Rt)/(1 - RC.Er.Rt)) %>%
+  mutate(Kappa=(RC.Er.Rt -Er.Rt)/(RC.Er.Rt), Kappa.REF=(RC.Er.Rt - REF.Er.Rt)/(RC.Er.Rt)) %>%
   # for each (Algorithm, Dataset) compute the mean normalized rstar, error rate
   # over folds
   dplyr::group_by(Algorithm, Dataset, n) %>%
-  dplyr::summarize(Kappa.dif=mean(Kappa - Kappa.REF), Kappa=mean(Kappa), Er.Rt=mean(Er.Rt)) %>%
+  dplyr::summarize(Kappa.dif=mean(Kappa.REF - Kappa), Kappa=mean(Kappa), Er.Rt=mean(Er.Rt)) %>%
   dplyr::group_by(Dataset) %>%
-  dplyr::mutate(Rank=rank(Kappa, ties.method="average")) %>%
+  dplyr::mutate(Rank=rank(-Kappa, ties.method="average")) %>%
   dplyr::mutate(Rank=factor(Rank, ordered=TRUE, levels=sort(unique(Rank))))
 ```
 
@@ -81,13 +81,13 @@ kappa.scatter <- function(data, title="") {
     ggplot(aes(x=Algorithm, y=Kappa.dif, color=Algorithm)) +
       geom_quasirandom() +
       xlab(sprintf("Algorithm Compared to %s", ref.alg)) +
-      ylab("Effect Size (%)") +
+      ylab("Effect Size") +
       theme_bw() +
       scale_color_manual(values=acols) +
       stat_summary(fun.y=mean, geom="point", color="black", size=2, stroke=1.2, shape=4) +
-      annotate("text", size=4, label=sprintf("%s better", ref.alg), color="black", x=5, y=.35) +
-      annotate("text", size=4, label=sprintf("%s worse", ref.alg), color="black", x=5, y=-.35) +
-      scale_y_continuous(limits=c(-0.5, 2)) +
+      annotate("text", size=4, label=sprintf("%s better", ref.alg), color="black", x=3, y=.35) +
+      annotate("text", size=4, label=sprintf("%s worse", ref.alg), color="black", x=3, y=-.35) +
+      scale_y_continuous(limits=c(-0.5, .6)) +
       geom_hline(yintercept=0, linetype="dotted") +
       ggtitle(title) +
       guides(color=FALSE)
@@ -117,15 +117,16 @@ rank.hm <- function(data, title="") {
       scale_x_discrete(expand=c(0, 0)) +
       scale_y_discrete(expand=c(0, 0)) +
       theme_bw() +
-      coord_cartesian(xlim=c(0.5, 6.5), clip="off") +
+      coord_cartesian(xlim=c(0.5, 4.5), clip="off") +
       ggtitle(title) +
-      theme(legend.position="bottom", plot.margin=unit(c(1,4,1,1), "lines")) +
-      geom_text(data=p.vals, aes(x=6.75, y=Algorithm, fill=NULL,
+      theme(legend.position="bottom", plot.margin=unit(c(1,5,1,1), "lines"),
+            legend.key.height=unit(.3, "cm")) +
+      geom_text(data=p.vals, aes(x=4.75, y=Algorithm, fill=NULL,
                                  label=sprintf("%.3f", p.value)), hjust=0) +
-      annotate("text", label="p-value", x=6.75, hjust=0, y="LOL")
+      annotate("text", label="p-value", x=4.75, hjust=0, y="LOL")
 }
 ```
 
 ```{r}
-grid.arrange(kappa.scatter(lol.dat.prep, "(A)"), rank.hm(lol.dat.prep, "(B)"), widths=c(0.6, 0.4), nrow=1)
+grid.arrange(kappa.scatter(lol.dat.prep, "(A)"), rank.hm(lol.dat.prep, "(B)"), widths=c(0.6, 0.48), nrow=1)
 ```
