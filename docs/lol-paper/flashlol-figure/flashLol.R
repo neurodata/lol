@@ -4,7 +4,7 @@ require(abind)
 require(dplyr)
 
 flashx.pca <- function(X, r, ...) {
-  X <- fm.as.matrix(X); Y <- as.vector(Y)
+  X <- fm.as.matrix(X)
   # mean center by the column mean
   d <- dim(X)[2]
   if (r > d) {
