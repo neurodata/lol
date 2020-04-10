@@ -1,0 +1,135 @@
+---
+title: "All Datasets -- Cohen"
+author: "Eric Bridgeford"
+date: "January 24, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, messages=FALSE}
+require(tidyverse)
+require(ggplot2)
+require(tie)
+require(janitor)
+require(ggbeeswarm)
+require(grid)
+require(gridExtra)
+
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
+```
+
+# Data Loading
+
+```{r, warning=FALSE}
+ref.alg <- "PCA"
+classifier.alg <- "LDA"
+lol.dat <- readRDS('../data/flashlol/flashlol.rds') %>%
+  dplyr::rename(Er.Rt=Misclassification) %>%
+  dplyr::filter(Classifier == classifier.alg)
+
+lol.rc <- readRDS('../data/flashlol/chance.rds')
+
+lol.dat <- lol.dat %>%
+  dplyr::mutate(Algorithm=factor(Algorithm, ordered=TRUE, levels=c("CCA", "RP", "LDA", "PLS", "PCA", "LOL")))
+
+# horizontally merge the rstar, Lhatstar from LOL
+# and the misclassification rate from random chance
+lol.dat.prep <- lol.dat %>%
+  dplyr::inner_join(lol.dat %>%
+                      dplyr::filter(Algorithm == ref.alg) %>%
+                      ungroup() %>%
+                      dplyr::rename(REF.Er.Rt=Er.Rt) %>%
+                      dplyr::select(-c(Algorithm,Classifier)),
+                    by=c("Fold", "Dataset", "n")) %>%
+  dplyr::inner_join(lol.rc %>%
+                      dplyr::rename(RC.Er.Rt=Er.Rt) %>%
+                      dplyr::select(Dataset, Fold, RC.Er.Rt),
+                    by=c("Fold", "Dataset")) %>%
+  # normalize
+  mutate(Kappa=(Er.Rt - RC.Er.Rt)/(1 - RC.Er.Rt), Kappa.REF=(REF.Er.Rt - RC.Er.Rt)/(1 - RC.Er.Rt)) %>%
+  # for each (Algorithm, Dataset) compute the mean normalized rstar, error rate
+  # over folds
+  dplyr::group_by(Algorithm, Dataset, n) %>%
+  dplyr::summarize(Kappa.dif=mean(Kappa - Kappa.REF), Kappa=mean(Kappa), Er.Rt=mean(Er.Rt)) %>%
+  dplyr::group_by(Dataset) %>%
+  dplyr::mutate(Rank=rank(Kappa, ties.method="average")) %>%
+  dplyr::mutate(Rank=factor(Rank, ordered=TRUE, levels=sort(unique(Rank))))
+```
+
+```{r}
+algs <-  c("LOL", "PLS", "CCA", "LDA", "PCA", "RP")
+acols <- c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628")
+linestyle <- c("solid", "solid", "solid","solid", "solid", "solid")
+names(linestyle) <- algs
+names(algs) <- acols
+names(acols) <- algs
+#shapes <- c(21, 24, 21, 24, 23, 23, 21, 24, 23)
+shapes <- c(21, 24, 21, 22, 21, 23)
+names(shapes) <- algs
+
+kappa.scatter <- function(data, title="") {
+  data %>%
+    dplyr::filter(Algorithm != ref.alg) %>%
+    ggplot(aes(x=Algorithm, y=Kappa.dif, color=Algorithm)) +
+      geom_quasirandom() +
+      xlab(sprintf("Algorithm Compared to %s", ref.alg)) +
+      ylab("Effect Size (%)") +
+      theme_bw() +
+      scale_color_manual(values=acols) +
+      stat_summary(fun.y=mean, geom="point", color="black", size=2, stroke=1.2, shape=4) +
+      annotate("text", size=4, label=sprintf("%s better", ref.alg), color="black", x=5, y=.35) +
+      annotate("text", size=4, label=sprintf("%s worse", ref.alg), color="black", x=5, y=-.35) +
+      scale_y_continuous(limits=c(-0.5, 2)) +
+      geom_hline(yintercept=0, linetype="dotted") +
+      ggtitle(title) +
+      guides(color=FALSE)
+}
+
+rank.hm <- function(data, title="") {
+  p.vals <- data %>%
+    ungroup() %>%
+    dplyr::select(Dataset, Algorithm, Er.Rt) %>%
+    dplyr::filter(Algorithm != "LOL") %>%
+    dplyr::inner_join(data %>%
+                        dplyr::filter(Algorithm == "LOL") %>%
+                        dplyr::select(Dataset, Algorithm, Er.Rt) %>%
+                        dplyr::rename(LOL.Er.Rt=Er.Rt) %>%
+                        dplyr::select(Dataset, LOL.Er.Rt),
+                      by=c("Dataset")) %>%
+    group_by(Algorithm) %>%
+    summarize(p.value=wilcox.test(LOL.Er.Rt, Er.Rt, paired=TRUE, alternative = "less")$p.value)
+  data %>%
+    dplyr::group_by(Algorithm, Rank, .drop=FALSE) %>%
+    dplyr::summarise(Count=n()) %>%
+    dplyr::mutate(freq=prop.table(Count)) %>%
+    ggplot(aes(x=Rank, y=Algorithm, fill=freq)) +
+      geom_tile() +
+      scale_fill_gradient(low="#FFFFFF", high="#660099", name="Frequency",
+                          breaks=c(0, 1), limits=c(0, 1)) +
+      scale_x_discrete(expand=c(0, 0)) +
+      scale_y_discrete(expand=c(0, 0)) +
+      theme_bw() +
+      coord_cartesian(xlim=c(0.5, 6.5), clip="off") +
+      ggtitle(title) +
+      theme(legend.position="bottom", plot.margin=unit(c(1,4,1,1), "lines")) +
+      geom_text(data=p.vals, aes(x=6.75, y=Algorithm, fill=NULL,
+                                 label=sprintf("%.3f", p.value)), hjust=0) +
+      annotate("text", label="p-value", x=6.75, hjust=0, y="LOL")
+}
+```
+
+```{r}
+grid.arrange(kappa.scatter(lol.dat.prep, "(A)"), rank.hm(lol.dat.prep, "(B)"), widths=c(0.6, 0.4), nrow=1)
+```

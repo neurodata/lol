@@ -4,7 +4,7 @@ require(abind)
 require(dplyr)
 
 flashx.pca <- function(X, r, ...) {
-  X <- fm.as.matrix(X); Y <- as.vector(Y)
+  X <- fm.as.matrix(X)
   # mean center by the column mean
   d <- dim(X)[2]
   if (r > d) {
@@ -68,7 +68,7 @@ flashx.deltas <- function(centroids, priors) {
     deltas[[i-1]] <- fm.get.rows(centroids, str_prior[1]) - fm.get.rows(centroids, str_prior[i])
   }
   if (length(deltas) > 1) {
-    deltas <- fm.cbind.list(deltas)
+    deltas <- fm.rbind.list(deltas)
   } else {
     deltas <- deltas[[1]]
   }
