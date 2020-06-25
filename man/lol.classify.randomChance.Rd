@@ -2,7 +2,7 @@
 % Please edit documentation in R/random_classifier.R
 \name{lol.classify.randomChance}
 \alias{lol.classify.randomChance}
-\title{Randomly Guessing Classifier Training}
+\title{Randomly Chance Classifier Training}
 \usage{
 lol.classify.randomChance(X, Y, ...)
 }
@@ -19,7 +19,9 @@ A list of class \code{randomGuess}, with the following attributes:
 \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 }
 \description{
-A function that trains a classifier based on random guessing.
+A function that predicts the maximally present class in the dataset. Functionality consistent
+with the standard R prediction interface so that one can compute the "chance" accuracy
+with minimal modification of other classification scripts.
 }
 \examples{
 library(lolR)

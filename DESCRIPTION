@@ -2,7 +2,7 @@ Package: lolR
 Type: Package
 Title: Linear Optimal Low-Rank Projection
 Version: 2.1
-Date: 2018-04-12
+Date: 2020-06-20
 Authors@R: c(person("Eric", "Bridgeford", role = c("aut", "cre"),
 	   	    email = "ericwb95@gmail.com"),
 	   	 person("Minh", "Tang", role="ctb",
@@ -27,7 +27,7 @@ Imports:
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 Suggests:
     knitr,
     rmarkdown,

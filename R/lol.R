@@ -39,6 +39,8 @@
 #' \code{vignette("lol", package = "lolR")}
 #'
 #' @author Eric Bridgeford
+
+#' @references Joshua T. Vogelstein, et al. "Supervised Dimensionality Reduction for Big Data" arXiv (2020).
 #' @examples
 #' library(lolR)
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions

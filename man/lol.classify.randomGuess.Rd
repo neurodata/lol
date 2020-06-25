@@ -19,7 +19,9 @@ A list of class \code{randomGuess}, with the following attributes:
 \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
 }
 \description{
-A function that trains a classifier based on random guessing.
+A function that predicts by randomly guessing based on the pmf of the class priors. Functionality consistent
+with the standard R prediction interface so that one can compute the "guess" accuracy
+with minimal modification of other classification scripts.
 }
 \examples{
 library(lolR)

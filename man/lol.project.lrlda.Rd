@@ -16,9 +16,9 @@ lol.project.lrlda(X, Y, r, xfm = FALSE, xfm.opts = list(), robust = FALSE, ...)
 \item{xfm}{whether to transform the variables before taking the SVD.
 \itemize{
 \item{FALSE}{apply no transform to the variables.}
-\item{'unit'}{unit transform the variables, defaulting to centering and scaling to mean 0, variance 1. See \link[base]{scale} for details and optional args.}
-\item{'log'}{log-transform the variables, for use-cases such as having high variance in larger values. Defaults to natural logarithm. See \link[base]{log} for details and optional args.}
-\item{'rank'}{rank-transform the variables. Defalts to breaking ties with the average rank of the tied values. See \link[base]{rank} for details and optional args.}
+\item{'unit'}{unit transform the variables, defaulting to centering and scaling to mean 0, variance 1. See \code{\link[base]{scale}} for details and optional args.}
+\item{'log'}{log-transform the variables, for use-cases such as having high variance in larger values. Defaults to natural logarithm. See \code{\link[base:Log]{log}} for details and optional args.}
+\item{'rank'}{rank-transform the variables. Defalts to breaking ties with the average rank of the tied values. See \code{\link[base]{rank}} for details and optional args.}
 \item{c(opt1, opt2, etc.)}{apply the transform specified in opt1, followed by opt2, etc.}
 }}
 
@@ -51,7 +51,7 @@ For more details see the help vignette:
 library(lolR)
 data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 X <- data$X; Y <- data$Y
-model <- lol.project.lrlda(X=X, Y=Y, r=2)  # use cpca to project into 2 dimensions
+model <- lol.project.lrlda(X=X, Y=Y, r=2)  # use lrlda to project into 2 dimensions
 }
 \author{
 Eric Bridgeford

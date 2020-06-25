@@ -21,7 +21,9 @@
 Yhat \code{[n]} the predicted class of each of the \code{n} data point in \code{X}.
 }
 \description{
-A function that predicts the maximally present class in the dataset.
+A function that predicts the maximally present class in the dataset. Functionality consistent
+with the standard R prediction interface so that one can compute the "chance" accuracy
+with minimal modification of other classification scripts.
 }
 \examples{
 library(lolR)

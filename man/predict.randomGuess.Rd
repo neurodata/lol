@@ -21,7 +21,9 @@
 Yhat \code{[n]} the predicted class of each of the \code{n} data point in \code{X}.
 }
 \description{
-A function that predicts the class of points randomly with a sample from the pmf of trained class labels.
+A function that predicts by randomly guessing based on the pmf of the class priors. Functionality consistent
+with the standard R prediction interface so that one can compute the "guess" accuracy
+with minimal modification of other classification scripts.
 }
 \examples{
 library(lolR)

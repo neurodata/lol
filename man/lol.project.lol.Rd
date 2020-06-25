@@ -91,6 +91,9 @@ model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='pls')
 model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='linear', second.moment.xfm='unit',
                          second.moment.xfm.opts=list(center=FALSE))
 }
+\references{
+Joshua T. Vogelstein, et al. "Supervised Dimensionality Reduction for Big Data" arXiv (2020).
+}
 \author{
 Eric Bridgeford
 }
