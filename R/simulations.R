@@ -285,7 +285,7 @@ lol.sims.qdtoep <- function(n, d, rotate=FALSE, priors=NULL, D1=10, b=0.4, rho=0
 #' @param rotate whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.
 #' @param priors the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.
 #' @param b scalar for mu scaling. Default to \code{4}.
-#' @param K number of classes, should be <4. Defaults to \code{2}.
+#' @param K number of classes, should be <=4. Defaults to \code{2}.
 #' @param maxvar the maximum covariance between the two classes. Defaults to \code{100}.
 #' @return A list of class \code{simulation} with the following:
 #' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
@@ -337,6 +337,72 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2, maxvar=10
   # simulate from GMM
   sim <- lol.sims.sim_gmm(mus, S, n, priors)
   structure(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors, simtype="Random Trunk",
+                 params=list(b=b, K=K)), class="simulation")
+}
+
+
+#' Multiclass Trunk
+#'
+#' A simulation for the multiclass trunk experiment, in which the maximal covariant dimensions are the reverse of the maximal mean differences.
+#' @importFrom abind abind
+#' @param n the number of samples of the simulated data.
+#' @param d the dimensionality of the simulated data.
+#' @param rotate whether to apply a random rotation to the mean and covariance. With random rotataion matrix \code{Q}, \code{mu = Q*mu}, and \code{S = Q*S*Q}. Defaults to \code{FALSE}.
+#' @param priors the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.
+#' @param b scalar for mu scaling. Default to \code{4}.
+#' @param K the number of classes. Should be an even number. Defaults to \code{4}.
+#' @param maxvar the maximum covariance between the two classes. Defaults to \code{100}.
+#' @return A list of class \code{simulation} with the following:
+#' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
+#' \item{Y}{\code{[n]} the \code{n} labels as an array.}
+#' \item{mus}{\code{[d, K]} the \code{K} class means in \code{d} dimensions.}
+#' \item{Sigmas}{\code{[d, d, K]} the \code{K} class covariance matrices in \code{d} dimensions.}
+#' \item{priors}{\code{[K]} the priors for each of the \code{K} classes.}
+#' \item{simtype}{The name of the simulation.}
+#' \item{params}{Any extraneous parameters the simulation was created with.}
+#' \item{robust}{If robust is not false, a list containing \code{inlier} a boolean array indicating which points are inliers, \code{s.outlier} the covariance structure of outliers, and \code{mu.outlier} the means of the outliers.}
+#'
+#' @section Details:
+#' For more details see the help vignette:
+#' \code{vignette("sims", package = "lolR")}
+#'
+#' @author Eric Bridgeford
+#' @examples
+#' library(lolR)
+#' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
+#' X <- data$X; Y <- data$Y
+#' @export
+lol.sims.ktrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=4, maxvar=100) {
+  if (is.null(priors)) {
+    priors <- array(1/K, dim=c(K))
+  } else if (length(priors) != K) {
+    stop(sprintf("You have specified %d priors for %d classes.", length(priors), K))
+  } else if (sum(priors) != 1) {
+    stop(sprintf("You have passed invalid priors. The sum(priors) should be 1; yours is %.3f", sum(priors)))
+  }
+  mu1 <- b/sqrt(0:(d-1)*2 + 1)
+  mus <- sapply(1:K, function(k) {
+    if (k <= K/2) {
+      scale <- k/(K/2)
+    } else {
+      scale <- -(k-(K/2))/(K/2)
+    }
+    return(scale*mu1)
+  })
+  s <- diag(d)
+  diag(s) <- maxvar/sqrt(seq(from=d, to=1, by=-1))
+
+  S <- array(unlist(replicate(K, s, simplify=FALSE)), dim=c(d, d, K))
+
+  if (rotate) {
+    res <- lol.sims.random_rotate(mus, S)
+    mus <- res$mus
+    S <- res$S
+  }
+
+  # simulate from GMM
+  sim <- lol.sims.sim_gmm(mus, S, n, priors)
+  structure(list(X=sim$X, Y=sim$Y, mus=mus, Sigmas=S, priors=sim$priors, simtype="K-Class Random Trunk",
                  params=list(b=b, K=K)), class="simulation")
 }
 
