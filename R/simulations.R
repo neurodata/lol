@@ -350,7 +350,7 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2, maxvar=10
 #' @param priors the priors for each class. If \code{NULL}, class priors are all equal. If not null, should be \code{|priors| = K}, a length \code{K} vector for \code{K} classes. Defaults to \code{NULL}.
 #' @param b scalar for mu scaling. Default to \code{4}.
 #' @param K the number of classes. Should be an even number. Defaults to \code{4}.
-#' @param minvar the minimum variance for each dimension. Defaults to \code{1}.
+#' @param var.dim the variance for each dimension. Defaults to \code{1}.
 #' @return A list of class \code{simulation} with the following:
 #' \item{X}{\code{[n, d]} the \code{n} data points in \code{d} dimensions as a matrix.}
 #' \item{Y}{\code{[n]} the \code{n} labels as an array.}
@@ -371,7 +371,7 @@ lol.sims.rtrunk <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=2, maxvar=10
 #' data <- lol.sims.rtrunk(n=200, d=30)  # 200 examples of 30 dimensions
 #' X <- data$X; Y <- data$Y
 #' @export
-lol.sims.khump <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=4, minvar=1) {
+lol.sims.khump <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=4, var.dim=100) {
   if (is.null(priors)) {
     priors <- array(1/K, dim=c(K))
   } else if (length(priors) != K) {
@@ -397,7 +397,7 @@ lol.sims.khump <- function(n, d, rotate=FALSE, priors=NULL, b=4, K=4, minvar=1) 
     return(c(scale*mu))
   })
   s <- matrix(0, nrow=d, ncol=d)
-  diag(s) <- (2*(b - apply(abs(mus), c(1), max) + minvar))^2
+  diag(s) <- var.dim/sqrt(K)
   S <- array(unlist(replicate(K, s, simplify=FALSE)), dim=c(d, d, K))
 
   if (rotate) {
