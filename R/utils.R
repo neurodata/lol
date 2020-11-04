@@ -39,7 +39,7 @@ lol.utils.deltas <- function(centroids, priors, ...) {
   srt_prior <- sort(priors, decreasing=TRUE, index.return=TRUE)$ix
   deltas[,1] <- centroids[,srt_prior[1]]
   for (i in 2:K) {
-    deltas[,i] <- deltas[,1] - centroids[,srt_prior[2]]
+    deltas[,i] <- deltas[,1] - centroids[,srt_prior[i]]
   }
   return(deltas[,2:K,drop=FALSE])
 }
