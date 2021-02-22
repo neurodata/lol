@@ -22,7 +22,8 @@
 #' @param second.moment.xfm whether to use extraneous options in estimation of the second moment component. The transforms specified should be a numbered list of transforms you wish to apply, and will be applied in accordance with \code{second.moment}.
 #' @param second.moment.xfm.opts optional arguments to pass to the \code{second.moment.xfm} option specified. Should be a numbered list of lists, where \code{second.moment.xfm.opts[[i]]} corresponds to the optional arguments for \code{second.moment.xfm[[i]]}.
 #' Defaults to the default options for each transform scheme.
-#' @param robust whether to perform PCA on a robust estimate of the covariance matrix or not. Defaults to \code{FALSE}.
+#' @param robust.first whether to perform PCA on a robust estimate of the first moment component or not. A robust estimate corresponds to usage of medians. Defaults to \code{TRUE}.
+#' @param robust.second whether to perform PCA on a robust estimate of the second moment component or not. A robust estimate corresponds to usage of a robust covariance matrix, which requires \code{d < n}. Defaults to \code{FALSE}.
 #' @param ... trailing args.
 #' @return A list containing the following:
 #' \item{\code{A}}{\code{[d, r]} the projection matrix from \code{d} to \code{r} dimensions.}
@@ -53,7 +54,6 @@
 #' # use LRQDA to estimate the second moment by performing PCA on each class
 #' model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='quadratic')
 #'
-#'
 #' # use PLS to estimate the second moment
 #' model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='pls')
 #'
@@ -64,7 +64,7 @@
 #' @export
 lol.project.lol <- function(X, Y, r, second.moment.xfm=FALSE, second.moment.xfm.opts=list(),
                             first.moment='delta', second.moment='linear', orthogonalize=FALSE,
-                            robust=FALSE, ...) {
+                            robust.first=TRUE, robust.second=FALSE, ...) {
   # class data
   info <- lol.utils.info(X, Y, robust=robust)
   priors <- info$priors; centroids <- info$centroids
@@ -75,14 +75,14 @@ lol.project.lol <- function(X, Y, r, second.moment.xfm=FALSE, second.moment.xfm.
   }
 
   if (first.moment == "delta") {
-    first.moment.proj <- lol.utils.deltas(centroids, priors)
+    first.moment.proj <- lol.utils.deltas(centroids, priors, robust=robust.first)
   } else {
     first.moment.proj <- array(0, dim=c(d, 0))
   }
 
   nv <- r - dim(first.moment.proj)[2]
   if (second.moment == "linear" & nv > 0) {
-    lrlda <- lol.project.lrlda(X, Y, r=nv, xfm=second.moment.xfm, xfm.opts=second.moment.xfm.opts, robust=robust)
+    lrlda <- lol.project.lrlda(X, Y, r=nv, xfm=second.moment.xfm, xfm.opts=second.moment.xfm.opts, robust=robust.second)
     #d <- lrlda$d
     second.moment.proj <- lrlda$A
   } else if (second.moment == "quadratic" & nv > 0) {
@@ -90,7 +90,7 @@ lol.project.lol <- function(X, Y, r, second.moment.xfm=FALSE, second.moment.xfm.
     vclass <- c()  # the class-wise egvals
     for (ylab in ylabs) {
       Xclass = X[Y == ylab,]
-      obj <- lol.project.pca(Xclass, r=nv, xfm=second.moment.xfm, xfm.opts=second.moment.xfm.opts, robust=robust)
+      obj <- lol.project.pca(Xclass, r=nv, xfm=second.moment.xfm, xfm.opts=second.moment.xfm.opts, robust=robust.second)
       Aclass <- cbind(Aclass, obj$A)
       vclass <- c(vclass, obj$d[1:nv])
     }

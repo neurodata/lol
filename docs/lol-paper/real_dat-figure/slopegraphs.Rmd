@@ -1,0 +1,113 @@
+---
+title: "Real Data Slope Graphs"
+author: "Eric Bridgeford"
+date: "1/24/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, messages=FALSE}
+require(tidyverse)
+require(ggplot2)
+require(tie)
+require(janitor)
+require(ggbeeswarm)
+require(grid)
+require(gridExtra)
+
+g_legend<-function(a.gplot){
+  tmp <- ggplot_gtable(ggplot_build(a.gplot))
+  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
+  legend <- tmp$grobs[[leg]]
+  return(legend)
+}
+
+compute_cutoff <- function(rs, lhats, t=0) {
+  rs <- rs[complete.cases(lhats) & complete.cases(rs)]; lhats <- lhats[complete.cases(lhats) & complete.cases(rs)]
+  sr.ix <- sort(rs, decreasing=FALSE, index.return=TRUE)$ix
+  # compute minimum value
+  min.lhat <- min(lhats)
+  # compute minimum value + 5%
+  lhat.thresh <- (1 + t)*min.lhat
+  # find which indices are all below this
+  lhat.below <- which(lhats <= lhat.thresh)
+  rs.below <- rs[lhat.below]; lhats.below <- lhats[lhat.below]
+  tmin.ix <- min(rs.below, index.return=TRUE)
+  return(list(r.star=rs.below[tmin.ix], Er.Rt.Star=lhats.below[tmin.ix]))
+}
+```
+
+# Data Loading
+
+```{r, warning=FALSE}
+ref.alg <- "LOL"
+classifier.alg <- "LDA"
+lol.dat <- readRDS('../data/real_data/lda_results.rds') %>%
+  dplyr::select(-c(xv, ntrain, repo, K)) %>%
+  dplyr::rename(Dataset=exp, Algorithm=alg, Fold=fold, Er.Rt=lhat) %>%
+  dplyr::mutate(Classifier=classifier.alg) %>%
+  mutate(Algorithm=recode_factor(Algorithm, "LRLDA"="LDA", "RandomGuess"="RC"))
+
+lol.rc <- readRDS('../data/real_data/chance.rds') %>%
+  dplyr::group_by(Dataset) %>%
+  dplyr::summarise(Er.Rt=mean(Er.Rt))
+
+lol.dat <- lol.dat %>%
+  dplyr::filter(Algorithm != "RC") %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(Algorithm=factor(Algorithm, ordered=TRUE, levels=c("CCA", "RP", "LDA", "PLS", "PCA", "LOL"))) %>%
+  dplyr::group_by(Algorithm, Classifier, r, Dataset, n, d) %>%
+  dplyr::summarize(Er.Rt=mean(Er.Rt)) %>%
+  dplyr::group_by(Algorithm, Classifier, Dataset, n, d) %>%
+  dplyr::summarize(Er.Rt = min(Er.Rt))
+
+# horizontally merge the rstar, Lhatstar from LOL
+# and the misclassification rate from random chance
+lol.dat.prep <- lol.dat %>%
+  dplyr::inner_join(lol.dat %>%
+                      dplyr::filter(Algorithm == ref.alg) %>%
+                      ungroup() %>%
+                      dplyr::rename(REF.Er.Rt=Er.Rt) %>%
+                      dplyr::select(-c(Algorithm, Classifier, d)),
+                    by=c("Dataset", "n")) %>%
+  dplyr::inner_join(lol.rc %>%
+                      dplyr::rename(RC.Er.Rt=Er.Rt) %>%
+                      dplyr::select(Dataset, RC.Er.Rt),
+                    by=c("Dataset")) %>%
+  # normalize
+  mutate(Kappa=1-(Er.Rt)/RC.Er.Rt, Kappa.REF=1-(REF.Er.Rt)/RC.Er.Rt) %>%
+  # for each (Algorithm, Dataset) compute the mean normalized rstar, error rate
+  # over folds
+  dplyr::group_by(Dataset) %>%
+  dplyr::mutate(Rank=rank(Kappa, ties.method="average")) %>%
+  dplyr::mutate(Rank=factor(Rank, ordered=TRUE, levels=sort(unique(Rank))))
+```
+
+```{r}
+algs <-  c("LOL", "PLS", "CCA", "LDA", "PCA", "RP")
+acols <- c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", "#a65628")
+linestyle <- c("solid", "solid", "solid","solid", "solid", "solid")
+names(linestyle) <- algs
+names(algs) <- acols
+names(acols) <- algs
+#shapes <- c(21, 24, 21, 24, 23, 23, 21, 24, 23)
+shapes <- c(21, 24, 21, 22, 21, 23)
+names(shapes) <- algs
+
+
+lol.dat.prep %>%
+  dplyr::select(Algorithm, Dataset, Er.Rt, REF.Er.Rt) %>%
+  dplyr::filter(Algorithm != "LOL") %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(Slope = REF.Er.Rt - Er.Rt, Pos.Sl=as.factor(Slope > 0)) %>%
+  dplyr::mutate(ID=dplyr::row_number()) %>%
+  gather("Position", "Value", Er.Rt, REF.Er.Rt) %>%
+  ggplot(aes(x=Position, y=Value, group=ID, color=as.factor(Pos.Sl))) +
+    geom_line() +
+    #scale_color_manual(values=c(TRUE"green", FALSE="red")) +
+    facet_grid(.~Algorithm)
+```
