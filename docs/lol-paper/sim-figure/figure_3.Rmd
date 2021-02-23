@@ -141,13 +141,13 @@ lhat_plt <- as.ggplot(gtable_filter(ggplotGrob(grid_sim), "axis-b-[2,3]", trim=F
 
 We combine and plot:
 
-```{r, fig.height=11, fig.width=10}
+```{r, fig.height=7, fig.width=12}
 grid.arrange(sim_plt, lhat_plt, nrow=2, heights=c(0.35, 0.35))
 ```
 
 # Multiclass Plot
 
-```{r}
+```{r, fig.width=10, fig.height=4}
 plt.multiclass <- readRDS('../data/sims/lol_results_khump.rds') %>%
   group_by(K, r, alg) %>%
   summarize(lhat=mean(lhat)) %>%
@@ -170,4 +170,5 @@ plt.multiclass <- readRDS('../data/sims/lol_results_khump.rds') %>%
 
 
 plt.multiclass <- as.ggplot(gtable_filter(ggplotGrob(plt.multiclass), "axis-b-[2,3,4,5]", trim=FALSE, invert=TRUE))
+plt.multiclass
 ```
