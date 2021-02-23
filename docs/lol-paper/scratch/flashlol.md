@@ -14,7 +14,7 @@ ssh -i /path/to/pemkey ubuntu@<ip>
 
 ```
 Dataset="SWU4"
-docker pull ericw95/flashlol:0.0.1
+docker pull ericw95/flashlol:0.0.3
 ```
 
 3. Format and Drives:
@@ -51,7 +51,7 @@ git clone https://github.com/neurodata/lol.git
 6. Launch Docker:
 
 ```
-docker run -ti --entrypoint /bin/bash -v /home/ubuntu/Documents/lol:/lol -v /mnt/ssd1:/brains ericw95/flashlol:0.0.1
+docker run -ti --entrypoint /bin/bash -v /<path>/<to>/<repo>/lol:/lol -v /mnt/ssd1:/brains ericw95/flashlol:0.0.1
 ```
 
 8. Run scripts:
