@@ -13,7 +13,8 @@ lol.project.lol(
   first.moment = "delta",
   second.moment = "linear",
   orthogonalize = FALSE,
-  robust = FALSE,
+  robust.first = TRUE,
+  robust.second = FALSE,
   ...
 )
 }
@@ -45,7 +46,9 @@ Defaults to the default options for each transform scheme.}
 
 \item{orthogonalize}{whether to orthogonalize the projection matrix. Defaults to \code{FALSE}.}
 
-\item{robust}{whether to perform PCA on a robust estimate of the covariance matrix or not. Defaults to \code{FALSE}.}
+\item{robust.first}{whether to perform PCA on a robust estimate of the first moment component or not. A robust estimate corresponds to usage of medians. Defaults to \code{TRUE}.}
+
+\item{robust.second}{whether to perform PCA on a robust estimate of the second moment component or not. A robust estimate corresponds to usage of a robust covariance matrix, which requires \code{d < n}. Defaults to \code{FALSE}.}
 
 \item{...}{trailing args.}
 }
@@ -81,7 +84,6 @@ model <- lol.project.lol(X=X, Y=Y, r=5, orthogonalize=TRUE)
 
 # use LRQDA to estimate the second moment by performing PCA on each class
 model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='quadratic')
-
 
 # use PLS to estimate the second moment
 model <- lol.project.lol(X=X, Y=Y, r=5, second.moment='pls')

@@ -4,7 +4,15 @@
 \alias{lol.sims.khump}
 \title{Multiclass Trunk}
 \usage{
-lol.sims.khump(n, d, rotate = FALSE, priors = NULL, b = 4, K = 4, minvar = 1)
+lol.sims.khump(
+  n,
+  d,
+  rotate = FALSE,
+  priors = NULL,
+  b = 4,
+  K = 4,
+  var.dim = 100
+)
 }
 \arguments{
 \item{n}{the number of samples of the simulated data.}
@@ -19,7 +27,7 @@ lol.sims.khump(n, d, rotate = FALSE, priors = NULL, b = 4, K = 4, minvar = 1)
 
 \item{K}{the number of classes. Should be an even number. Defaults to \code{4}.}
 
-\item{minvar}{the minimum variance for each dimension. Defaults to \code{1}.}
+\item{var.dim}{the variance for each dimension. Defaults to \code{1}.}
 }
 \value{
 A list of class \code{simulation} with the following:

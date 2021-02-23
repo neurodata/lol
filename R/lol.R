@@ -66,7 +66,7 @@ lol.project.lol <- function(X, Y, r, second.moment.xfm=FALSE, second.moment.xfm.
                             first.moment='delta', second.moment='linear', orthogonalize=FALSE,
                             robust.first=TRUE, robust.second=FALSE, ...) {
   # class data
-  info <- lol.utils.info(X, Y, robust=robust)
+  info <- lol.utils.info(X, Y, robust=robust.first)
   priors <- info$priors; centroids <- info$centroids
   K <- info$K; ylabs <- info$ylabs
   n <- info$n; d <- info$d

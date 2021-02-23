@@ -30,7 +30,7 @@ test_that('Cross Validation Returns Lhat', {
 test_that('Optimal Embedding Dimensions', {
   r <- 2
   result.r <- lol.xval.eval(dat$X, dat$Y, r, alg=lol.project.lol, sets=sets, k=xv)
-  rs <- c(2, 20)
+  rs <- c(2, 15)
   result.rs <- lol.xval.optimal_dimselect(dat$X, dat$Y, rs, lol.project.lol, sets=sets, k=xv)
   expect_equal(r, result.rs$optimal.r)
   expect_equal(as.numeric(result.rs$folds.data$lhat[result.rs$folds.data$r == r]),
